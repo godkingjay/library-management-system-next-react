@@ -1,30 +1,73 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
+import axios from "axios";
+import { apiConfig } from "@/utils/api";
 
 const useAuth = () => {
 	const [user, setUser] = useState(null);
-	const [loading, setLoading] = useState(true);
+	const [loadingUser, setLoadingUser] = useState(true);
 	const [error, setError] = useState<any>(null);
+
+	const [loadingSession, setLoadingSession] = useState(false);
 
 	const { user: userMemo, setUser: setUserMemo } = useMemo(
 		() => ({ user, setUser }),
 		[user, setUser]
 	);
 
-	const { loading: loadingMemo, setLoading: setLoadingMemo } = useMemo(
-		() => ({ loading, setLoading }),
-		[loading, setLoading]
-	);
+	const { loadingUser: loadingUserMemo, setLoadingUser: setLoadingUserMemo } =
+		useMemo(
+			() => ({ loadingUser, setLoadingUser }),
+			[loadingUser, setLoadingUser]
+		);
 
 	const { error: errorMemo, setError: setErrorMemo } = useMemo(
 		() => ({ error, setError }),
 		[error, setError]
 	);
 
+	const getSession = useCallback(async (sessionToken: string) => {
+		try {
+			if (!userMemo && !loadingSession) {
+				setLoadingUserMemo(true);
+				setLoadingSession(true);
+
+				const data = await axios
+					.post(apiConfig.apiEndpoint + "/auth/signin", {
+						sessionToken,
+					})
+					.then((response) => response.data);
+
+				setUserMemo(data.user);
+
+				setLoadingSession(false);
+				setLoadingUserMemo(false);
+			}
+		} catch (error) {
+			setErrorMemo(error);
+		}
+	}, []);
+
 	const signInWithPassword = useCallback(
 		async (emailOrUsername: string, password: string) => {
 			try {
-				if (!userMemo) {
-					setLoadingMemo(true);
+				if (!userMemo && !loadingSession) {
+					setLoadingUserMemo(true);
+					setLoadingSession(true);
+
+					const { user } = await axios
+						.post(apiConfig.apiEndpoint + "/auth/signin", {
+							emailOrUsername,
+							password,
+						})
+						.then((response) => response.data);
+
+					if (user) {
+						setUserMemo(user);
+						localStorage.setItem("sessionToken", user.session.token);
+					}
+
+					setLoadingSession(false);
+					setLoadingUserMemo(false);
 				}
 			} catch (error) {
 				setErrorMemo(error);
@@ -33,12 +76,19 @@ const useAuth = () => {
 		[]
 	);
 
-	useEffect(() => {}, []);
+	useEffect(() => {
+		const sessionToken = localStorage.getItem("sessionToken");
+
+		if (sessionToken) {
+			getSession(sessionToken);
+		}
+	}, []);
 
 	return {
 		user: userMemo,
-		loading: loadingMemo,
+		loadingUser: loadingUserMemo,
 		error: errorMemo,
+		signInWithPassword,
 	};
 };
 
