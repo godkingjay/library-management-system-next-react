@@ -6,6 +6,8 @@ import jwt from "jsonwebtoken";
 import { getTimeDifference } from "@/utils/functions/date";
 import { UserAuth } from "@/utils/models/auth";
 import { jwtConfig } from "@/utils/site";
+import { SiteUser } from "@/utils/models/user";
+import userDb from "@/server/mongo/userDb";
 
 export interface APIEndpointSignInParameters {
 	email: string;
@@ -19,6 +21,9 @@ export default async function handler(
 ) {
 	try {
 		const { authCollection } = await authDb();
+
+		const { userCollection } = await userDb();
+
 		const { email, password, sessionToken }: APIEndpointSignInParameters =
 			req.body;
 
@@ -36,8 +41,12 @@ export default async function handler(
 
 		switch (req.method) {
 			case "POST": {
+				const userData = (await userCollection.findOne({
+					email,
+				})) as unknown as SiteUser;
+
 				if (sessionToken) {
-					const previousSession: any = (await authCollection.findOne({
+					const previousSession = (await authCollection.findOne({
 						"session.token": sessionToken,
 					})) as unknown as UserAuth;
 
@@ -53,7 +62,7 @@ export default async function handler(
 
 					const timeDifference = getTimeDifference(
 						requestDate.toISOString(),
-						previousSession.session.expiresAt
+						previousSession.session!.expiresAt
 					);
 
 					if (timeDifference <= 0) {
@@ -77,7 +86,7 @@ export default async function handler(
 
 					const {
 						ok,
-						value: { password: excludedPassword, ...userSession },
+						value: { password: excludedPassword, ...userSessionData },
 					}: {
 						ok: 0 | 1;
 						value: any;
@@ -96,131 +105,135 @@ export default async function handler(
 					return res.status(200).json({
 						statusCode: 200,
 						success: {
+							status: ok ? 1 : 0,
 							type: "User Signed In",
 							message: "Successfully signed in",
 						},
-						user: userSession,
+						userAuth: userSessionData,
+						user: userData,
 					});
-				}
-
-				if (!email || !password) {
-					return res.status(400).json({
-						statusCode: 400,
-						error: {
-							type: "Missing Parameters",
-							message: "Email and password are required",
-						},
-					});
-				}
-
-				if (!EmailRegex.test(email)) {
-					return res.status(400).json({
-						statusCode: 400,
-						error: {
-							type: "Invalid Email",
-							message: "Email is invalid",
-						},
-					});
-				}
-
-				if (!PasswordRegex.test(password)) {
-					return res.status(400).json({
-						statusCode: 400,
-						error: {
-							type: "Invalid Password",
-							message: "Password is invalid",
-						},
-					});
-				}
-
-				const userAuth = (await authCollection.findOne({
-					email,
-				})) as unknown as UserAuth;
-
-				if (!userAuth) {
-					return res.status(400).json({
-						statusCode: 400,
-						error: {
-							type: "Invalid Credentials",
-							message: "Email or password is incorrect",
-						},
-					});
-				}
-
-				const isPasswordValid = await comparePasswords(
-					password,
-					userAuth.password
-				);
-
-				if (!isPasswordValid) {
-					return res.status(400).json({
-						statusCode: 400,
-						error: {
-							type: "Invalid Credentials",
-							message: "Email or password is incorrect",
-						},
-					});
-				}
-
-				const updatedUserAuth = {
-					lastSignIn: requestDate.toISOString(),
-					updatedAt: requestDate.toISOString(),
-					"session.token":
-						userAuth.session?.token &&
-						getTimeDifference(
-							requestDate.toISOString(),
-							userAuth.session.expiresAt
-						) > 0
-							? userAuth.session.token
-							: jwt.sign(
-									{
-										userId: userAuth._id.toHexString(),
-									},
-									jwtConfig.secretKey,
-									{
-										expiresIn: "30d",
-									}
-							  ),
-					"session.updatedAt": requestDate.toISOString(),
-					"session.expiresAt": new Date(
-						Date.now() + 30 * 24 * 60 * 60 * 1000
-					).toISOString(),
-					"session.createdAt":
-						userAuth.session?.expiresAt &&
-						getTimeDifference(
-							requestDate.toISOString(),
-							userAuth.session.expiresAt
-						) > 0
-							? userAuth.session.createdAt
-							: requestDate.toISOString(),
-				};
-
-				const {
-					ok,
-					value: { password: excludedPassword, ...newUserAuth },
-				}: {
-					ok: 0 | 1;
-					value: any;
-				} = await authCollection.findOneAndUpdate(
-					{
-						email,
-					},
-					{
-						$set: updatedUserAuth,
-					},
-					{
-						returnDocument: "after",
+				} else {
+					if (!email || !password) {
+						return res.status(400).json({
+							statusCode: 400,
+							error: {
+								type: "Missing Parameters",
+								message: "Email and password are required",
+							},
+						});
 					}
-				);
 
-				return res.status(200).json({
-					statusCode: 200,
-					success: {
-						type: "User Signed In",
-						message: "Successfully signed in",
-					},
-					user: newUserAuth,
-				});
+					if (!EmailRegex.test(email)) {
+						return res.status(400).json({
+							statusCode: 400,
+							error: {
+								type: "Invalid Email",
+								message: "Email is invalid",
+							},
+						});
+					}
+
+					if (!PasswordRegex.test(password)) {
+						return res.status(400).json({
+							statusCode: 400,
+							error: {
+								type: "Invalid Password",
+								message: "Password is invalid",
+							},
+						});
+					}
+
+					const userAuth = (await authCollection.findOne({
+						email,
+					})) as unknown as UserAuth;
+
+					if (!userAuth) {
+						return res.status(400).json({
+							statusCode: 400,
+							error: {
+								type: "Invalid Credentials",
+								message: "Email or password is incorrect",
+							},
+						});
+					}
+
+					const isPasswordValid = await comparePasswords(
+						password,
+						userAuth.password
+					);
+
+					if (!isPasswordValid) {
+						return res.status(400).json({
+							statusCode: 400,
+							error: {
+								type: "Invalid Credentials",
+								message: "Email or password is incorrect",
+							},
+						});
+					}
+
+					const updatedUserAuth = {
+						lastSignIn: requestDate.toISOString(),
+						updatedAt: requestDate.toISOString(),
+						"session.token":
+							userAuth.session?.token &&
+							getTimeDifference(
+								requestDate.toISOString(),
+								userAuth.session.expiresAt
+							) > 0
+								? userAuth.session.token
+								: jwt.sign(
+										{
+											userId: userAuth._id.toHexString(),
+										},
+										jwtConfig.secretKey,
+										{
+											expiresIn: "30d",
+										}
+								  ),
+						"session.updatedAt": requestDate.toISOString(),
+						"session.expiresAt": new Date(
+							Date.now() + 30 * 24 * 60 * 60 * 1000
+						).toISOString(),
+						"session.createdAt":
+							userAuth.session?.expiresAt &&
+							getTimeDifference(
+								requestDate.toISOString(),
+								userAuth.session.expiresAt
+							) > 0
+								? userAuth.session.createdAt
+								: requestDate.toISOString(),
+					};
+
+					const {
+						ok,
+						value: { password: excludedPassword, ...userSessionData },
+					}: {
+						ok: 0 | 1;
+						value: any;
+					} = await authCollection.findOneAndUpdate(
+						{
+							email,
+						},
+						{
+							$set: updatedUserAuth,
+						},
+						{
+							returnDocument: "after",
+						}
+					);
+
+					return res.status(200).json({
+						statusCode: 200,
+						success: {
+							status: ok ? 1 : 0,
+							type: "User Signed In",
+							message: "Successfully signed in",
+						},
+						userAuth: userSessionData,
+						user: userData,
+					});
+				}
 
 				break;
 			}
