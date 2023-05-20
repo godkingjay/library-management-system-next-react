@@ -3,12 +3,12 @@ import { SiteUser } from "@/utils/models/user";
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 
 interface UserState {
-	userAuth: UserAuth | null;
+	// userAuth: UserAuth | null;
 	user: SiteUser | null;
 }
 
 const initialState: UserState = {
-	userAuth: null,
+	// userAuth: null,
 	user: null,
 };
 
@@ -16,14 +16,14 @@ const userSlice = createSlice({
 	name: "user",
 	initialState,
 	reducers: {
-		setUserAuth: (state, action: PayloadAction<UserAuth>) => {
-			state.userAuth = action.payload;
-		},
+		// setUserAuth: (state, action: PayloadAction<UserAuth>) => {
+		// 	state.userAuth = action.payload;
+		// },
+		// clearUserAuth: (state) => {
+		// 	state.userAuth = null;
+		// },
 		setSiteUser: (state, action: PayloadAction<SiteUser>) => {
 			state.user = action.payload;
-		},
-		clearUserAuth: (state) => {
-			state.userAuth = null;
 		},
 		clearSiteUser: (state) => {
 			state.user = null;
@@ -31,8 +31,12 @@ const userSlice = createSlice({
 	},
 });
 
-export const { setUserAuth, setSiteUser, clearUserAuth, clearSiteUser } =
-	userSlice.actions;
+export const {
+	// setUserAuth,
+	// clearUserAuth,
+	setSiteUser,
+	clearSiteUser,
+} = userSlice.actions;
 
 const userReducer = userSlice.reducer;
 
