@@ -46,7 +46,7 @@ export default async function handler(
 					});
 				}
 
-				if (!EmailRegex.test(email)) {
+				if (!EmailRegex.test(email) && email) {
 					return res.status(400).json({
 						statusCode: 400,
 						error: {

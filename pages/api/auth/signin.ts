@@ -11,6 +11,7 @@ import userDb from "@/server/mongo/userDb";
 
 export interface APIEndpointSignInParameters {
 	email: string;
+	username: string;
 	password: string;
 	sessionToken: string;
 }
@@ -24,8 +25,12 @@ export default async function handler(
 
 		const { userCollection } = await userDb();
 
-		const { email, password, sessionToken }: APIEndpointSignInParameters =
-			req.body;
+		const {
+			email,
+			username,
+			password,
+			sessionToken,
+		}: APIEndpointSignInParameters = req.body;
 
 		if (!authCollection) {
 			return res.status(500).json({
@@ -42,7 +47,14 @@ export default async function handler(
 		switch (req.method) {
 			case "POST": {
 				const userData = (await userCollection.findOne({
-					email,
+					$or: [
+						{
+							email,
+						},
+						{
+							username,
+						},
+					],
 				})) as unknown as SiteUser;
 
 				if (sessionToken) {
@@ -113,7 +125,7 @@ export default async function handler(
 						user: userData,
 					});
 				} else {
-					if (!email || !password) {
+					if ((!email && !username) || !password) {
 						return res.status(400).json({
 							statusCode: 400,
 							error: {
@@ -123,7 +135,7 @@ export default async function handler(
 						});
 					}
 
-					if (!EmailRegex.test(email)) {
+					if (!EmailRegex.test(email) && email) {
 						return res.status(400).json({
 							statusCode: 400,
 							error: {
@@ -144,7 +156,14 @@ export default async function handler(
 					}
 
 					const userAuth = (await authCollection.findOne({
-						email,
+						$or: [
+							{
+								email,
+							},
+							{
+								username,
+							},
+						],
 					})) as unknown as UserAuth;
 
 					if (!userAuth) {
@@ -213,7 +232,14 @@ export default async function handler(
 						value: any;
 					} = await authCollection.findOneAndUpdate(
 						{
-							email,
+							$or: [
+								{
+									email,
+								},
+								{
+									username,
+								},
+							],
 						},
 						{
 							$set: updatedUserAuth,
