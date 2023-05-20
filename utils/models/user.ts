@@ -4,9 +4,9 @@ export interface SiteUser {
 	_id: ObjectId;
 	username: string;
 	email: string;
-	password: string;
-	firstName: string;
-	lastName: string;
+	firstName?: string;
+	lastName?: string;
+	birthDate?: Date | string;
 	roles: ("admin" | "user")[];
 	updatedAt: Date | string;
 	createdAt: Date | string;
