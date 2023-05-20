@@ -3,6 +3,8 @@ import { EmailRegex, PasswordRegex } from "./../../../utils/regex";
 import authDb from "@/server/mongo/authDb";
 import { NextApiRequest, NextApiResponse } from "next";
 import { UserAuth } from "@/utils/models/auth";
+import { SiteUser } from "@/utils/models/user";
+import userDb from "@/server/mongo/userDb";
 
 export interface APIEndpointSignUpParameters {
 	email: string;
@@ -15,6 +17,8 @@ export default async function handler(
 ) {
 	try {
 		const { authCollection } = await authDb();
+
+		const { userCollection } = await userDb();
 
 		const { email, password }: APIEndpointSignUpParameters = req.body;
 
@@ -84,12 +88,33 @@ export default async function handler(
 					createdAt: requestDate.toISOString(),
 				};
 
-				const newUser = await authCollection.findOneAndUpdate(
+				const newUser: Partial<SiteUser> = {
+					username: email.split("@")[0],
+					email,
+					roles: ["user"],
+					updatedAt: requestDate.toISOString(),
+					createdAt: requestDate.toISOString(),
+				};
+
+				const newUserAuthData = await authCollection.findOneAndUpdate(
 					{
 						email,
 					},
 					{
 						$set: newUserAuth,
+					},
+					{
+						upsert: true,
+						returnDocument: "after",
+					}
+				);
+
+				const newUserData = await userCollection.findOneAndUpdate(
+					{
+						email,
+					},
+					{
+						$set: newUser,
 					},
 					{
 						upsert: true,
@@ -103,7 +128,8 @@ export default async function handler(
 						type: "User Created",
 						message: "User was created successfully",
 					},
-					user: newUser.value,
+					userAuth: newUserAuthData.value,
+					user: newUserData.value,
 				});
 
 				break;
