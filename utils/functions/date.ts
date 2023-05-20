@@ -8,7 +8,7 @@ export function getTimeDifference(
 
 	const startDate = new Date(from);
 	const endDate = new Date(to);
-	const timeDifference = startDate.getTime() - endDate.getTime();
+	const timeDifference = endDate.getTime() - startDate.getTime();
 
 	const calculate = () => {
 		switch (type) {

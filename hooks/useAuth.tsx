@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import axios from "axios";
-import { apiConfig } from "@/utils/api";
+import { apiConfig } from "@/utils/site";
 
 const useAuth = () => {
 	const [user, setUser] = useState(null);

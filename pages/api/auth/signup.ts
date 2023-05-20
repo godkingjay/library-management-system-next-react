@@ -2,6 +2,7 @@ import { hashPassword } from "@/server/bcrypt";
 import { EmailRegex, PasswordRegex } from "./../../../utils/regex";
 import authDb from "@/server/mongo/authDb";
 import { NextApiRequest, NextApiResponse } from "next";
+import { UserAuth } from "@/utils/models/auth";
 
 export interface APIEndpointSignUpParameters {
 	email: string;
@@ -26,6 +27,8 @@ export default async function handler(
 				},
 			});
 		}
+
+		const requestDate = new Date();
 
 		switch (req.method) {
 			case "POST": {
@@ -73,13 +76,20 @@ export default async function handler(
 					});
 				}
 
+				const newUserAuth: Partial<UserAuth> = {
+					username: email.split("@")[0],
+					email,
+					password: await hashPassword(password),
+					updatedAt: requestDate.toISOString(),
+					createdAt: requestDate.toISOString(),
+				};
+
 				const newUser = await authCollection.findOneAndUpdate(
 					{
 						email,
 					},
 					{
-						email,
-						password: await hashPassword(password),
+						$set: newUserAuth,
 					},
 					{
 						upsert: true,
@@ -93,7 +103,7 @@ export default async function handler(
 						type: "User Created",
 						message: "User was created successfully",
 					},
-					user: newUser,
+					user: newUser.value,
 				});
 
 				break;
