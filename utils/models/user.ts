@@ -1,7 +1,7 @@
 import { ObjectId } from "mongodb";
 
 export interface SiteUser {
-	_id: ObjectId;
+	_id?: ObjectId;
 	username: string;
 	email: string;
 	firstName?: string;

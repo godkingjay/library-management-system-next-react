@@ -1,6 +1,6 @@
 import { useCallback, useMemo } from "react";
 import { useAppDispatch, useAppSelector } from "@/redux/hooks";
-import { UserState, setUsersState } from "@/redux/slice/usersSlice";
+import { UserData, setCurrentUser, setUsers } from "@/redux/slice/usersSlice";
 
 const useUser = () => {
 	const dispatch = useAppDispatch();
@@ -8,16 +8,24 @@ const useUser = () => {
 
 	const usersStateValueMemo = useMemo(() => usersStateValue, [usersStateValue]);
 
-	const setUsersStateValue = useCallback(
-		(userState: UserState) => {
-			dispatch(setUsersState(userState));
+	const setCurrentUserMemo = useCallback(
+		(user: UserData) => {
+			dispatch(setCurrentUser(user));
+		},
+		[dispatch]
+	);
+
+	const setUsersMemo = useCallback(
+		(users: UserData[]) => {
+			dispatch(setUsers(users));
 		},
 		[dispatch]
 	);
 
 	return {
 		usersStateValue: usersStateValueMemo,
-		setUsersStateValue,
+		setCurrentUser: setCurrentUserMemo,
+		setUsers: setUsersMemo,
 	};
 };
 

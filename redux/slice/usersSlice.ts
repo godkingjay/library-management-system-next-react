@@ -19,18 +19,23 @@ const userSlice = createSlice({
 	name: "user",
 	initialState,
 	reducers: {
-		setUsersState: (state, action: PayloadAction<UserState>) => {
-			state.currentUser = action.payload.currentUser;
-			state.users = action.payload.users;
+		setCurrentUser: (state, action: PayloadAction<UserData>) => {
+			state.currentUser = action.payload;
 		},
-		clearUsersState: (state) => {
+		clearCurrentUser: (state) => {
 			state.currentUser = null;
+		},
+		setUsers: (state, action: PayloadAction<UserData[]>) => {
+			state.users = action.payload;
+		},
+		clearUsers: (state) => {
 			state.users = [];
 		},
 	},
 });
 
-export const { setUsersState, clearUsersState } = userSlice.actions;
+export const { setCurrentUser, clearCurrentUser, setUsers, clearUsers } =
+	userSlice.actions;
 
 const usersReducer = userSlice.reducer;
 
