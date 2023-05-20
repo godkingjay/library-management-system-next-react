@@ -7,6 +7,9 @@
     "type-check": "tsc"
   },
   "dependencies": {
+    "@chakra-ui/react": "^2.6.1",
+    "@emotion/react": "^11.11.0",
+    "@emotion/styled": "^11.11.0",
     "@reduxjs/toolkit": "^1.9.5",
     "@types/bcrypt": "^5.0.0",
     "@types/jsonwebtoken": "^9.0.2",
@@ -20,6 +23,7 @@
     "bcrypt": "^5.1.0",
     "eslint": "^8.40.0",
     "eslint-config-next": "^13.4.2",
+    "framer-motion": "^10.12.12",
     "graphql": "^16.6.0",
     "graphql-tag": "^2.12.6",
     "jsonwebtoken": "^9.0.0",
