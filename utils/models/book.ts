@@ -4,7 +4,7 @@ export interface Book {
 	_id: ObjectId;
 	title: string;
 	authorId: string;
-	category: string;
+	categories: string[];
 	amount: number;
 	available: number;
 	borrowed: number;
