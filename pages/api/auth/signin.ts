@@ -4,6 +4,8 @@ import { EmailRegex, PasswordRegex } from "@/utils/regex";
 import { NextApiRequest, NextApiResponse } from "next";
 import jwt from "jsonwebtoken";
 import { getTimeDifference } from "@/utils/functions/date";
+import { UserAuth } from "@/utils/models/auth";
+import { jwtConfig } from "@/utils/site";
 
 export interface APIEndpointSignInParameters {
 	email: string;
@@ -30,12 +32,14 @@ export default async function handler(
 			});
 		}
 
+		const requestDate = new Date();
+
 		switch (req.method) {
 			case "POST": {
 				if (sessionToken) {
-					const previousSession: any = await authCollection.findOne({
+					const previousSession: any = (await authCollection.findOne({
 						"session.token": sessionToken,
-					});
+					})) as unknown as UserAuth;
 
 					if (!previousSession) {
 						return res.status(400).json({
@@ -48,8 +52,8 @@ export default async function handler(
 					}
 
 					const timeDifference = getTimeDifference(
-						previousSession.session.expiresAt,
-						new Date()
+						requestDate.toISOString(),
+						previousSession.session.expiresAt
 					);
 
 					if (timeDifference <= 0) {
@@ -62,6 +66,15 @@ export default async function handler(
 						});
 					}
 
+					const updatedUserAuth = {
+						lastSignIn: requestDate.toISOString(),
+						updatedAt: requestDate.toISOString(),
+						"session.expiresAt": new Date(
+							Date.now() + 30 * 24 * 60 * 60 * 1000
+						).toISOString(),
+						"session.updatedAt": requestDate.toISOString(),
+					};
+
 					const {
 						ok,
 						value: { password: excludedPassword, ...userSession },
@@ -73,12 +86,7 @@ export default async function handler(
 							"session.token": sessionToken,
 						},
 						{
-							$set: {
-								lastSignIn: new Date().toISOString(),
-								"session.expiresAt": new Date(
-									Date.now() + 30 * 24 * 60 * 60 * 1000
-								).toISOString(),
-							},
+							$set: updatedUserAuth,
 						},
 						{
 							returnDocument: "after",
@@ -125,9 +133,9 @@ export default async function handler(
 					});
 				}
 
-				const userAuth = await authCollection.findOne({
+				const userAuth = (await authCollection.findOne({
 					email,
-				});
+				})) as unknown as UserAuth;
 
 				if (!userAuth) {
 					return res.status(400).json({
@@ -154,15 +162,38 @@ export default async function handler(
 					});
 				}
 
-				const token = jwt.sign(
-					{
-						userId: userAuth._id.toHexString(),
-					},
-					"secretKey",
-					{
-						expiresIn: "30d",
-					}
-				);
+				const updatedUserAuth = {
+					lastSignIn: requestDate.toISOString(),
+					updatedAt: requestDate.toISOString(),
+					"session.token":
+						userAuth.session?.token &&
+						getTimeDifference(
+							requestDate.toISOString(),
+							userAuth.session.expiresAt
+						) > 0
+							? userAuth.session.token
+							: jwt.sign(
+									{
+										userId: userAuth._id.toHexString(),
+									},
+									jwtConfig.secretKey,
+									{
+										expiresIn: "30d",
+									}
+							  ),
+					"session.updatedAt": requestDate.toISOString(),
+					"session.expiresAt": new Date(
+						Date.now() + 30 * 24 * 60 * 60 * 1000
+					).toISOString(),
+					"session.createdAt":
+						userAuth.session?.expiresAt &&
+						getTimeDifference(
+							requestDate.toISOString(),
+							userAuth.session.expiresAt
+						) > 0
+							? userAuth.session.createdAt
+							: requestDate.toISOString(),
+				};
 
 				const {
 					ok,
@@ -175,15 +206,7 @@ export default async function handler(
 						email,
 					},
 					{
-						$set: {
-							lastSignIn: new Date().toISOString(),
-							session: {
-								token,
-								expiresAt: new Date(
-									Date.now() + 30 * 24 * 60 * 60 * 1000
-								).toISOString(),
-							},
-						},
+						$set: updatedUserAuth,
 					},
 					{
 						returnDocument: "after",
