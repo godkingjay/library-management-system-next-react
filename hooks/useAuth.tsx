@@ -1,8 +1,11 @@
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import axios from "axios";
 import { apiConfig } from "@/utils/site";
+import useUser from "./useUser";
 
 const useAuth = () => {
+	const { usersStateValue } = useUser();
+
 	const [user, setUser] = useState(null);
 	const [loadingUser, setLoadingUser] = useState(true);
 	const [error, setError] = useState<any>(null);
