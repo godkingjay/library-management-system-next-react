@@ -1,6 +1,6 @@
 import { ObjectId } from "mongodb";
 
-interface Author {
+export interface Author {
 	_id?: ObjectId;
 	name: string;
 	biography?: string;
