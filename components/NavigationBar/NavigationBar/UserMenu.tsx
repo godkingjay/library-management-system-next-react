@@ -9,13 +9,13 @@ import {
 	AlertDialogOverlay,
 	Box,
 	Button,
-	Link,
 	Menu,
 	MenuButton,
 	MenuItem,
 	MenuList,
 	Text,
 } from "@chakra-ui/react";
+import Link from "next/link";
 import React, { useRef, useState } from "react";
 import { AiOutlineUser } from "react-icons/ai";
 import { BiChevronDown } from "react-icons/bi";
@@ -69,7 +69,7 @@ const UserMenu: React.FC<UserMenuProps> = () => {
 						<>
 							<MenuItem>
 								<Link
-									href="/"
+									href="/manage"
 									className="flex-1 gap-x-4 font-semibold !text-gray-500 flex flex-row items-center !no-underline"
 								>
 									<Box className="h-6 w-6">
