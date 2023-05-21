@@ -4,6 +4,7 @@ import { UserState, setUsersState } from "@/redux/slice/usersSlice";
 
 const useUser = () => {
 	const dispatch = useAppDispatch();
+
 	const usersStateValue = useAppSelector((state) => state.users);
 
 	const usersStateValueMemo = useMemo(() => usersStateValue, [usersStateValue]);
