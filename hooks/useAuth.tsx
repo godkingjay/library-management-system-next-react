@@ -6,6 +6,7 @@ import { APIEndpointSignUpParameters } from "@/pages/api/auth/signup";
 import { EmailRegex, PasswordRegex } from "@/utils/regex";
 import { SiteUser } from "@/utils/models/user";
 import { APIEndpointSignInParameters } from "@/pages/api/auth/signin";
+import { UserAuth } from "@/utils/models/auth";
 
 const useAuth = () => {
 	const { usersStateValue, setUsersStateValue } = useUser();
@@ -59,6 +60,7 @@ const useAuth = () => {
 								user,
 							},
 						});
+
 						localStorage.setItem("sessionToken", userAuth.session.token);
 					}
 
@@ -99,17 +101,18 @@ const useAuth = () => {
 						throw new Error("=>Parameter Error: Password is invalid");
 					}
 
-					const { user }: { user: SiteUser } = await axios
-						.post(apiConfig.apiEndpoint + "/auth/signup", {
-							email,
-							password,
-						} as Pick<APIEndpointSignUpParameters, "email" | "password">)
-						.then((response) => response.data)
-						.catch((error) => {
-							throw new Error(
-								`=>API: Sign Up Failed:\n${error.response.data.error.message}`
-							);
-						});
+					const { user, userAuth }: { user: SiteUser; userAuth: UserAuth } =
+						await axios
+							.post(apiConfig.apiEndpoint + "/auth/signup", {
+								email,
+								password,
+							} as Pick<APIEndpointSignUpParameters, "email" | "password">)
+							.then((response) => response.data)
+							.catch((error) => {
+								throw new Error(
+									`=>API: Sign Up Failed:\n${error.response.data.error.message}`
+								);
+							});
 
 					if (user) {
 						setUsersStateValue({
@@ -119,6 +122,8 @@ const useAuth = () => {
 								user,
 							},
 						});
+
+						localStorage.setItem("sessionToken", userAuth.session!.token);
 					} else {
 						throw new Error("=>API: Sign Up Failed: User is undefined");
 					}

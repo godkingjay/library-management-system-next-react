@@ -1,3 +1,7 @@
+import { ObjectId } from "mongodb";
+
+import JWT from "jsonwebtoken";
+
 import { hashPassword } from "@/server/bcrypt";
 import { EmailRegex, PasswordRegex } from "./../../../utils/regex";
 import authDb from "@/server/mongo/authDb";
@@ -5,6 +9,7 @@ import { NextApiRequest, NextApiResponse } from "next";
 import { UserAuth } from "@/utils/models/auth";
 import { SiteUser } from "@/utils/models/user";
 import userDb from "@/server/mongo/userDb";
+import { jwtConfig } from "@/utils/site";
 
 export interface APIEndpointSignUpParameters {
 	email: string;
@@ -96,12 +101,34 @@ export default async function handler(
 					createdAt: requestDate.toISOString(),
 				};
 
-				const newUserAuthData = await authCollection.findOneAndUpdate(
+				const {
+					ok,
+					value: { password: excludedPassword, ...userAuthData },
+				}: {
+					ok: 0 | 1;
+					value: any;
+				} = await authCollection.findOneAndUpdate(
 					{
 						email,
 					},
 					{
-						$set: newUserAuth,
+						$set: {
+							...newUserAuth,
+							"session.token": JWT.sign(
+								{
+									userId: new ObjectId().toHexString(),
+								},
+								jwtConfig.secretKey,
+								{
+									expiresIn: "30d",
+								}
+							),
+							"session.updatedAt": requestDate.toISOString(),
+							"session.expiresAt": new Date(
+								Date.now() + 30 * 24 * 60 * 60 * 1000
+							).toISOString(),
+							"session.createdAt": requestDate.toISOString(),
+						},
 					},
 					{
 						upsert: true,
@@ -128,7 +155,7 @@ export default async function handler(
 						type: "User Created",
 						message: "User was created successfully",
 					},
-					userAuth: newUserAuthData.value,
+					userAuth: userAuthData,
 					user: newUserData.value,
 				});
 

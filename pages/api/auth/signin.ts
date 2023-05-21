@@ -2,7 +2,7 @@ import { comparePasswords } from "@/server/bcrypt";
 import authDb from "@/server/mongo/authDb";
 import { EmailRegex, PasswordRegex } from "@/utils/regex";
 import { NextApiRequest, NextApiResponse } from "next";
-import jwt from "jsonwebtoken";
+import JWT from "jsonwebtoken";
 import { getTimeDifference } from "@/utils/functions/date";
 import { UserAuth } from "@/utils/models/auth";
 import { jwtConfig } from "@/utils/site";
@@ -194,7 +194,7 @@ export default async function handler(
 								userAuth.session.expiresAt
 							) > 0
 								? userAuth.session.token
-								: jwt.sign(
+								: JWT.sign(
 										{
 											userId: userAuth._id.toHexString(),
 										},
