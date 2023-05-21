@@ -19,149 +19,6 @@ const ManageAuthorsPage: React.FC<ManageAuthorsPageProps> = () => {
 	const [currentPage, setCurrentPage] = useState(1);
 	const [tableData, setTableData] = useState<Author[]>([]);
 
-	// const tableData = [
-	// 	{
-	// 		name: "Author 1",
-	// 		biography: "Biography 1",
-	// 		birthdate: "01/01/2000",
-	// 		updatedAt: "02/01/2022",
-	// 		createdAt: "01/01/2022",
-	// 	},
-	// 	{
-	// 		name: "Author 2",
-	// 		biography: "Biography 2",
-	// 		birthdate: "02/02/2000",
-	// 		updatedAt: "03/02/2022",
-	// 		createdAt: "02/02/2022",
-	// 	},
-	// 	{
-	// 		name: "Author 3",
-	// 		biography: "Biography 1",
-	// 		birthdate: "01/01/2000",
-	// 		updatedAt: "02/01/2022",
-	// 		createdAt: "01/01/2022",
-	// 	},
-	// 	{
-	// 		name: "Author 4",
-	// 		biography: "Biography 2",
-	// 		birthdate: "02/02/2000",
-	// 		updatedAt: "03/02/2022",
-	// 		createdAt: "02/02/2022",
-	// 	},
-	// 	{
-	// 		name: "Author 5",
-	// 		biography: "Biography 1",
-	// 		birthdate: "01/01/2000",
-	// 		updatedAt: "02/01/2022",
-	// 		createdAt: "01/01/2022",
-	// 	},
-	// 	{
-	// 		name: "Author 6",
-	// 		biography: "Biography 1",
-	// 		birthdate: "01/01/2000",
-	// 		updatedAt: "02/01/2022",
-	// 		createdAt: "01/01/2022",
-	// 	},
-	// 	{
-	// 		name: "Author 7",
-	// 		biography: "Biography 2",
-	// 		birthdate: "02/02/2000",
-	// 		updatedAt: "03/02/2022",
-	// 		createdAt: "02/02/2022",
-	// 	},
-	// 	{
-	// 		name: "Author 8",
-	// 		biography: "Biography 1",
-	// 		birthdate: "01/01/2000",
-	// 		updatedAt: "02/01/2022",
-	// 		createdAt: "01/01/2022",
-	// 	},
-	// 	{
-	// 		name: "Author 9",
-	// 		biography: "Biography 2",
-	// 		birthdate: "02/02/2000",
-	// 		updatedAt: "03/02/2022",
-	// 		createdAt: "02/02/2022",
-	// 	},
-	// 	{
-	// 		name: "Author 10",
-	// 		biography: "Biography 1",
-	// 		birthdate: "01/01/2000",
-	// 		updatedAt: "02/01/2022",
-	// 		createdAt: "01/01/2022",
-	// 	},
-	// 	{
-	// 		name: "Author 11",
-	// 		biography: "Biography 1",
-	// 		birthdate: "01/01/2000",
-	// 		updatedAt: "02/01/2022",
-	// 		createdAt: "01/01/2022",
-	// 	},
-	// 	{
-	// 		name: "Author 12",
-	// 		biography: "Biography 2",
-	// 		birthdate: "02/02/2000",
-	// 		updatedAt: "03/02/2022",
-	// 		createdAt: "02/02/2022",
-	// 	},
-	// 	{
-	// 		name: "Author 13",
-	// 		biography: "Biography 1",
-	// 		birthdate: "01/01/2000",
-	// 		updatedAt: "02/01/2022",
-	// 		createdAt: "01/01/2022",
-	// 	},
-	// 	{
-	// 		name: "Author 14",
-	// 		biography: "Biography 2",
-	// 		birthdate: "02/02/2000",
-	// 		updatedAt: "03/02/2022",
-	// 		createdAt: "02/02/2022",
-	// 	},
-	// 	{
-	// 		name: "Author 15",
-	// 		biography: "Biography 1",
-	// 		birthdate: "01/01/2000",
-	// 		updatedAt: "02/01/2022",
-	// 		createdAt: "01/01/2022",
-	// 	},
-	// 	{
-	// 		name: "Author 16",
-	// 		biography: "Biography 1",
-	// 		birthdate: "01/01/2000",
-	// 		updatedAt: "02/01/2022",
-	// 		createdAt: "01/01/2022",
-	// 	},
-	// 	{
-	// 		name: "Author 17",
-	// 		biography: "Biography 2",
-	// 		birthdate: "02/02/2000",
-	// 		updatedAt: "03/02/2022",
-	// 		createdAt: "02/02/2022",
-	// 	},
-	// 	{
-	// 		name: "Author 18",
-	// 		biography: "Biography 1",
-	// 		birthdate: "01/01/2000",
-	// 		updatedAt: "02/01/2022",
-	// 		createdAt: "01/01/2022",
-	// 	},
-	// 	{
-	// 		name: "Author 19",
-	// 		biography: "Biography 2",
-	// 		birthdate: "02/02/2000",
-	// 		updatedAt: "03/02/2022",
-	// 		createdAt: "02/02/2022",
-	// 	},
-	// 	{
-	// 		name: "Author 20",
-	// 		biography: "Biography 1",
-	// 		birthdate: "01/01/2000",
-	// 		updatedAt: "02/01/2022",
-	// 		createdAt: "01/01/2022",
-	// 	},
-	// ];
-
 	const itemsPerPage = 5;
 	const pageCount = Math.ceil(tableData.length / itemsPerPage);
 
@@ -171,11 +28,6 @@ const ManageAuthorsPage: React.FC<ManageAuthorsPageProps> = () => {
 
 	const offset = (currentPage - 1) * itemsPerPage;
 	const currentPageData = tableData.slice(offset, offset + itemsPerPage);
-
-	console.log({
-		currentPage,
-		offset,
-	});
 
 	return (
 		<>
@@ -189,12 +41,13 @@ const ManageAuthorsPage: React.FC<ManageAuthorsPageProps> = () => {
 					maxWidth="5xl"
 					width="100%"
 					bg="white"
-					p={8}
+					p={4}
 					className="
             border border-transparent
+            flex flex-col gap-y-4
             sm:shadow-lg
             sm:border-gray-200
-            sm:rounded-3xl
+            sm:rounded-2xl
           "
 				>
 					<TableContainer>
@@ -260,10 +113,10 @@ const ManageAuthorsPage: React.FC<ManageAuthorsPageProps> = () => {
 							</Tbody>
 						</Table>
 					</TableContainer>
-					<div className="w-full mt-4 flex flex-col items-center">
+					<div className="w-full flex flex-col items-center">
 						<Pagination
 							currentPage={currentPage}
-							totalPages={pageCount}
+							totalPages={pageCount > 1 ? pageCount : 1}
 							onPageChange={handlePageChange}
 						/>
 					</div>

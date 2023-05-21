@@ -22,6 +22,7 @@ const Pagination: React.FC<PaginationProps> = ({
 			pages.push(
 				<Button
 					key={i}
+					size={"sm"}
 					variant={currentPage === i ? "solid" : "outline"}
 					colorScheme={currentPage === i ? "blue" : "gray"}
 					onClick={() => handlePageChange(i)}
@@ -35,8 +36,12 @@ const Pagination: React.FC<PaginationProps> = ({
 
 	return (
 		<Box>
-			<ButtonGroup spacing={2}>
+			<ButtonGroup
+				spacing={2}
+				className="flex flex-row items-center flex-wrap justify-center gap-y-2"
+			>
 				<Button
+					size={"sm"}
 					disabled={currentPage === 1}
 					onClick={() => currentPage > 1 && handlePageChange(currentPage - 1)}
 				>
@@ -44,6 +49,7 @@ const Pagination: React.FC<PaginationProps> = ({
 				</Button>
 				{renderPages()}
 				<Button
+					size={"sm"}
 					disabled={currentPage === totalPages}
 					onClick={() =>
 						currentPage < totalPages && handlePageChange(currentPage + 1)
