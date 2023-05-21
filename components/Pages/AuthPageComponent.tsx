@@ -2,12 +2,7 @@ import useAuth from "@/hooks/useAuth";
 import { APIEndpointSignInParameters } from "@/pages/api/auth/signin";
 import { EmailRegex, PasswordRegex } from "@/utils/regex";
 import {
-	Box,
 	Button,
-	FormControl,
-	FormHelperText,
-	FormLabel,
-	Input,
 	Modal,
 	ModalBody,
 	ModalCloseButton,
@@ -15,7 +10,6 @@ import {
 	ModalFooter,
 	ModalHeader,
 	ModalOverlay,
-	Stack,
 } from "@chakra-ui/react";
 import React, { useState } from "react";
 
@@ -24,9 +18,13 @@ type AuthPageComponentProps = {};
 export type AuthModalTypes = "" | "signin" | "signup";
 
 const AuthPageComponent: React.FC<AuthPageComponentProps> = () => {
-	const { loadingUser, signInWithPassword, signUp } = useAuth();
+	const { loadingUser, signInWithPassword, signUp, error } = useAuth();
 
 	const [authenticating, setAuthenticating] = useState<boolean>(false);
+
+	console.log({
+		error,
+	});
 
 	const [signInForm, setSignInForm] = useState<
 		Pick<APIEndpointSignInParameters, "email" | "username" | "password">
