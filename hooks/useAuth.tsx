@@ -7,9 +7,13 @@ import { EmailRegex, PasswordRegex } from "@/utils/regex";
 import { SiteUser } from "@/utils/models/user";
 import { APIEndpointSignInParameters } from "@/pages/api/auth/signin";
 import { UserAuth } from "@/utils/models/auth";
+import { useAppDispatch } from "@/redux/hooks";
+import { clearUsersState } from "@/redux/slice/usersSlice";
 
 const useAuth = () => {
 	const { usersStateValue, setUsersStateValue } = useUser();
+
+	const dispatch = useAppDispatch();
 
 	const [loadingUser, setLoadingUser] = useState(true);
 	const [error, setError] = useState<any>(null);
@@ -205,6 +209,15 @@ const useAuth = () => {
 		},
 		[]
 	);
+
+	const signOut = useCallback(async () => {
+		try {
+			dispatch(clearUsersState());
+		} catch (error: any) {
+			console.log(`=>Mongo: Sign Out Failed:\n${error.message}`);
+			setErrorMemo(error);
+		}
+	}, []);
 
 	useEffect(() => {
 		const sessionToken = localStorage.getItem("sessionToken");
