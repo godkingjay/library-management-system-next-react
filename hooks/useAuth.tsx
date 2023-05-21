@@ -40,7 +40,7 @@ const useAuth = () => {
 						throw new Error("=>Parameter Error: Session token is required");
 					}
 
-					const { user } = await axios
+					const { user, userAuth } = await axios
 						.post(apiConfig.apiEndpoint + "/auth/signin", {
 							sessionToken,
 						} as Pick<APIEndpointSignInParameters, "sessionToken">)
@@ -59,7 +59,7 @@ const useAuth = () => {
 								user,
 							},
 						});
-						localStorage.setItem("sessionToken", user.session.token);
+						localStorage.setItem("sessionToken", userAuth.session.token);
 					}
 
 					setLoadingSession(false);
@@ -68,6 +68,8 @@ const useAuth = () => {
 			} catch (error) {
 				console.log(`=>Mongo: Get Session Failed:\n${error}`);
 				setErrorMemo(error);
+				setLoadingSession(false);
+				setLoadingUserMemo(false);
 			}
 		},
 		[]
@@ -127,6 +129,8 @@ const useAuth = () => {
 			} catch (error: any) {
 				console.log(`=>Mongo: Sign Up Failed:\n${error}`);
 				setErrorMemo(error);
+				setLoadingSession(false);
+				setLoadingUserMemo(false);
 			}
 		},
 		[]
@@ -151,7 +155,7 @@ const useAuth = () => {
 
 					if (!EmailRegex.test(email) && email) {
 						throw new Error("=>Parameter Error: Email is invalid");
-					} else if (!username) {
+					} else if (!username && username) {
 						throw new Error("=>Parameter Error: Username is required");
 					}
 
@@ -159,7 +163,7 @@ const useAuth = () => {
 						throw new Error("=>Parameter Error: Password is invalid");
 					}
 
-					const { user } = await axios
+					const { user, userAuth } = await axios
 						.post(apiConfig.apiEndpoint + "/auth/signin", {
 							email,
 							username,
@@ -180,15 +184,18 @@ const useAuth = () => {
 								user,
 							},
 						});
-						localStorage.setItem("sessionToken", user.session.token);
+
+						localStorage.setItem("sessionToken", userAuth.session.token);
 					}
 
 					setLoadingSession(false);
 					setLoadingUserMemo(false);
 				}
 			} catch (error: any) {
-				console.log(`=>Mongo: Sign In Failed:\n${error}`);
+				console.log(`=>Mongo: Sign In Failed:\n${error.message}`);
 				setErrorMemo(error);
+				setLoadingSession(false);
+				setLoadingUserMemo(false);
 			}
 		},
 		[]

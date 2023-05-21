@@ -13,12 +13,14 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
 
 	const { usersStateValue } = useUser();
 
-	console.log({ loadingUser });
-
 	return (
 		<>
 			<div className="relative min-h-full w-full max-w-full m-0 p-0 flex flex-col">
-				<NavigationBar />
+				{usersStateValue.currentUser && (
+					<>
+						<NavigationBar />
+					</>
+				)}
 				<>{children}</>
 				{!usersStateValue.currentUser && !loadingUser && (
 					<>

@@ -46,17 +46,6 @@ export default async function handler(
 
 		switch (req.method) {
 			case "POST": {
-				const userData = (await userCollection.findOne({
-					$or: [
-						{
-							email,
-						},
-						{
-							username,
-						},
-					],
-				})) as unknown as SiteUser;
-
 				if (sessionToken) {
 					const previousSession = (await authCollection.findOne({
 						"session.token": sessionToken,
@@ -113,6 +102,10 @@ export default async function handler(
 							returnDocument: "after",
 						}
 					);
+
+					const userData = (await userCollection.findOne({
+						email: userSessionData.email,
+					})) as unknown as SiteUser;
 
 					return res.status(200).json({
 						statusCode: 200,
@@ -223,6 +216,17 @@ export default async function handler(
 								? userAuth.session.createdAt
 								: requestDate.toISOString(),
 					};
+
+					const userData = (await userCollection.findOne({
+						$or: [
+							{
+								email,
+							},
+							{
+								username,
+							},
+						],
+					})) as unknown as SiteUser;
 
 					const {
 						ok,
