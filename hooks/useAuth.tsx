@@ -201,6 +201,8 @@ const useAuth = () => {
 			getSession({
 				sessionToken,
 			});
+		} else {
+			setLoadingUserMemo(false);
 		}
 	}, []);
 
