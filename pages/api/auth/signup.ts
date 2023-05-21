@@ -23,7 +23,7 @@ export default async function handler(
 	try {
 		const { authCollection } = await authDb();
 
-		const { userCollection } = await userDb();
+		const { usersCollection } = await userDb();
 
 		const { email, password }: APIEndpointSignUpParameters = req.body;
 
@@ -136,7 +136,7 @@ export default async function handler(
 					}
 				);
 
-				const newUserData = await userCollection.findOneAndUpdate(
+				const newUserData = await usersCollection.findOneAndUpdate(
 					{
 						email,
 					},

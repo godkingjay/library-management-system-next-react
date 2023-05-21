@@ -23,7 +23,7 @@ export default async function handler(
 	try {
 		const { authCollection } = await authDb();
 
-		const { userCollection } = await userDb();
+		const { usersCollection } = await userDb();
 
 		const {
 			email,
@@ -103,7 +103,7 @@ export default async function handler(
 						}
 					);
 
-					const userData = (await userCollection.findOne({
+					const userData = (await usersCollection.findOne({
 						email: userSessionData.email,
 					})) as unknown as SiteUser;
 
@@ -217,7 +217,7 @@ export default async function handler(
 								: requestDate.toISOString(),
 					};
 
-					const userData = (await userCollection.findOne({
+					const userData = (await usersCollection.findOne({
 						$or: [
 							{
 								email,
