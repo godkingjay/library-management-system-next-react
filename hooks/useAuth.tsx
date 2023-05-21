@@ -212,6 +212,7 @@ const useAuth = () => {
 
 	const signOut = useCallback(async () => {
 		try {
+			localStorage.removeItem("sessionToken");
 			dispatch(clearUsersState());
 		} catch (error: any) {
 			console.log(`=>Mongo: Sign Out Failed:\n${error.message}`);
@@ -236,6 +237,7 @@ const useAuth = () => {
 		error: errorMemo,
 		signInWithPassword,
 		signUp,
+		signOut,
 	};
 };
 
