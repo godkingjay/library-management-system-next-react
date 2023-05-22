@@ -23,7 +23,7 @@ export default async function handler(
 	try {
 		const { authCollection } = await authDb();
 
-		const { userCollection } = await userDb();
+		const { usersCollection } = await userDb();
 
 		const { email, password }: APIEndpointSignUpParameters = req.body;
 
@@ -89,6 +89,12 @@ export default async function handler(
 					username: email.split("@")[0],
 					email,
 					password: await hashPassword(password),
+					keys: [
+						{
+							key: await hashPassword(email.concat(password)),
+							createdAt: requestDate.toISOString(),
+						},
+					],
 					updatedAt: requestDate.toISOString(),
 					createdAt: requestDate.toISOString(),
 				};
@@ -103,7 +109,7 @@ export default async function handler(
 
 				const {
 					ok,
-					value: { password: excludedPassword, ...userAuthData },
+					value: { password: excludedPassword, ...newUserAuthData },
 				}: {
 					ok: 0 | 1;
 					value: any;
@@ -136,7 +142,7 @@ export default async function handler(
 					}
 				);
 
-				const newUserData = await userCollection.findOneAndUpdate(
+				const newUserData = await usersCollection.findOneAndUpdate(
 					{
 						email,
 					},
@@ -155,7 +161,7 @@ export default async function handler(
 						type: "User Created",
 						message: "User was created successfully",
 					},
-					userAuth: userAuthData,
+					userAuth: newUserAuthData,
 					user: newUserData.value,
 				});
 

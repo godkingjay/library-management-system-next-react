@@ -19,9 +19,9 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
 				{usersStateValue.currentUser && (
 					<>
 						<NavigationBar />
+						<>{children}</>
 					</>
 				)}
-				<>{children}</>
 				{!usersStateValue.currentUser && !loadingUser && (
 					<>
 						<AuthPageComponent />

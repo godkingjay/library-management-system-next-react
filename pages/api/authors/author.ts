@@ -1,10 +1,181 @@
+import authDb from "@/server/mongo/authDb";
+import authorDb from "@/server/mongo/authorDb";
+import userDb from "@/server/mongo/userDb";
+import { UserAuth } from "@/utils/models/auth";
+import { Author } from "@/utils/models/author";
+import { SiteUser } from "@/utils/models/user";
 import { NextApiRequest, NextApiResponse } from "next";
+
+export interface APIEndpointAuthorParameters {
+	apiKey: string;
+	name: string;
+	biography: string;
+	birthdate?: Date | string;
+}
 
 export default async function handler(
 	req: NextApiRequest,
 	res: NextApiResponse
 ) {
 	try {
+		const { authCollection } = await authDb();
+
+		const { usersCollection } = await userDb();
+
+		const { authorsCollection } = await authorDb();
+
+		const {
+			apiKey,
+			name: rawName = "",
+			biography: rawBiography = "",
+			birthdate = undefined,
+		}: APIEndpointAuthorParameters = req.body || req.query;
+
+		const name = rawName.trim();
+		const biography = rawBiography.trim();
+
+		if (!apiKey) {
+			return res.status(400).json({
+				statusCode: 400,
+				error: {
+					type: "Missing API Key",
+					message: "Please enter API Key",
+				},
+			});
+		}
+
+		if (!authCollection) {
+			return res.status(500).json({
+				statusCode: 500,
+				error: {
+					type: "Database Connection Error",
+					message: "Could not connect to authentication database",
+				},
+			});
+		}
+
+		if (!authorsCollection) {
+			return res.status(500).json({
+				statusCode: 500,
+				error: {
+					type: "Database Connection Error",
+					message: "Could not connect to author database",
+				},
+			});
+		}
+
+		const userAuthData = (await authCollection.findOne({
+			"keys.key": apiKey,
+		})) as unknown as UserAuth;
+
+		if (!userAuthData) {
+			return res.status(400).json({
+				statusCode: 400,
+				error: {
+					type: "Invalid API Key",
+					message: "Invalid API Key",
+				},
+			});
+		}
+
+		const userData = (await usersCollection.findOne({
+			email: userAuthData.email,
+			username: userAuthData.username,
+		})) as unknown as SiteUser;
+
+		if (!userData) {
+			return res.status(400).json({
+				statusCode: 400,
+				error: {
+					type: "Invalid User",
+					message: "Invalid API Key",
+				},
+			});
+		}
+
+		const requestedAt = new Date();
+
+		switch (req.method) {
+			case "POST": {
+				if (!userData.roles.includes("admin")) {
+					return res.status(401).json({
+						statusCode: 401,
+						error: {
+							type: "Unauthorized",
+							message: "User is not authorized to create a new author",
+						},
+					});
+				}
+
+				if (!name) {
+					return res.status(400).json({
+						statusCode: 400,
+						error: {
+							type: "Missing Parameters",
+							message: "Name is required",
+						},
+					});
+				}
+
+				const existingAuthor = (await authorsCollection.findOne({
+					name,
+				})) as unknown as Author;
+
+				if (existingAuthor) {
+					return res.status(400).json({
+						statusCode: 400,
+						error: {
+							type: "Author Already Exists",
+							message: "An author with the same name already exists",
+						},
+					});
+				}
+
+				const newAuthor: Author = {
+					name: name,
+					biography: biography,
+					birthdate: birthdate,
+					updatedAt: requestedAt.toISOString(),
+					createdAt: requestedAt.toISOString(),
+				};
+
+				const newAuthorData = await authorsCollection.findOneAndUpdate(
+					{
+						name,
+					},
+					{
+						$set: newAuthor,
+					},
+					{
+						upsert: true,
+						returnDocument: "after",
+					}
+				);
+
+				return res.status(201).json({
+					statusCode: 201,
+					success: {
+						type: "Author Created",
+						message: "Author was created successfully",
+					},
+					author: newAuthorData.value,
+				});
+
+				break;
+			}
+
+			default: {
+				return res.status(405).json({
+					statusCode: 405,
+					error: {
+						type: "Method Not Allowed",
+						message: "Method Not Allowed",
+					},
+				});
+
+				break;
+			}
+		}
 	} catch (error: any) {
 		return res.status(500).json({
 			statusCode: 500,

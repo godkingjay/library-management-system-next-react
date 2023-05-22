@@ -1,5 +1,10 @@
 import { NextApiRequest, NextApiResponse } from "next";
 
+export interface APIEndpointBooksParameters {
+	apiKey: string;
+	name?: string;
+}
+
 export default async function handler(
 	req: NextApiRequest,
 	res: NextApiResponse
