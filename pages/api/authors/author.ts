@@ -10,7 +10,7 @@ export interface APIEndpointAuthorParameters {
 	apiKey: string;
 	name: string;
 	biography: string;
-	birthdate: Date | string;
+	birthdate?: Date | string;
 }
 
 export default async function handler(
@@ -26,9 +26,9 @@ export default async function handler(
 
 		const {
 			apiKey,
-			name: rawName,
-			biography: rawBiography,
-			birthdate,
+			name: rawName = "",
+			biography: rawBiography = "",
+			birthdate = undefined,
 		}: APIEndpointAuthorParameters = req.body || req.query;
 
 		const name = rawName.trim();
@@ -107,17 +107,17 @@ export default async function handler(
 					});
 				}
 
-				if (!name || !biography) {
+				if (!name) {
 					return res.status(400).json({
 						statusCode: 400,
 						error: {
 							type: "Missing Parameters",
-							message: "Name, biography and birthdate are required",
+							message: "Name is required",
 						},
 					});
 				}
 
-				const existingAuthor = (await authorsCollection.find({
+				const existingAuthor = (await authorsCollection.findOne({
 					name,
 				})) as unknown as Author;
 
@@ -139,7 +139,7 @@ export default async function handler(
 					createdAt: requestedAt.toISOString(),
 				};
 
-				const newAuthorData = (await authorsCollection.findOneAndUpdate(
+				const newAuthorData = await authorsCollection.findOneAndUpdate(
 					{
 						name,
 					},
@@ -150,15 +150,15 @@ export default async function handler(
 						upsert: true,
 						returnDocument: "after",
 					}
-				)) as unknown as Author;
+				);
 
 				return res.status(201).json({
 					statusCode: 201,
 					success: {
-						type: "User Created",
-						message: "User was created successfully",
+						type: "Author Created",
+						message: "Author was created successfully",
 					},
-					author: newAuthorData,
+					author: newAuthorData.value,
 				});
 
 				break;
