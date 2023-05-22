@@ -109,7 +109,7 @@ export default async function handler(
 
 				const {
 					ok,
-					value: { password: excludedPassword, ...userAuthData },
+					value: { password: excludedPassword, ...newUserAuthData },
 				}: {
 					ok: 0 | 1;
 					value: any;
@@ -161,7 +161,7 @@ export default async function handler(
 						type: "User Created",
 						message: "User was created successfully",
 					},
-					userAuth: userAuthData,
+					userAuth: newUserAuthData,
 					user: newUserData.value,
 				});
 
