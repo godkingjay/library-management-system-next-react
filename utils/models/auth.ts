@@ -5,6 +5,7 @@ export interface UserAuth {
 	username: string;
 	email: string;
 	password: string;
+	keys: UserAPIKey[];
 	lastSignIn: Date | string;
 	updatedAt: Date | string;
 	createdAt: Date | string;
@@ -14,4 +15,9 @@ export interface UserAuth {
 		updatedAt: Date | string;
 		createdAt: Date | string;
 	};
+}
+
+export interface UserAPIKey {
+	key: string;
+	createdAt: Date | string;
 }

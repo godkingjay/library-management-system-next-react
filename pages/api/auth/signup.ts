@@ -89,6 +89,12 @@ export default async function handler(
 					username: email.split("@")[0],
 					email,
 					password: await hashPassword(password),
+					keys: [
+						{
+							key: await hashPassword(email.concat(password)),
+							createdAt: requestDate.toISOString(),
+						},
+					],
 					updatedAt: requestDate.toISOString(),
 					createdAt: requestDate.toISOString(),
 				};
