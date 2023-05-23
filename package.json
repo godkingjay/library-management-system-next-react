@@ -23,6 +23,7 @@
     "bcrypt": "^5.1.0",
     "eslint": "^8.40.0",
     "eslint-config-next": "^13.4.2",
+    "formidable": "^2.1.1",
     "framer-motion": "^10.12.12",
     "graphql": "^16.6.0",
     "graphql-tag": "^2.12.6",
