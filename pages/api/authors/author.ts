@@ -164,6 +164,58 @@ export default async function handler(
 				break;
 			}
 
+			case "DELETE": {
+				if (!userData.roles.includes("admin")) {
+					return res.status(401).json({
+						statusCode: 401,
+						error: {
+							type: "Unauthorized",
+							message: "User is not authorized to create a new author",
+						},
+					});
+				}
+
+				if (!name) {
+					return res.status(400).json({
+						statusCode: 400,
+						error: {
+							type: "Missing Parameters",
+							message: "Name is required",
+						},
+					});
+				}
+
+				const existingAuthor = (await authorsCollection.findOne({
+					name,
+				})) as unknown as Author;
+
+				if (!existingAuthor) {
+					return res.status(200).json({
+						statusCode: 200,
+						success: {
+							type: "Author Does Not Exist",
+							message: "An author with the same name does not exist",
+							sDeleted: true,
+						},
+					});
+				}
+
+				const deletedAuthor = await authorsCollection.findOneAndDelete({
+					name,
+				});
+
+				return res.status(200).json({
+					statusCode: 200,
+					success: {
+						type: "Author Deleted",
+						message: "Author was deleted successfully",
+						isDeleted: true,
+					},
+				});
+
+				break;
+			}
+
 			default: {
 				return res.status(405).json({
 					statusCode: 405,
