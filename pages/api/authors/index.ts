@@ -7,6 +7,7 @@ export interface APIEndpointAuthorsParameters {
 	apiKey: string;
 	name?: string;
 	fromName?: string;
+	page?: number;
 	limit?: number;
 }
 
@@ -23,6 +24,7 @@ export default async function handler(
 			apiKey,
 			name = undefined,
 			fromName = undefined,
+			page = 1,
 			limit = 10,
 		}: APIEndpointAuthorsParameters = req.body || req.query;
 
@@ -89,6 +91,22 @@ export default async function handler(
 					};
 				}
 
+				const pageNumber =
+					typeof page === "number"
+						? page
+						: typeof page === "string"
+						? parseInt(page)
+						: 1;
+
+				const itemsPerPage =
+					typeof limit === "number"
+						? limit
+						: typeof limit === "string"
+						? parseInt(limit)
+						: 10;
+
+				const skip = (pageNumber - 1) * itemsPerPage;
+
 				const authorsData = await authorsCollection
 					.find({
 						...query,
@@ -96,6 +114,7 @@ export default async function handler(
 					.sort({
 						name: 1,
 					})
+					.skip(skip)
 					.limit(
 						typeof limit === "number"
 							? limit
