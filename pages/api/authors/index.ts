@@ -6,6 +6,8 @@ import { NextApiRequest, NextApiResponse } from "next";
 export interface APIEndpointAuthorsParameters {
 	apiKey: string;
 	name?: string;
+	fromName?: string;
+	limit?: number;
 }
 
 export default async function handler(
@@ -17,8 +19,12 @@ export default async function handler(
 
 		const { authorsCollection } = await authorDb();
 
-		const { apiKey, name = undefined }: APIEndpointAuthorsParameters =
-			req.body || req.query;
+		const {
+			apiKey,
+			name = undefined,
+			fromName = undefined,
+			limit = 10,
+		}: APIEndpointAuthorsParameters = req.body || req.query;
 
 		if (!apiKey) {
 			return res.status(400).json({
@@ -67,6 +73,46 @@ export default async function handler(
 		const requestedAt = new Date();
 
 		switch (req.method) {
+			case "GET": {
+				let query: any = {};
+
+				if (name) {
+					query.name = {
+						$regex: new RegExp(name, "i"),
+					};
+				}
+
+				if (fromName) {
+					query.name = {
+						...query.name,
+						$lt: fromName,
+					};
+				}
+
+				const authorsData = await authorsCollection
+					.find({
+						...query,
+					})
+					.sort({
+						name: 1,
+					})
+					.limit(
+						typeof limit === "number"
+							? limit
+							: typeof limit === "string"
+							? parseInt(limit)
+							: 10
+					)
+					.toArray();
+
+				return res.status(200).json({
+					statusCode: 200,
+					authors: authorsData,
+				});
+
+				break;
+			}
+
 			default: {
 				return res.status(405).json({
 					statusCode: 405,
