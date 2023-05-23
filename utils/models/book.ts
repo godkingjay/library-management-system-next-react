@@ -5,6 +5,7 @@ export interface Book {
 	title: string;
 	authorId: string;
 	categories: string[];
+	coveUrl?: string;
 	amount: number;
 	available: number;
 	borrowed: number;
@@ -23,11 +24,11 @@ export interface BookCategory {
 	createdAt: Date | string;
 }
 
-export interface BookLoan {
+export interface BorrowedBook {
 	_id: ObjectId;
 	userId: string;
 	bookId: string;
-	loanStatus: "borrowed" | "pending" | "returned";
+	borrowStatus: "borrowed" | "pending" | "returned";
 	borrowedAt: Date | string;
 	dueAt: Date | string;
 }
