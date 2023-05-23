@@ -11,7 +11,7 @@ import {
 	Box,
 } from "@chakra-ui/react";
 import moment from "moment";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 
 type ManageAuthorsPageProps = {};
 
@@ -19,15 +19,17 @@ const ManageAuthorsPage: React.FC<ManageAuthorsPageProps> = () => {
 	const [currentPage, setCurrentPage] = useState(1);
 	const [tableData, setTableData] = useState<Author[]>([]);
 
-	const itemsPerPage = 5;
+	const itemsPerPage = 10;
 	const pageCount = Math.ceil(tableData.length / itemsPerPage);
+
+	const offset = (currentPage - 1) * itemsPerPage;
+	const currentPageData = tableData.slice(offset, offset + itemsPerPage);
 
 	const handlePageChange = (pageNumber: number) => {
 		setCurrentPage(pageNumber);
 	};
 
-	const offset = (currentPage - 1) * itemsPerPage;
-	const currentPageData = tableData.slice(offset, offset + itemsPerPage);
+	useEffect(() => {}, []);
 
 	return (
 		<>
