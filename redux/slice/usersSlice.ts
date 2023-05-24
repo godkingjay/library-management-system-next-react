@@ -1,8 +1,10 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { SiteUser } from "@/utils/models/user";
+import { UserAuth } from "@/utils/models/auth";
 
 export interface UserData {
 	user: SiteUser | null;
+	auth: UserAuth | null;
 }
 
 export interface UserState {
