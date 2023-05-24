@@ -1,9 +1,26 @@
 import { Author } from "@/utils/models/author";
-import { Tr, Td, Stack, Button, Icon } from "@chakra-ui/react";
+import {
+	Tr,
+	Td,
+	Stack,
+	Button,
+	Icon,
+	Popover,
+	PopoverArrow,
+	PopoverBody,
+	PopoverCloseButton,
+	PopoverContent,
+	PopoverHeader,
+	PopoverTrigger,
+	Flex,
+	Text,
+	useClipboard,
+	Tooltip,
+} from "@chakra-ui/react";
 import moment from "moment";
 import React from "react";
 import { FiEdit } from "react-icons/fi";
-import { MdOutlineDeleteOutline } from "react-icons/md";
+import { MdContentCopy, MdOutlineDeleteOutline } from "react-icons/md";
 
 type AuthorItemProps = {
 	index: number;
@@ -18,6 +35,13 @@ const AuthorItem: React.FC<AuthorItemProps> = ({
 	onEdit,
 	onDelete,
 }) => {
+	const { onCopy, setValue, hasCopied } = useClipboard("");
+
+	const handleCopyText = (text: string) => {
+		setValue(text);
+		onCopy();
+	};
+
 	return (
 		<>
 			<Tr>
@@ -25,7 +49,47 @@ const AuthorItem: React.FC<AuthorItemProps> = ({
 					className="text-sm"
 					textAlign={"center"}
 				>
-					{index}
+					<Popover>
+						<PopoverTrigger>
+							<Button colorScheme="gray">{index}</Button>
+						</PopoverTrigger>
+						<PopoverContent>
+							<PopoverArrow />
+							<PopoverCloseButton />
+							<PopoverHeader fontWeight={"bold"}>Author</PopoverHeader>
+							<PopoverBody>
+								<Flex
+									direction={"row"}
+									gap={2}
+									alignItems={"center"}
+								>
+									<Text
+										fontWeight={"bold"}
+										color={"gray.700"}
+									>
+										ID:
+									</Text>
+									<Text color={"gray.500"}>{author.id}</Text>
+									<Tooltip
+										placement="top"
+										label={hasCopied ? "Copied!" : "Copy to clipboard"}
+										closeOnClick={false}
+									>
+										<Button
+											size={"2xs"}
+											onClick={() => handleCopyText(author.id)}
+											className="w-5 h-5 flex flex-row items-center p-1"
+										>
+											<Icon
+												className="h-full w-full"
+												as={MdContentCopy}
+											/>
+										</Button>
+									</Tooltip>
+								</Flex>
+							</PopoverBody>
+						</PopoverContent>
+					</Popover>
 				</Td>
 				<Td className="text-sm">{author.name}</Td>
 				<Td className="text-sm break-words whitespace-pre">

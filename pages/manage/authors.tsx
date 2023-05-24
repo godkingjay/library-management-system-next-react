@@ -345,8 +345,8 @@ const ManageAuthorsPage: React.FC<ManageAuthorsPageProps> = () => {
 					<TableContainer>
 						<Table
 							className="overflow-x-scroll"
-							variant={"striped"}
-							colorScheme="gray"
+							// variant={"striped"}
+							// colorScheme="gray"
 						>
 							<Thead>
 								<Tr>
