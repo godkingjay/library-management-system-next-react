@@ -10,12 +10,18 @@ import {
 	Tbody,
 	Td,
 	Box,
+	Button,
+	Stack,
+	Icon,
 } from "@chakra-ui/react";
 import axios from "axios";
 import moment from "moment";
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import { APIEndpointAuthorsParameters } from "../api/authors";
 import useUser from "@/hooks/useUser";
+import { AiOutlinePlus } from "react-icons/ai";
+import { FiEdit } from "react-icons/fi";
+import { MdOutlineDeleteOutline } from "react-icons/md";
 
 type ManageAuthorsPageProps = {};
 
@@ -26,6 +32,8 @@ const ManageAuthorsPage: React.FC<ManageAuthorsPageProps> = () => {
 	const [tPages, setTPages] = useState(1);
 	const [tableData, setTableData] = useState<Author[]>([]);
 	const [fetchingData, setFetchingData] = useState(false);
+
+	const authorsMounted = useRef(false);
 
 	const itemsPerPage = 10;
 
@@ -77,8 +85,14 @@ const ManageAuthorsPage: React.FC<ManageAuthorsPageProps> = () => {
 	}, []);
 
 	useEffect(() => {
-		fetchAuthors(cPage);
-	}, []);
+		if (!authorsMounted.current && usersStateValue.currentUser?.auth) {
+			authorsMounted.current = true;
+
+			fetchAuthors(cPage);
+		}
+	}, [authorsMounted]);
+
+	console.log(tableData);
 
 	return (
 		<>
@@ -101,16 +115,28 @@ const ManageAuthorsPage: React.FC<ManageAuthorsPageProps> = () => {
             sm:rounded-2xl
           "
 				>
+					<Stack
+						direction="row"
+						justifyContent={"end"}
+					>
+						<Button
+							leftIcon={<AiOutlinePlus />}
+							colorScheme="whatsapp"
+							variant="solid"
+						>
+							Add Author
+						</Button>
+					</Stack>
 					<TableContainer>
 						<Table className="overflow-x-scroll">
 							<Thead>
 								<Tr>
 									<Th>Name</Th>
 									<Th>Biography</Th>
-									<Th>Birthdate</Th>
-									<Th>Updated At</Th>
-									<Th>Created At</Th>
-									<Th>Action</Th>
+									<Th textAlign={"center"}>Birthdate</Th>
+									<Th textAlign={"center"}>Updated At</Th>
+									<Th textAlign={"center"}>Created At</Th>
+									<Th textAlign={"center"}>Action</Th>
 								</Tr>
 							</Thead>
 							<Tbody>
@@ -118,7 +144,10 @@ const ManageAuthorsPage: React.FC<ManageAuthorsPageProps> = () => {
 									<Tr key={index}>
 										<Td className="text-sm">{item.name}</Td>
 										<Td className="text-sm">{item.biography}</Td>
-										<Td className="text-sm">
+										<Td
+											className="text-sm"
+											textAlign={"center"}
+										>
 											{item.birthdate
 												? typeof item.birthdate === "string"
 													? moment(item.birthdate).format("DD/MM/YYYY")
@@ -127,7 +156,10 @@ const ManageAuthorsPage: React.FC<ManageAuthorsPageProps> = () => {
 													  ).format("DD/MM/YYYY")
 												: "---"}
 										</Td>
-										<Td className="text-sm">
+										<Td
+											className="text-sm"
+											textAlign={"center"}
+										>
 											{item.updatedAt
 												? typeof item.updatedAt === "string"
 													? moment(item.updatedAt).format("DD/MM/YYYY")
@@ -136,7 +168,10 @@ const ManageAuthorsPage: React.FC<ManageAuthorsPageProps> = () => {
 													  ).format("DD/MM/YYYY")
 												: "---"}
 										</Td>
-										<Td className="text-sm">
+										<Td
+											className="text-sm"
+											textAlign={"center"}
+										>
 											{item.createdAt
 												? typeof item.createdAt === "string"
 													? moment(item.createdAt).format("DD/MM/YYYY")
@@ -145,7 +180,43 @@ const ManageAuthorsPage: React.FC<ManageAuthorsPageProps> = () => {
 													  ).format("DD/MM/YYYY")
 												: "---"}
 										</Td>
-										<Td className="text-sm">Action</Td>
+										<Td
+											className="text-sm"
+											align="center"
+										>
+											<Stack
+												display={"flex"}
+												direction="row"
+												align="center"
+												alignItems={"center"}
+												justifyContent={"center"}
+											>
+												<Button
+													display={"flex"}
+													flexDirection={"column"}
+													alignItems={"center"}
+													justifyContent={"center"}
+													colorScheme="blue"
+													variant="solid"
+													size={"sm"}
+													padding={1}
+												>
+													<Icon as={FiEdit} />
+												</Button>
+												<Button
+													display={"flex"}
+													flexDirection={"column"}
+													alignItems={"center"}
+													justifyContent={"center"}
+													colorScheme="red"
+													variant="solid"
+													size={"sm"}
+													padding={1}
+												>
+													<Icon as={MdOutlineDeleteOutline} />
+												</Button>
+											</Stack>
+										</Td>
 									</Tr>
 								))}
 								{currentPageData.length === 0 && (
