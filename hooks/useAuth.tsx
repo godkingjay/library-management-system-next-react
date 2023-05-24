@@ -62,6 +62,7 @@ const useAuth = () => {
 							currentUser: {
 								...usersStateValue.currentUser,
 								user,
+								auth: userAuth,
 							},
 						});
 
@@ -124,6 +125,7 @@ const useAuth = () => {
 							currentUser: {
 								...usersStateValue.currentUser,
 								user,
+								auth: userAuth,
 							},
 						});
 
@@ -191,6 +193,7 @@ const useAuth = () => {
 							currentUser: {
 								...usersStateValue.currentUser,
 								user,
+								auth: userAuth,
 							},
 						});
 
