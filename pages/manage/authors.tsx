@@ -576,7 +576,11 @@ const ManageAuthorsPage: React.FC<ManageAuthorsPageProps> = () => {
 										whiteSpace={"pre-wrap"}
 										isTruncated
 									>
-										{deleteForm?.name}
+										{deleteForm?.biography?.length && deleteForm
+											? deleteForm.biography.length > 256
+												? deleteForm.biography.slice(0, 256) + "..."
+												: deleteForm.biography
+											: "---"}
 									</Text>
 								</Flex>
 								<Flex
