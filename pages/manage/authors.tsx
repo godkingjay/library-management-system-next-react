@@ -42,12 +42,14 @@ import { AiOutlinePlus } from "react-icons/ai";
 import { APIEndpointAuthorParameters } from "../api/authors/author";
 import AuthorItem from "@/components/Table/Author/AuthorItem";
 import { FiLoader } from "react-icons/fi";
+import useAuth from "@/hooks/useAuth";
 
 type ManageAuthorsPageProps = {};
 
 export type AuthorsModalTypes = "" | "add" | "edit" | "delete";
 
 const ManageAuthorsPage: React.FC<ManageAuthorsPageProps> = () => {
+	const { loadingUser } = useAuth();
 	const { usersStateValue } = useUser();
 
 	const [cPage, setCPage] = useState(1);
@@ -268,7 +270,10 @@ const ManageAuthorsPage: React.FC<ManageAuthorsPageProps> = () => {
 								</Tr>
 							</Thead>
 							<Tbody>
-								{fetchingData || !authorsMounted.current ? (
+								{fetchingData ||
+								!authorsMounted.current ||
+								loadingUser ||
+								!usersStateValue.currentUser?.auth ? (
 									<>
 										<Tr>
 											<Td
@@ -292,7 +297,7 @@ const ManageAuthorsPage: React.FC<ManageAuthorsPageProps> = () => {
 											<>
 												{tableData.map((item, index) => (
 													<>
-														<React.Fragment key={item._id as unknown as string}>
+														<React.Fragment key={item.id}>
 															<AuthorItem
 																index={index + 1 + itemsPerPage * (cPage - 1)}
 																author={item}
