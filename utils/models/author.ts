@@ -1,7 +1,7 @@
 import { ObjectId } from "mongodb";
 
 export interface Author {
-	_id?: ObjectId;
+	_id: ObjectId;
 	name: string;
 	biography?: string;
 	birthdate?: Date | string;
