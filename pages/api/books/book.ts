@@ -1,8 +1,13 @@
 import authDb from "@/server/mongo/authDb";
+import authorDb from "@/server/mongo/authorDb";
 import bookDb from "@/server/mongo/bookDb";
 import userDb from "@/server/mongo/userDb";
 import { UserAuth } from "@/utils/models/auth";
+import { Author } from "@/utils/models/author";
+import { Book } from "@/utils/models/book";
 import { SiteUser } from "@/utils/models/user";
+import { ISBNRegex } from "@/utils/regex";
+import { ObjectId } from "mongodb";
 import { NextApiRequest, NextApiResponse } from "next";
 
 export interface APIEndpointBookParameters {
@@ -28,6 +33,8 @@ export default async function handler(
 
 		const { usersCollection } = await userDb();
 
+		const { authorsCollection } = await authorDb();
+
 		const { booksCollection, bookCategoriesCollection, bookLoansCollection } =
 			await bookDb();
 
@@ -36,14 +43,19 @@ export default async function handler(
 			authorId = undefined,
 			bookId = undefined,
 			title = undefined,
-			categories = undefined,
+			categories = [],
 			amount = 0,
 			available = 0,
 			borrowed = 0,
 			borrowedTimes = 0,
 			ISBN = undefined,
-			publicationDate = undefined,
+			publicationDate: rawPublicationDate = undefined,
 		}: APIEndpointBookParameters = req.body || req.query;
+
+		const publicationDate =
+			typeof rawPublicationDate === "string"
+				? new Date(rawPublicationDate)
+				: rawPublicationDate;
 
 		if (!apiKey) {
 			return res.status(400).json({
@@ -61,6 +73,16 @@ export default async function handler(
 				error: {
 					type: "Database Connection Error",
 					message: "Could not connect to authentication database",
+				},
+			});
+		}
+
+		if (!authorsCollection) {
+			return res.status(500).json({
+				statusCode: 500,
+				error: {
+					type: "Database Connection Error",
+					message: "Could not connect to author database",
 				},
 			});
 		}
@@ -107,6 +129,112 @@ export default async function handler(
 		const requestedAt = new Date();
 
 		switch (req.method) {
+			case "POST": {
+				if (!title) {
+					return res.status(400).json({
+						statusCode: 400,
+						error: {
+							type: "Missing Book Title",
+							message: "Please enter book title",
+						},
+					});
+				}
+
+				if (!categories) {
+					return res.status(400).json({
+						statusCode: 400,
+						error: {
+							type: "Missing Book Categories",
+							message: "Please enter book categories",
+						},
+					});
+				}
+
+				if (!ISBN) {
+					return res.status(400).json({
+						statusCode: 400,
+						error: {
+							type: "Missing Book ISBN",
+							message: "Please enter book ISBN",
+						},
+					});
+				}
+
+				if (!ISBNRegex.test(ISBN)) {
+					return res.status(400).json({
+						statusCode: 400,
+						error: {
+							type: "Invalid Book ISBN",
+							message: "Please enter valid book ISBN",
+						},
+					});
+				}
+
+				let bookISBN: string = ISBN.replace(/[- ]/g, "");
+
+				if (bookISBN.length !== 10 && bookISBN.length !== 13) {
+					return res.status(400).json({
+						statusCode: 400,
+						error: {
+							type: "Invalid Book ISBN",
+							message: "Please enter valid book ISBN",
+						},
+					});
+				}
+
+				const authorData = (await authorsCollection.findOne({
+					id: authorId,
+				})) as unknown as Author;
+
+				if (!authorData) {
+					return res.status(404).json({
+						statusCode: 404,
+						error: {
+							type: "Author Not Found",
+							message: "Author not found",
+						},
+					});
+				}
+
+				const bookId = new ObjectId();
+
+				const newBook: Book = {
+					_id: bookId,
+					id: bookId.toHexString(),
+					title,
+					authorId: authorData.id,
+					categories,
+					amount,
+					available,
+					borrowed,
+					borrowedTimes,
+					ISBN,
+					publicationDate,
+					updatedAt: requestedAt,
+					createdAt: requestedAt,
+				};
+
+				const bookData = await booksCollection.findOneAndUpdate(
+					{
+						id: bookId.toHexString(),
+					},
+					{
+						$set: newBook,
+					},
+					{
+						upsert: true,
+						returnDocument: "after",
+					}
+				);
+
+				return res.status(200).json({
+					statusCode: 200,
+					book: bookData.value,
+				});
+
+				break;
+			}
+
 			default: {
 				return res.status(405).json({
 					statusCode: 405,
