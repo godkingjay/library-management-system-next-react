@@ -36,6 +36,7 @@ import { AiOutlinePlus } from "react-icons/ai";
 import { FiEdit } from "react-icons/fi";
 import { MdOutlineDeleteOutline } from "react-icons/md";
 import { APIEndpointAuthorParameters } from "../api/authors/author";
+import AuthorItem from "@/components/Table/Author/AuthorItem";
 
 type ManageAuthorsPageProps = {};
 
@@ -135,6 +136,13 @@ const ManageAuthorsPage: React.FC<ManageAuthorsPageProps> = () => {
 		}
 	};
 
+	const deleteAuthor = async (author: Author) => {
+		try {
+		} catch (error: any) {
+			console.error(`=>API: Delete Author Failed:\n${error}`);
+		}
+	};
+
 	const handlePageChange = async (page: number) => {
 		setCPage(page);
 		await fetchAuthors(page);
@@ -203,9 +211,14 @@ const ManageAuthorsPage: React.FC<ManageAuthorsPageProps> = () => {
 						</Button>
 					</Stack>
 					<TableContainer>
-						<Table className="overflow-x-scroll">
+						<Table
+							className="overflow-x-scroll"
+							variant={"striped"}
+							colorScheme="gray"
+						>
 							<Thead>
 								<Tr>
+									<Th textAlign={"center"}>#</Th>
 									<Th>Name</Th>
 									<Th>Biography</Th>
 									<Th textAlign={"center"}>Birthdate</Th>
@@ -216,83 +229,14 @@ const ManageAuthorsPage: React.FC<ManageAuthorsPageProps> = () => {
 							</Thead>
 							<Tbody>
 								{tableData.map((item, index) => (
-									<Tr key={index}>
-										<Td className="text-sm">{item.name}</Td>
-										<Td className="text-sm">{item.biography}</Td>
-										<Td
-											className="text-sm"
-											textAlign={"center"}
-										>
-											{item.birthdate
-												? typeof item.birthdate === "string"
-													? moment(item.birthdate).format("DD/MM/YYYY")
-													: moment(
-															new Date(item.birthdate).toISOString()
-													  ).format("DD/MM/YYYY")
-												: "---"}
-										</Td>
-										<Td
-											className="text-sm"
-											textAlign={"center"}
-										>
-											{item.updatedAt
-												? typeof item.updatedAt === "string"
-													? moment(item.updatedAt).format("DD/MM/YYYY")
-													: moment(
-															new Date(item.updatedAt).toISOString()
-													  ).format("DD/MM/YYYY")
-												: "---"}
-										</Td>
-										<Td
-											className="text-sm"
-											textAlign={"center"}
-										>
-											{item.createdAt
-												? typeof item.createdAt === "string"
-													? moment(item.createdAt).format("DD/MM/YYYY")
-													: moment(
-															new Date(item.createdAt).toISOString()
-													  ).format("DD/MM/YYYY")
-												: "---"}
-										</Td>
-										<Td
-											className="text-sm"
-											align="center"
-										>
-											<Stack
-												display={"flex"}
-												direction="row"
-												align="center"
-												alignItems={"center"}
-												justifyContent={"center"}
-											>
-												<Button
-													display={"flex"}
-													flexDirection={"column"}
-													alignItems={"center"}
-													justifyContent={"center"}
-													colorScheme="blue"
-													variant="solid"
-													size={"sm"}
-													padding={1}
-												>
-													<Icon as={FiEdit} />
-												</Button>
-												<Button
-													display={"flex"}
-													flexDirection={"column"}
-													alignItems={"center"}
-													justifyContent={"center"}
-													colorScheme="red"
-													variant="solid"
-													size={"sm"}
-													padding={1}
-												>
-													<Icon as={MdOutlineDeleteOutline} />
-												</Button>
-											</Stack>
-										</Td>
-									</Tr>
+									<>
+										<React.Fragment key={item._id.toString()}>
+											<AuthorItem
+												index={index + 1 + itemsPerPage * (cPage - 1)}
+												author={item}
+											/>
+										</React.Fragment>
+									</>
 								))}
 								{tableData.length === 0 && (
 									<>
