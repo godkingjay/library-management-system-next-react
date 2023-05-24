@@ -9,6 +9,7 @@ import { NextApiRequest, NextApiResponse } from "next";
 
 export interface APIEndpointAuthorParameters {
 	apiKey: string;
+	authorId?: string;
 	name: string;
 	biography: string;
 	birthdate?: Date | string;
@@ -27,6 +28,7 @@ export default async function handler(
 
 		const {
 			apiKey,
+			authorId: rawAuthorId = "",
 			name: rawName = "",
 			biography: rawBiography = "",
 			birthdate = undefined,
@@ -34,6 +36,7 @@ export default async function handler(
 
 		const name = rawName.trim();
 		const biography = rawBiography.trim();
+		const authorId = rawAuthorId.trim();
 
 		if (!apiKey) {
 			return res.status(400).json({
@@ -169,6 +172,80 @@ export default async function handler(
 				break;
 			}
 
+			case "PUT": {
+				if (!userData.roles.includes("admin")) {
+					return res.status(401).json({
+						statusCode: 401,
+						error: {
+							type: "Unauthorized",
+							message: "User is not authorized to create a new author",
+						},
+					});
+				}
+
+				if (!authorId) {
+					return res.status(400).json({
+						statusCode: 400,
+						error: {
+							type: "Missing Parameters",
+							message: "Author ID is required",
+						},
+					});
+				}
+
+				const existingAuthor = (await authorsCollection.findOne({
+					id: authorId,
+				})) as unknown as Author;
+
+				if (existingAuthor) {
+					return res.status(400).json({
+						statusCode: 400,
+						error: {
+							type: "Author Already Exists",
+							message: "An author with the same name already exists",
+						},
+					});
+				}
+
+				let updatedAuthor: Partial<Author> = {
+					updatedAt: requestedAt.toISOString(),
+				};
+
+				if (name) {
+					updatedAuthor.name = name;
+				}
+
+				if (biography) {
+					updatedAuthor.biography = biography;
+				}
+
+				if (birthdate) {
+					updatedAuthor.birthdate = birthdate;
+				}
+
+				const updatedAuthorData = await authorsCollection.findOneAndUpdate(
+					{
+						id: authorId,
+					},
+					{
+						$set: updatedAuthor,
+					},
+					{
+						returnDocument: "after",
+					}
+				);
+
+				return res.status(200).json({
+					statusCode: 200,
+					success: {
+						type: "Author Updated",
+						message: "Author was updated successfully",
+					},
+				});
+
+				break;
+			}
+
 			case "DELETE": {
 				if (!userData.roles.includes("admin")) {
 					return res.status(401).json({
@@ -180,18 +257,18 @@ export default async function handler(
 					});
 				}
 
-				if (!name) {
+				if (!authorId) {
 					return res.status(400).json({
 						statusCode: 400,
 						error: {
 							type: "Missing Parameters",
-							message: "Name is required",
+							message: "Author ID is required",
 						},
 					});
 				}
 
 				const existingAuthor = (await authorsCollection.findOne({
-					name,
+					id: authorId,
 				})) as unknown as Author;
 
 				if (!existingAuthor) {
@@ -206,7 +283,7 @@ export default async function handler(
 				}
 
 				const deletedAuthorData = await authorsCollection.findOneAndDelete({
-					name,
+					id: authorId,
 				});
 
 				return res.status(200).json({

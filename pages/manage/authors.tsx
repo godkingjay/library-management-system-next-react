@@ -162,7 +162,7 @@ const ManageAuthorsPage: React.FC<ManageAuthorsPageProps> = () => {
 					.delete(apiConfig.apiEndpoint + "/authors/author", {
 						params: {
 							apiKey: usersStateValue.currentUser?.auth?.keys[0].key,
-							name: author.name,
+							authorId: author.id,
 						} as APIEndpointAuthorParameters,
 					})
 					.then((response) => response.data)
