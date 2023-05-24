@@ -453,6 +453,10 @@ const ManageAuthorsPage: React.FC<ManageAuthorsPageProps> = () => {
 										placeholder="Name"
 										maxLength={256}
 										disabled={submitting}
+										isDisabled={submitting}
+										_disabled={{
+											filter: "grayscale(100%)",
+										}}
 										onChange={(event) =>
 											!submitting && handleAuthorFormChange(event)
 										}
@@ -465,6 +469,10 @@ const ManageAuthorsPage: React.FC<ManageAuthorsPageProps> = () => {
 										placeholder="Biography[Optional]"
 										maxLength={4000}
 										disabled={submitting}
+										isDisabled={submitting}
+										_disabled={{
+											filter: "grayscale(100%)",
+										}}
 										onChange={(event) =>
 											!submitting && handleAuthorFormChange(event)
 										}
@@ -476,6 +484,10 @@ const ManageAuthorsPage: React.FC<ManageAuthorsPageProps> = () => {
 										type="date"
 										name="birthdate"
 										disabled={submitting}
+										isDisabled={submitting}
+										_disabled={{
+											filter: "grayscale(100%)",
+										}}
 										onChange={(event) =>
 											!submitting && handleAuthorFormChange(event)
 										}
@@ -485,9 +497,13 @@ const ManageAuthorsPage: React.FC<ManageAuthorsPageProps> = () => {
 								<Button
 									type="submit"
 									colorScheme="whatsapp"
-									disabled={submitting}
+									disabled={submitting || !authorForm.name}
 									loadingText="Adding Author"
 									isLoading={submitting}
+									isDisabled={submitting || !authorForm.name}
+									_disabled={{
+										filter: "grayscale(100%)",
+									}}
 								>
 									Add Author
 								</Button>
@@ -646,6 +662,11 @@ const ManageAuthorsPage: React.FC<ManageAuthorsPageProps> = () => {
 
 						<AlertDialogFooter className="flex flex-row gap-x-2">
 							<Button
+								disabled={deleting}
+								isDisabled={deleting}
+								_disabled={{
+									filter: "grayscale(100%)",
+								}}
 								ref={deleteRef}
 								onClick={() => handleAuthorsModalOpen("")}
 							>
@@ -653,6 +674,11 @@ const ManageAuthorsPage: React.FC<ManageAuthorsPageProps> = () => {
 							</Button>
 							<Button
 								colorScheme="red"
+								disabled={deleting}
+								isDisabled={deleting}
+								_disabled={{
+									filter: "grayscale(100%)",
+								}}
 								isLoading={deleting}
 								loadingText="Deleting"
 								onClick={() =>
@@ -680,7 +706,19 @@ const ManageAuthorsPage: React.FC<ManageAuthorsPageProps> = () => {
 					<ModalHeader>Update Author</ModalHeader>
 					<ModalCloseButton />
 					<ModalBody>
-						<form onSubmit={(event) => !updating && handleUpdateAuthor(event)}>
+						<form
+							onSubmit={(event) =>
+								!updating &&
+								editForm &&
+								editUpdateForm &&
+								editForm?.id === editUpdateForm?.id &&
+								editForm.name !== editUpdateForm.name &&
+								editForm.biography !== editUpdateForm.biography &&
+								editForm.birthdate !== editUpdateForm.birthdate
+									? handleUpdateAuthor(event)
+									: event.preventDefault()
+							}
+						>
 							<Flex
 								direction={"column"}
 								gap={4}
@@ -693,6 +731,7 @@ const ManageAuthorsPage: React.FC<ManageAuthorsPageProps> = () => {
 										placeholder={editForm?.name}
 										maxLength={256}
 										disabled={updating}
+										isDisabled={updating}
 										value={editUpdateForm?.name}
 										onChange={(event) =>
 											!updating && handleUpdateAuthorFormChange(event)
@@ -706,6 +745,7 @@ const ManageAuthorsPage: React.FC<ManageAuthorsPageProps> = () => {
 										placeholder={editForm?.biography || "Biography[Optional]"}
 										maxLength={4000}
 										disabled={updating}
+										isDisabled={updating}
 										value={editUpdateForm?.biography}
 										onChange={(event) =>
 											!updating && handleUpdateAuthorFormChange(event)
@@ -718,6 +758,7 @@ const ManageAuthorsPage: React.FC<ManageAuthorsPageProps> = () => {
 										type="date"
 										name="birthdate"
 										disabled={updating}
+										isDisabled={updating}
 										value={
 											editUpdateForm?.birthdate
 												? typeof editUpdateForm?.birthdate === "string"
@@ -738,9 +779,23 @@ const ManageAuthorsPage: React.FC<ManageAuthorsPageProps> = () => {
 								<Button
 									type="submit"
 									colorScheme="whatsapp"
-									disabled={updating}
+									disabled={
+										updating ||
+										(editForm?.name === editUpdateForm?.name &&
+											editForm?.biography === editUpdateForm?.biography &&
+											editForm?.birthdate === editUpdateForm?.birthdate)
+									}
 									loadingText="Updating Author"
 									isLoading={updating}
+									isDisabled={
+										updating ||
+										(editForm?.name === editUpdateForm?.name &&
+											editForm?.biography === editUpdateForm?.biography &&
+											editForm?.birthdate === editUpdateForm?.birthdate)
+									}
+									_disabled={{
+										filter: "grayscale(100%)",
+									}}
 								>
 									Update Author
 								</Button>
