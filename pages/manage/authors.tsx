@@ -25,20 +25,24 @@ import { MdOutlineDeleteOutline } from "react-icons/md";
 
 type ManageAuthorsPageProps = {};
 
+export type AuthorsModalTypes = "" | "add" | "edit";
+
 const ManageAuthorsPage: React.FC<ManageAuthorsPageProps> = () => {
 	const { usersStateValue } = useUser();
 
 	const [cPage, setCPage] = useState(1);
 	const [tPages, setTPages] = useState(1);
+	const [itemsPerPage, setItemsPerPage] = useState(10);
 	const [tableData, setTableData] = useState<Author[]>([]);
 	const [fetchingData, setFetchingData] = useState(false);
+	const [authorsModalOpen, setAuthorsModalOpen] =
+		useState<AuthorsModalTypes>("");
 
 	const authorsMounted = useRef(false);
 
-	const itemsPerPage = 10;
-
-	const offset = (cPage - 1) * itemsPerPage;
-	const currentPageData = tableData.slice(offset, offset + itemsPerPage);
+	const handleAuthorModalOpen = (type: AuthorsModalTypes) => {
+		setAuthorsModalOpen(type);
+	};
 
 	const fetchAuthors = useCallback(async (page: number) => {
 		try {
@@ -92,8 +96,6 @@ const ManageAuthorsPage: React.FC<ManageAuthorsPageProps> = () => {
 		}
 	}, [authorsMounted]);
 
-	console.log(tableData);
-
 	return (
 		<>
 			<Box
@@ -140,7 +142,7 @@ const ManageAuthorsPage: React.FC<ManageAuthorsPageProps> = () => {
 								</Tr>
 							</Thead>
 							<Tbody>
-								{currentPageData.map((item, index) => (
+								{tableData.map((item, index) => (
 									<Tr key={index}>
 										<Td className="text-sm">{item.name}</Td>
 										<Td className="text-sm">{item.biography}</Td>
@@ -219,7 +221,7 @@ const ManageAuthorsPage: React.FC<ManageAuthorsPageProps> = () => {
 										</Td>
 									</Tr>
 								))}
-								{currentPageData.length === 0 && (
+								{tableData.length === 0 && (
 									<>
 										<Tr>
 											<Td
