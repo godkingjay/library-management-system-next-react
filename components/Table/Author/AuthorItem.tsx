@@ -8,8 +8,8 @@ import { MdOutlineDeleteOutline } from "react-icons/md";
 type AuthorItemProps = {
 	index: number;
 	author: Author;
-	onEdit?: (author: Author) => Promise<void>;
-	onDelete?: (author: Author) => Promise<void>;
+	onEdit?: (author: Author) => void;
+	onDelete?: (author: Author) => void;
 };
 
 const AuthorItem: React.FC<AuthorItemProps> = ({

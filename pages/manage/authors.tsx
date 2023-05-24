@@ -12,7 +12,6 @@ import {
 	Box,
 	Button,
 	Stack,
-	Icon,
 	Modal,
 	ModalBody,
 	ModalCloseButton,
@@ -21,11 +20,17 @@ import {
 	ModalHeader,
 	ModalOverlay,
 	FormControl,
-	FormHelperText,
 	FormLabel,
 	Input,
 	Flex,
 	Textarea,
+	AlertDialog,
+	AlertDialogBody,
+	AlertDialogContent,
+	AlertDialogFooter,
+	AlertDialogHeader,
+	AlertDialogOverlay,
+	Text,
 } from "@chakra-ui/react";
 import axios from "axios";
 import moment from "moment";
@@ -33,14 +38,12 @@ import React, { useCallback, useEffect, useRef, useState } from "react";
 import { APIEndpointAuthorsParameters } from "../api/authors";
 import useUser from "@/hooks/useUser";
 import { AiOutlinePlus } from "react-icons/ai";
-import { FiEdit } from "react-icons/fi";
-import { MdOutlineDeleteOutline } from "react-icons/md";
 import { APIEndpointAuthorParameters } from "../api/authors/author";
 import AuthorItem from "@/components/Table/Author/AuthorItem";
 
 type ManageAuthorsPageProps = {};
 
-export type AuthorsModalTypes = "" | "add" | "edit";
+export type AuthorsModalTypes = "" | "add" | "edit" | "delete";
 
 const ManageAuthorsPage: React.FC<ManageAuthorsPageProps> = () => {
 	const { usersStateValue } = useUser();
@@ -51,6 +54,7 @@ const ManageAuthorsPage: React.FC<ManageAuthorsPageProps> = () => {
 	const [tableData, setTableData] = useState<Author[]>([]);
 	const [fetchingData, setFetchingData] = useState(false);
 	const [submitting, setSubmitting] = useState(false);
+	const [deleting, setDeleting] = useState(false);
 	const [authorsModalOpen, setAuthorsModalOpen] =
 		useState<AuthorsModalTypes>("");
 
@@ -62,10 +66,18 @@ const ManageAuthorsPage: React.FC<ManageAuthorsPageProps> = () => {
 		birthdate: "",
 	});
 
+	const [deleteForm, setDeleteForm] = useState<Author | null>(null);
+
 	const authorsMounted = useRef(false);
+	const deleteRef = useRef(null);
 
 	const handleAuthorsModalOpen = (type: AuthorsModalTypes) => {
 		setAuthorsModalOpen(type);
+	};
+
+	const handleDeleteAuthorModalOpen = (author: Author) => {
+		handleAuthorsModalOpen("delete");
+		setDeleteForm(author);
 	};
 
 	const handleCreateAuthor = async (event: React.FormEvent<HTMLFormElement>) => {
@@ -234,6 +246,7 @@ const ManageAuthorsPage: React.FC<ManageAuthorsPageProps> = () => {
 											<AuthorItem
 												index={index + 1 + itemsPerPage * (cPage - 1)}
 												author={item}
+												onDelete={handleDeleteAuthorModalOpen}
 											/>
 										</React.Fragment>
 									</>
@@ -335,6 +348,167 @@ const ManageAuthorsPage: React.FC<ManageAuthorsPageProps> = () => {
 					<ModalFooter></ModalFooter>
 				</ModalContent>
 			</Modal>
+
+			{/**
+			 *
+			 * Delete Modal
+			 *
+			 */}
+			<AlertDialog
+				isOpen={authorsModalOpen === "delete"}
+				leastDestructiveRef={deleteRef}
+				onClose={() => handleAuthorsModalOpen("")}
+				isCentered
+			>
+				<AlertDialogOverlay>
+					<AlertDialogContent>
+						<AlertDialogHeader
+							fontSize="lg"
+							fontWeight="bold"
+						>
+							Delete Author
+						</AlertDialogHeader>
+
+						<AlertDialogBody>
+							<Text>Are you sure you want to delete this author?</Text>
+							<Flex
+								borderWidth={1}
+								marginTop={4}
+								borderColor={"red"}
+								rounded={"lg"}
+								padding={4}
+								display={"flex"}
+								flexDirection={"column"}
+								gap={4}
+							>
+								<Text
+									fontSize={"xs"}
+									textColor={"red.500"}
+								>
+									<Text
+										textTransform={"uppercase"}
+										fontWeight={"bold"}
+									>
+										Name:
+									</Text>
+									<Text fontSize={"sm"}>{deleteForm?.name}</Text>
+								</Text>
+								<Text
+									fontSize={"xs"}
+									textColor={"red.500"}
+								>
+									<Text
+										textTransform={"uppercase"}
+										fontWeight={"bold"}
+									>
+										Biography:
+									</Text>
+									<Text
+										fontSize={"sm"}
+										overflowWrap={"break-word"}
+										whiteSpace={"pre-wrap"}
+										isTruncated
+									>
+										{deleteForm?.name}
+									</Text>
+								</Text>
+								<Text
+									fontSize={"xs"}
+									textColor={"red.500"}
+								>
+									<Text
+										textTransform={"uppercase"}
+										fontWeight={"bold"}
+									>
+										Birthdate:
+									</Text>
+									<Text
+										fontSize={"sm"}
+										overflowWrap={"break-word"}
+										whiteSpace={"pre-wrap"}
+										isTruncated
+									>
+										{deleteForm?.birthdate
+											? typeof deleteForm?.birthdate === "string"
+												? moment(deleteForm?.birthdate).format("DD/MM/YYYY")
+												: moment(
+														new Date(deleteForm?.birthdate).toISOString()
+												  ).format("DD/MM/YYYY")
+											: "---"}
+									</Text>
+								</Text>
+								<Text
+									fontSize={"xs"}
+									textColor={"red.500"}
+								>
+									<Text
+										textTransform={"uppercase"}
+										fontWeight={"bold"}
+									>
+										Updated At:
+									</Text>
+									<Text
+										fontSize={"sm"}
+										overflowWrap={"break-word"}
+										whiteSpace={"pre-wrap"}
+										isTruncated
+									>
+										{deleteForm?.updatedAt
+											? typeof deleteForm?.updatedAt === "string"
+												? moment(deleteForm?.updatedAt).format("DD/MM/YYYY")
+												: moment(
+														new Date(deleteForm?.updatedAt).toISOString()
+												  ).format("DD/MM/YYYY")
+											: "---"}
+									</Text>
+								</Text>
+								<Text
+									fontSize={"xs"}
+									textColor={"red.500"}
+								>
+									<Text
+										textTransform={"uppercase"}
+										fontWeight={"bold"}
+									>
+										Created At:
+									</Text>
+									<Text
+										fontSize={"sm"}
+										overflowWrap={"break-word"}
+										whiteSpace={"pre-wrap"}
+										isTruncated
+									>
+										{deleteForm?.createdAt
+											? typeof deleteForm?.createdAt === "string"
+												? moment(deleteForm?.createdAt).format("DD/MM/YYYY")
+												: moment(
+														new Date(deleteForm?.createdAt).toISOString()
+												  ).format("DD/MM/YYYY")
+											: "---"}
+									</Text>
+								</Text>
+							</Flex>
+						</AlertDialogBody>
+
+						<AlertDialogFooter className="flex flex-row gap-x-2">
+							<Button
+								ref={deleteRef}
+								onClick={() => handleAuthorsModalOpen("")}
+							>
+								Cancel
+							</Button>
+							<Button
+								colorScheme="red"
+								isLoading={submitting || deleting}
+								loadingText="Signing Out"
+								// onClick={handleSignOut}
+							>
+								Delete
+							</Button>
+						</AlertDialogFooter>
+					</AlertDialogContent>
+				</AlertDialogOverlay>
+			</AlertDialog>
 		</>
 	);
 };
