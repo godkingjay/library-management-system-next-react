@@ -1,6 +1,7 @@
 import authDb from "@/server/mongo/authDb";
 import authorDb from "@/server/mongo/authorDb";
 import { UserAuth } from "@/utils/models/auth";
+import { CollationOptions } from "mongodb";
 import { NextApiRequest, NextApiResponse } from "next";
 
 export interface APIEndpointAuthorsParameters {
@@ -107,6 +108,11 @@ export default async function handler(
 
 				const skip = (pageNumber - 1) * itemsPerPage;
 
+				const collationOptions: CollationOptions = {
+					locale: "en",
+					numericOrdering: true,
+				};
+
 				const authorsData = await authorsCollection
 					.find({
 						...query,
@@ -114,6 +120,7 @@ export default async function handler(
 					.sort({
 						name: 1,
 					})
+					.collation(collationOptions)
 					.skip(skip)
 					.limit(
 						typeof limit === "number"
