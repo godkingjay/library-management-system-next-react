@@ -1,3 +1,4 @@
+import { ObjectId } from "mongodb";
 import authDb from "@/server/mongo/authDb";
 import authorDb from "@/server/mongo/authorDb";
 import userDb from "@/server/mongo/userDb";
@@ -131,7 +132,11 @@ export default async function handler(
 					});
 				}
 
-				const newAuthor: Partial<Author> = {
+				const authorId = new ObjectId();
+
+				const newAuthor: Author = {
+					_id: authorId,
+					id: authorId.toHexString(),
 					name: name,
 					biography: biography,
 					birthdate: birthdate,
