@@ -52,12 +52,12 @@ export default async function handler(
 			publicationDate: rawPublicationDate = undefined,
 		}: APIEndpointBookParameters = req.body || req.query;
 
-		const categories =
+		const categories: APIEndpointBookParameters["categories"] =
 			typeof rawCategories === "string"
 				? JSON.parse(rawCategories)
 				: rawCategories;
 
-		const publicationDate =
+		const publicationDate: APIEndpointBookParameters["publicationDate"] =
 			typeof rawPublicationDate === "string"
 				? new Date(rawPublicationDate)
 				: rawPublicationDate;
@@ -160,7 +160,7 @@ export default async function handler(
 					});
 				}
 
-				if (!categories.length) {
+				if (!categories?.length) {
 					return res.status(400).json({
 						statusCode: 400,
 						error: {
@@ -284,6 +284,149 @@ export default async function handler(
 
 				return res.status(200).json({
 					statusCode: 200,
+					book: bookData.value,
+				});
+
+				break;
+			}
+
+			case "PUT": {
+				if (!bookId) {
+					return res.status(400).json({
+						statusCode: 400,
+						error: {
+							type: "Missing Book ID",
+							message: "Please enter book ID",
+						},
+					});
+				}
+
+				const existingBook = (await booksCollection.findOne({
+					id: bookId,
+				})) as unknown as Book;
+
+				if (!existingBook) {
+					return res.status(404).json({
+						statusCode: 404,
+						error: {
+							type: "Book Not Found",
+							message: "Book not found",
+						},
+					});
+				}
+
+				let updatedBook: Partial<Book> = {
+					updatedAt: requestedAt.toISOString(),
+				};
+
+				if (title) {
+					updatedBook.title = title;
+				}
+
+				if (amount) {
+					updatedBook.amount = amount;
+				}
+
+				if (available) {
+					updatedBook.available = available;
+				}
+
+				if (borrowed) {
+					updatedBook.borrowed = borrowed;
+				}
+
+				if (borrowedTimes) {
+					updatedBook.borrowedTimes = borrowedTimes;
+				}
+
+				if (ISBN) {
+					if (!ISBNRegex.test(ISBN)) {
+						return res.status(400).json({
+							statusCode: 400,
+							error: {
+								type: "Invalid Book ISBN",
+								message: "Please enter valid book ISBN",
+							},
+						});
+					}
+
+					let bookISBN: string = ISBN.replace(/[- ]/g, "");
+
+					if (bookISBN.length !== 10 && bookISBN.length !== 13) {
+						return res.status(400).json({
+							statusCode: 400,
+							error: {
+								type: "Invalid Book ISBN",
+								message: "Please enter valid book ISBN",
+							},
+						});
+					}
+
+					updatedBook.ISBN = bookISBN;
+				}
+
+				if (publicationDate) {
+					updatedBook.publicationDate = publicationDate;
+				}
+
+				if (categories?.length) {
+					updatedBook.categories = categories;
+
+					categories.map(async (category) => {
+						const existingCategory = (await bookCategoriesCollection.findOne({
+							name: category,
+						})) as unknown as BookCategory;
+
+						let newCategory: Partial<BookCategory> = {
+							updatedAt: requestedAt.toISOString(),
+						};
+
+						if (!existingCategory) {
+							const categoryId = new ObjectId();
+
+							newCategory = {
+								...newCategory,
+								_id: categoryId,
+								id: categoryId.toHexString(),
+								name: category,
+								description: "",
+								createdAt: requestedAt.toISOString(),
+							};
+						}
+
+						await bookCategoriesCollection.findOneAndUpdate(
+							{
+								name: category,
+							},
+							{
+								$set: newCategory,
+							},
+							{
+								upsert: true,
+							}
+						);
+					});
+				}
+
+				const bookData = await booksCollection.findOneAndUpdate(
+					{
+						id: bookId,
+					},
+					{
+						$set: updatedBook,
+					},
+					{
+						upsert: true,
+						returnDocument: "after",
+					}
+				);
+
+				return res.status(200).json({
+					statusCode: 200,
+					success: {
+						type: "Book Updated",
+						message: "Book updated successfully",
+					},
 					book: bookData.value,
 				});
 
