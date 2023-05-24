@@ -85,7 +85,11 @@ export default async function handler(
 					});
 				}
 
-				const newUserAuth: Partial<UserAuth> = {
+				const authId = new ObjectId();
+
+				const newUserAuth: UserAuth = {
+					_id: authId,
+					id: authId.toHexString(),
 					username: email.split("@")[0],
 					email,
 					password: await hashPassword(password),
@@ -95,11 +99,16 @@ export default async function handler(
 							createdAt: requestDate.toISOString(),
 						},
 					],
+					lastSignIn: requestDate.toISOString(),
 					updatedAt: requestDate.toISOString(),
 					createdAt: requestDate.toISOString(),
 				};
 
-				const newUser: Partial<SiteUser> = {
+				const userId = new ObjectId();
+
+				const newUser: SiteUser = {
+					_id: userId,
+					id: userId.toHexString(),
 					username: email.split("@")[0],
 					email,
 					roles: ["user"],
