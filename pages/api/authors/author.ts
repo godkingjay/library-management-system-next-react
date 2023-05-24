@@ -194,7 +194,7 @@ export default async function handler(
 						statusCode: 200,
 						success: {
 							type: "Author Does Not Exist",
-							message: "An author with the same name does not exist",
+							message: "An author with that name does not exist",
 							isDeleted: true,
 						},
 					});

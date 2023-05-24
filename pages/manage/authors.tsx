@@ -31,6 +31,7 @@ import {
 	AlertDialogHeader,
 	AlertDialogOverlay,
 	Text,
+	Icon,
 } from "@chakra-ui/react";
 import axios from "axios";
 import moment from "moment";
@@ -40,6 +41,7 @@ import useUser from "@/hooks/useUser";
 import { AiOutlinePlus } from "react-icons/ai";
 import { APIEndpointAuthorParameters } from "../api/authors/author";
 import AuthorItem from "@/components/Table/Author/AuthorItem";
+import { FiLoader } from "react-icons/fi";
 
 type ManageAuthorsPageProps = {};
 
@@ -103,6 +105,7 @@ const ManageAuthorsPage: React.FC<ManageAuthorsPageProps> = () => {
 
 				if (statusCode === 201) {
 					await fetchAuthors(cPage);
+					handleAuthorsModalOpen("");
 				}
 
 				setSubmitting(false);
@@ -150,8 +153,33 @@ const ManageAuthorsPage: React.FC<ManageAuthorsPageProps> = () => {
 
 	const deleteAuthor = async (author: Author) => {
 		try {
+			if (!deleting) {
+				setDeleting(true);
+
+				const { statusCode } = await axios
+					.delete(apiConfig.apiEndpoint + "/authors/author", {
+						params: {
+							apiKey: usersStateValue.currentUser?.auth?.keys[0].key,
+							name: author.name,
+						} as APIEndpointAuthorParameters,
+					})
+					.then((response) => response.data)
+					.catch((error) => {
+						throw new Error(
+							`=>API: Delete Author Failed:\n${error.response.data.error.message}`
+						);
+					});
+
+				if (statusCode === 200) {
+					await fetchAuthors(cPage);
+					handleAuthorsModalOpen("");
+				}
+
+				setDeleting(false);
+			}
 		} catch (error: any) {
 			console.error(`=>API: Delete Author Failed:\n${error}`);
+			setDeleting(false);
 		}
 	};
 
@@ -240,28 +268,53 @@ const ManageAuthorsPage: React.FC<ManageAuthorsPageProps> = () => {
 								</Tr>
 							</Thead>
 							<Tbody>
-								{tableData.map((item, index) => (
-									<>
-										<React.Fragment key={item._id.toString()}>
-											<AuthorItem
-												index={index + 1 + itemsPerPage * (cPage - 1)}
-												author={item}
-												onDelete={handleDeleteAuthorModalOpen}
-											/>
-										</React.Fragment>
-									</>
-								))}
-								{tableData.length === 0 && (
+								{fetchingData || !authorsMounted.current ? (
 									<>
 										<Tr>
 											<Td
-												colSpan={6}
+												colSpan={7}
 												textAlign={"center"}
-												className="text-lg text-gray-500 font-bold"
+												className="text-gray-500 font-bold"
 											>
-												No Author Data
+												<Flex className="justify-center flex flex-row items-center gap-x-4">
+													<Icon
+														as={FiLoader}
+														className="h-12 w-12 animate-spin"
+													/>
+													<Text>Loading Authors...</Text>
+												</Flex>
 											</Td>
 										</Tr>
+									</>
+								) : (
+									<>
+										{tableData.length > 0 ? (
+											<>
+												{tableData.map((item, index) => (
+													<>
+														<React.Fragment key={item._id as unknown as string}>
+															<AuthorItem
+																index={index + 1 + itemsPerPage * (cPage - 1)}
+																author={item}
+																onDelete={handleDeleteAuthorModalOpen}
+															/>
+														</React.Fragment>
+													</>
+												))}
+											</>
+										) : (
+											<>
+												<Tr>
+													<Td
+														colSpan={7}
+														textAlign={"center"}
+														className="text-lg text-gray-500 font-bold"
+													>
+														No Author Data
+													</Td>
+												</Tr>
+											</>
+										)}
 									</>
 								)}
 							</Tbody>
@@ -381,7 +434,8 @@ const ManageAuthorsPage: React.FC<ManageAuthorsPageProps> = () => {
 								flexDirection={"column"}
 								gap={4}
 							>
-								<Text
+								<Flex
+									direction={"column"}
 									fontSize={"xs"}
 									textColor={"red.500"}
 								>
@@ -392,8 +446,9 @@ const ManageAuthorsPage: React.FC<ManageAuthorsPageProps> = () => {
 										Name:
 									</Text>
 									<Text fontSize={"sm"}>{deleteForm?.name}</Text>
-								</Text>
-								<Text
+								</Flex>
+								<Flex
+									direction={"column"}
 									fontSize={"xs"}
 									textColor={"red.500"}
 								>
@@ -411,8 +466,9 @@ const ManageAuthorsPage: React.FC<ManageAuthorsPageProps> = () => {
 									>
 										{deleteForm?.name}
 									</Text>
-								</Text>
-								<Text
+								</Flex>
+								<Flex
+									direction={"column"}
 									fontSize={"xs"}
 									textColor={"red.500"}
 								>
@@ -436,8 +492,9 @@ const ManageAuthorsPage: React.FC<ManageAuthorsPageProps> = () => {
 												  ).format("DD/MM/YYYY")
 											: "---"}
 									</Text>
-								</Text>
-								<Text
+								</Flex>
+								<Flex
+									direction={"column"}
 									fontSize={"xs"}
 									textColor={"red.500"}
 								>
@@ -461,8 +518,9 @@ const ManageAuthorsPage: React.FC<ManageAuthorsPageProps> = () => {
 												  ).format("DD/MM/YYYY")
 											: "---"}
 									</Text>
-								</Text>
-								<Text
+								</Flex>
+								<Flex
+									direction={"column"}
 									fontSize={"xs"}
 									textColor={"red.500"}
 								>
@@ -486,7 +544,7 @@ const ManageAuthorsPage: React.FC<ManageAuthorsPageProps> = () => {
 												  ).format("DD/MM/YYYY")
 											: "---"}
 									</Text>
-								</Text>
+								</Flex>
 							</Flex>
 						</AlertDialogBody>
 
@@ -499,9 +557,11 @@ const ManageAuthorsPage: React.FC<ManageAuthorsPageProps> = () => {
 							</Button>
 							<Button
 								colorScheme="red"
-								isLoading={submitting || deleting}
-								loadingText="Signing Out"
-								// onClick={handleSignOut}
+								isLoading={deleting}
+								loadingText="Deleting"
+								onClick={() =>
+									deleteForm && !deleting && deleteAuthor(deleteForm)
+								}
 							>
 								Delete
 							</Button>
