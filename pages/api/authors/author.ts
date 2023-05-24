@@ -195,7 +195,7 @@ export default async function handler(
 						success: {
 							type: "Author Does Not Exist",
 							message: "An author with the same name does not exist",
-							sDeleted: true,
+							isDeleted: true,
 						},
 					});
 				}
