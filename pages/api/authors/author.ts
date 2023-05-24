@@ -131,7 +131,7 @@ export default async function handler(
 					});
 				}
 
-				const newAuthor: Author = {
+				const newAuthor: Partial<Author> = {
 					name: name,
 					biography: biography,
 					birthdate: birthdate,
