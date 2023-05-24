@@ -15,8 +15,8 @@ type AuthorItemProps = {
 const AuthorItem: React.FC<AuthorItemProps> = ({
 	index,
 	author,
-	onDelete,
 	onEdit,
+	onDelete,
 }) => {
 	return (
 		<>

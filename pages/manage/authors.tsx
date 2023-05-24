@@ -56,9 +56,12 @@ const ManageAuthorsPage: React.FC<ManageAuthorsPageProps> = () => {
 	const [tPages, setTPages] = useState(1);
 	const [itemsPerPage, setItemsPerPage] = useState(10);
 	const [tableData, setTableData] = useState<Author[]>([]);
+
 	const [fetchingData, setFetchingData] = useState(false);
 	const [submitting, setSubmitting] = useState(false);
+	const [updating, setUpdating] = useState(false);
 	const [deleting, setDeleting] = useState(false);
+
 	const [authorsModalOpen, setAuthorsModalOpen] =
 		useState<AuthorsModalTypes>("");
 
@@ -71,6 +74,22 @@ const ManageAuthorsPage: React.FC<ManageAuthorsPageProps> = () => {
 	});
 
 	const [deleteForm, setDeleteForm] = useState<Author | null>(null);
+	const [editForm, setEditForm] = useState<
+		Pick<Author, "id" | "name" | "biography" | "birthdate">
+	>({
+		id: "",
+		name: "",
+		biography: "",
+		birthdate: "",
+	});
+	const [editUpdateForm, setEditUpdateForm] = useState<
+		Pick<Author, "id" | "name" | "biography" | "birthdate">
+	>({
+		id: "",
+		name: "",
+		biography: "",
+		birthdate: "",
+	});
 
 	const authorsMounted = useRef(false);
 	const deleteRef = useRef(null);
@@ -82,6 +101,22 @@ const ManageAuthorsPage: React.FC<ManageAuthorsPageProps> = () => {
 	const handleDeleteAuthorModalOpen = (author: Author) => {
 		handleAuthorsModalOpen("delete");
 		setDeleteForm(author);
+	};
+
+	const handleEditAuthorModalOpen = (author: Author) => {
+		handleAuthorsModalOpen("edit");
+		setEditForm({
+			id: author.id,
+			name: author.name,
+			biography: author.biography,
+			birthdate: author.birthdate,
+		});
+		setEditUpdateForm({
+			id: author.id,
+			name: author.name,
+			biography: author.biography,
+			birthdate: author.birthdate,
+		});
 	};
 
 	const handleCreateAuthor = async (event: React.FormEvent<HTMLFormElement>) => {
@@ -115,6 +150,41 @@ const ManageAuthorsPage: React.FC<ManageAuthorsPageProps> = () => {
 		} catch (error: any) {
 			console.error(`=>API: Create Author Failed:\n${error}`);
 			setSubmitting(false);
+		}
+	};
+
+	const handleUpdateAuthor = async (event: React.FormEvent<HTMLFormElement>) => {
+		event.preventDefault();
+
+		try {
+			if (!updating) {
+				setUpdating(true);
+
+				const { statusCode } = await axios
+					.put(apiConfig.apiEndpoint + "/authors/author", {
+						apiKey: usersStateValue.currentUser?.auth?.keys[0].key,
+						authorId: editUpdateForm.id,
+						name: editUpdateForm.name.trim(),
+						biography: editUpdateForm.biography?.trim(),
+						birthdate: editUpdateForm.birthdate,
+					} as APIEndpointAuthorParameters)
+					.then((response) => response.data)
+					.catch((error) => {
+						throw new Error(
+							`=>API: Update Author Failed:\n${error.response.data.error.message}`
+						);
+					});
+
+				if (statusCode === 200) {
+					await fetchAuthors(cPage);
+					handleAuthorsModalOpen("");
+				}
+
+				setUpdating(false);
+			}
+		} catch (error: any) {
+			console.error(`=>API: Update Author Failed:\n${error}`);
+			setUpdating(false);
 		}
 	};
 
@@ -204,6 +274,26 @@ const ManageAuthorsPage: React.FC<ManageAuthorsPageProps> = () => {
 			}));
 		} else {
 			setAuthorForm((prev) => ({
+				...prev,
+				[name]: value,
+			}));
+		}
+	};
+
+	const handleUpdateAuthorFormChange = (
+		event:
+			| React.ChangeEvent<HTMLInputElement>
+			| React.ChangeEvent<HTMLTextAreaElement>
+	) => {
+		const { name, value } = event.target;
+
+		if (name === "birthdate") {
+			setEditUpdateForm((prev) => ({
+				...prev,
+				[name]: new Date(value).toISOString(),
+			}));
+		} else {
+			setEditUpdateForm((prev) => ({
 				...prev,
 				[name]: value,
 			}));
@@ -301,6 +391,7 @@ const ManageAuthorsPage: React.FC<ManageAuthorsPageProps> = () => {
 															<AuthorItem
 																index={index + 1 + itemsPerPage * (cPage - 1)}
 																author={item}
+																onEdit={handleEditAuthorModalOpen}
 																onDelete={handleDeleteAuthorModalOpen}
 															/>
 														</React.Fragment>
@@ -574,6 +665,91 @@ const ManageAuthorsPage: React.FC<ManageAuthorsPageProps> = () => {
 					</AlertDialogContent>
 				</AlertDialogOverlay>
 			</AlertDialog>
+
+			{/**
+			 *
+			 * Edit Modal
+			 *
+			 */}
+			<Modal
+				isOpen={authorsModalOpen === "edit"}
+				onClose={() => handleAuthorsModalOpen("")}
+			>
+				<ModalOverlay />
+				<ModalContent>
+					<ModalHeader>Update Author</ModalHeader>
+					<ModalCloseButton />
+					<ModalBody>
+						<form onSubmit={(event) => !updating && handleUpdateAuthor(event)}>
+							<Flex
+								direction={"column"}
+								gap={4}
+							>
+								<FormControl>
+									<FormLabel>Name</FormLabel>
+									<Input
+										type="text"
+										name="name"
+										placeholder={editForm?.name}
+										maxLength={256}
+										disabled={updating}
+										value={editUpdateForm?.name}
+										onChange={(event) =>
+											!updating && handleUpdateAuthorFormChange(event)
+										}
+									/>
+								</FormControl>
+								<FormControl>
+									<FormLabel>Biography</FormLabel>
+									<Textarea
+										name="biography"
+										placeholder={editForm?.biography || "Biography[Optional]"}
+										maxLength={4000}
+										disabled={updating}
+										value={editUpdateForm?.biography}
+										onChange={(event) =>
+											!updating && handleUpdateAuthorFormChange(event)
+										}
+									/>
+								</FormControl>
+								<FormControl>
+									<FormLabel>Birthdate</FormLabel>
+									<Input
+										type="date"
+										name="birthdate"
+										disabled={updating}
+										value={
+											editUpdateForm?.birthdate
+												? typeof editUpdateForm?.birthdate === "string"
+													? moment(editUpdateForm?.birthdate).format(
+															"YYYY-MM-DD"
+													  )
+													: moment(
+															new Date(editUpdateForm?.birthdate).toISOString()
+													  ).format("YYYY-MM-DD")
+												: ""
+										}
+										onChange={(event) =>
+											!updating && handleUpdateAuthorFormChange(event)
+										}
+									/>
+								</FormControl>
+								<div className="h-[1px] bg-gray-200 my-1"></div>
+								<Button
+									type="submit"
+									colorScheme="whatsapp"
+									disabled={updating}
+									loadingText="Updating Author"
+									isLoading={updating}
+								>
+									Update Author
+								</Button>
+							</Flex>
+						</form>
+					</ModalBody>
+					<ModalFooter></ModalFooter>
+				</ModalContent>
+			</Modal>
 		</>
 	);
 };

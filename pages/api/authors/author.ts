@@ -194,7 +194,7 @@ export default async function handler(
 				}
 
 				const existingAuthor = (await authorsCollection.findOne({
-					id: authorId,
+					name,
 				})) as unknown as Author;
 
 				if (existingAuthor) {
@@ -241,6 +241,7 @@ export default async function handler(
 						type: "Author Updated",
 						message: "Author was updated successfully",
 					},
+					updatedAuthor: updatedAuthorData.value,
 				});
 
 				break;
