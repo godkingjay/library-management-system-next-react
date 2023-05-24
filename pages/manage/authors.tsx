@@ -380,6 +380,8 @@ const ManageAuthorsPage: React.FC<ManageAuthorsPageProps> = () => {
 									type="submit"
 									colorScheme="whatsapp"
 									disabled={submitting}
+									loadingText="Adding Author"
+									isLoading={submitting}
 								>
 									Add Author
 								</Button>
