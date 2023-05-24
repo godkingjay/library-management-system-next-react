@@ -124,9 +124,13 @@ export default async function handler(
 					)
 					.toArray();
 
+				const totalCount = await authorsCollection.countDocuments(query);
+
 				return res.status(200).json({
 					statusCode: 200,
 					authors: authorsData,
+					page: page,
+					totalPages: Math.ceil(totalCount / itemsPerPage),
 				});
 
 				break;
