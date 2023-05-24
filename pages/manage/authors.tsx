@@ -708,15 +708,12 @@ const ManageAuthorsPage: React.FC<ManageAuthorsPageProps> = () => {
 					<ModalBody>
 						<form
 							onSubmit={(event) =>
-								!updating &&
-								editForm &&
-								editUpdateForm &&
-								editForm?.id === editUpdateForm?.id &&
-								editForm.name !== editUpdateForm.name &&
-								editForm.biography !== editUpdateForm.biography &&
-								editForm.birthdate !== editUpdateForm.birthdate
-									? handleUpdateAuthor(event)
-									: event.preventDefault()
+								updating ||
+								(editForm?.name === editUpdateForm?.name &&
+									editForm?.biography === editUpdateForm?.biography &&
+									editForm?.birthdate === editUpdateForm?.birthdate)
+									? event.preventDefault()
+									: handleUpdateAuthor(event)
 							}
 						>
 							<Flex

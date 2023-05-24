@@ -195,6 +195,8 @@ export default async function handler(
 
 				const existingAuthor = (await authorsCollection.findOne({
 					name,
+					biography,
+					birthdate,
 				})) as unknown as Author;
 
 				if (existingAuthor) {
