@@ -200,7 +200,7 @@ export default async function handler(
 					});
 				}
 
-				const deletedAuthor = await authorsCollection.findOneAndDelete({
+				const deletedAuthorData = await authorsCollection.findOneAndDelete({
 					name,
 				});
 
