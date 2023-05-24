@@ -22,10 +22,6 @@ const AuthPageComponent: React.FC<AuthPageComponentProps> = () => {
 
 	const [authenticating, setAuthenticating] = useState<boolean>(false);
 
-	console.log({
-		error,
-	});
-
 	const [signInForm, setSignInForm] = useState<
 		Pick<APIEndpointSignInParameters, "email" | "username" | "password">
 	>({

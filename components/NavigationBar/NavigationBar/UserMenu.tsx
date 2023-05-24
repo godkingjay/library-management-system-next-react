@@ -16,20 +16,24 @@ import {
 	Text,
 } from "@chakra-ui/react";
 import Link from "next/link";
+import { useRouter } from "next/router";
 import React, { useRef, useState } from "react";
 import { AiOutlineUser } from "react-icons/ai";
 import { BiChevronDown } from "react-icons/bi";
-import { IoExitOutline, IoLibrary } from "react-icons/io5";
+import { IoExitOutline } from "react-icons/io5";
+import { MdSpaceDashboard } from "react-icons/md";
 
 type UserMenuProps = {};
 
 const UserMenu: React.FC<UserMenuProps> = () => {
 	const { signOut } = useAuth();
-
 	const { usersStateValue } = useUser();
 
-	const [signOutModalOpen, setSignOutModalOpen] = useState(false);
+	const router = useRouter();
+	const { pathname } = router;
+	const directories = pathname.split("/");
 
+	const [signOutModalOpen, setSignOutModalOpen] = useState(false);
 	const [signingOut, setSigningOut] = useState(false);
 
 	const cancelRef = useRef(null);
@@ -64,18 +68,29 @@ const UserMenu: React.FC<UserMenuProps> = () => {
 						<AiOutlineUser className="h-full w-full" />
 					</Box>
 				</MenuButton>
-				<MenuList className="!py-1">
+				<MenuList className="!py-1 group">
 					{usersStateValue.currentUser?.user?.roles.includes("admin") && (
 						<>
-							<MenuItem>
+							<MenuItem
+								className="
+									group
+									data-[active-directory=true]:bg-blue-100
+								"
+								data-active-directory={
+									directories[1] === "manage" && !directories[2]
+								}
+							>
 								<Link
 									href="/manage"
-									className="flex-1 gap-x-4 font-semibold !text-gray-500 flex flex-row items-center !no-underline"
+									className="
+										flex-1 gap-x-4 font-semibold !text-gray-500 flex flex-row items-center !no-underline
+										group-data-[active-directory=true]:!text-blue-500
+									"
 								>
 									<Box className="h-6 w-6">
-										<IoLibrary className="h-full w-full" />
+										<MdSpaceDashboard className="h-full w-full" />
 									</Box>
-									<Text>Manage</Text>
+									<Text>Dashboard</Text>
 								</Link>
 							</MenuItem>
 						</>

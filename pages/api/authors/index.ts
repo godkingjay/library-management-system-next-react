@@ -6,6 +6,9 @@ import { NextApiRequest, NextApiResponse } from "next";
 export interface APIEndpointAuthorsParameters {
 	apiKey: string;
 	name?: string;
+	fromName?: string;
+	page?: number;
+	limit?: number;
 }
 
 export default async function handler(
@@ -17,8 +20,13 @@ export default async function handler(
 
 		const { authorsCollection } = await authorDb();
 
-		const { apiKey, name = undefined }: APIEndpointAuthorsParameters =
-			req.body || req.query;
+		const {
+			apiKey,
+			name = undefined,
+			fromName = undefined,
+			page = 1,
+			limit = 10,
+		}: APIEndpointAuthorsParameters = req.body || req.query;
 
 		if (!apiKey) {
 			return res.status(400).json({
@@ -67,6 +75,67 @@ export default async function handler(
 		const requestedAt = new Date();
 
 		switch (req.method) {
+			case "GET": {
+				let query: any = {};
+
+				if (name) {
+					query.name = {
+						$regex: new RegExp(name, "i"),
+					};
+				}
+
+				if (fromName) {
+					query.name = {
+						...query.name,
+						$lt: fromName,
+					};
+				}
+
+				const pageNumber =
+					typeof page === "number"
+						? page
+						: typeof page === "string"
+						? parseInt(page)
+						: 1;
+
+				const itemsPerPage =
+					typeof limit === "number"
+						? limit
+						: typeof limit === "string"
+						? parseInt(limit)
+						: 10;
+
+				const skip = (pageNumber - 1) * itemsPerPage;
+
+				const authorsData = await authorsCollection
+					.find({
+						...query,
+					})
+					.sort({
+						name: 1,
+					})
+					.skip(skip)
+					.limit(
+						typeof limit === "number"
+							? limit
+							: typeof limit === "string"
+							? parseInt(limit)
+							: 10
+					)
+					.toArray();
+
+				const totalCount = await authorsCollection.countDocuments();
+
+				return res.status(200).json({
+					statusCode: 200,
+					authors: authorsData,
+					page: page,
+					totalPages: Math.ceil(totalCount / itemsPerPage),
+				});
+
+				break;
+			}
+
 			default: {
 				return res.status(405).json({
 					statusCode: 405,

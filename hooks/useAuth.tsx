@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import axios from "axios";
 import { apiConfig } from "@/utils/site";
 import useUser from "./useUser";
@@ -20,16 +20,17 @@ const useAuth = () => {
 
 	const [loadingSession, setLoadingSession] = useState(false);
 
-	const { loadingUser: loadingUserMemo, setLoadingUser: setLoadingUserMemo } =
-		useMemo(
-			() => ({ loadingUser, setLoadingUser }),
-			[loadingUser, setLoadingUser]
-		);
+	const [loadingUserMemo, setLoadingUserMemo] = useMemo(
+		() => [loadingUser, setLoadingUser],
+		[loadingUser, setLoadingUser]
+	);
 
-	const { error: errorMemo, setError: setErrorMemo } = useMemo(
-		() => ({ error, setError }),
+	const [errorMemo, setErrorMemo] = useMemo(
+		() => [error, setError],
 		[error, setError]
 	);
+
+	const userMounted = useRef(false);
 
 	const getSession = useCallback(
 		async ({
@@ -62,23 +63,33 @@ const useAuth = () => {
 							currentUser: {
 								...usersStateValue.currentUser,
 								user,
+								auth: userAuth,
 							},
 						});
 
+						setLoadingUserMemo(false);
+						setLoadingSession(false);
 						localStorage.setItem("sessionToken", userAuth.session.token);
+					} else {
+						throw new Error("=>API: Sign In Failed: User is undefined");
 					}
-
-					setLoadingSession(false);
-					setLoadingUserMemo(false);
 				}
 			} catch (error) {
 				console.log(`=>Mongo: Get Session Failed:\n${error}`);
 				setErrorMemo(error);
-				setLoadingSession(false);
 				setLoadingUserMemo(false);
+				setLoadingSession(false);
 			}
 		},
-		[]
+		[
+			usersStateValue.currentUser?.user,
+			usersStateValue.currentUser?.auth,
+			loadingSession,
+			setUsersStateValue,
+			setLoadingSession,
+			setLoadingUserMemo,
+			setErrorMemo,
+		]
 	);
 
 	const signUp = useCallback(
@@ -124,25 +135,33 @@ const useAuth = () => {
 							currentUser: {
 								...usersStateValue.currentUser,
 								user,
+								auth: userAuth,
 							},
 						});
 
+						setLoadingUserMemo(false);
+						setLoadingSession(false);
 						localStorage.setItem("sessionToken", userAuth.session!.token);
 					} else {
 						throw new Error("=>API: Sign Up Failed: User is undefined");
 					}
-
-					setLoadingSession(false);
-					setLoadingUserMemo(false);
 				}
 			} catch (error: any) {
 				console.log(`=>Mongo: Sign Up Failed:\n${error}`);
 				setErrorMemo(error);
-				setLoadingSession(false);
 				setLoadingUserMemo(false);
+				setLoadingSession(false);
 			}
 		},
-		[]
+		[
+			usersStateValue.currentUser?.user,
+			usersStateValue.currentUser?.auth,
+			loadingSession,
+			setUsersStateValue,
+			setLoadingSession,
+			setLoadingUserMemo,
+			setErrorMemo,
+		]
 	);
 
 	const signInWithPassword = useCallback(
@@ -191,23 +210,33 @@ const useAuth = () => {
 							currentUser: {
 								...usersStateValue.currentUser,
 								user,
+								auth: userAuth,
 							},
 						});
 
+						setLoadingUserMemo(false);
+						setLoadingSession(false);
 						localStorage.setItem("sessionToken", userAuth.session.token);
+					} else {
+						throw new Error("=>API: Sign In Failed: User is undefined");
 					}
-
-					setLoadingSession(false);
-					setLoadingUserMemo(false);
 				}
 			} catch (error: any) {
 				console.log(`=>Mongo: Sign In Failed:\n${error.message}`);
 				setErrorMemo(error);
-				setLoadingSession(false);
 				setLoadingUserMemo(false);
+				setLoadingSession(false);
 			}
 		},
-		[]
+		[
+			usersStateValue.currentUser?.user,
+			usersStateValue.currentUser?.auth,
+			loadingSession,
+			setUsersStateValue,
+			setLoadingSession,
+			setLoadingUserMemo,
+			setErrorMemo,
+		]
 	);
 
 	const signOut = useCallback(async () => {
@@ -218,19 +247,23 @@ const useAuth = () => {
 			console.log(`=>Mongo: Sign Out Failed:\n${error.message}`);
 			setErrorMemo(error);
 		}
-	}, []);
+	}, [dispatch, setErrorMemo]);
 
 	useEffect(() => {
 		const sessionToken = localStorage.getItem("sessionToken");
 
-		if (sessionToken) {
-			getSession({
-				sessionToken,
-			});
-		} else {
-			setLoadingUserMemo(false);
+		if (!userMounted.current) {
+			userMounted.current = true;
+
+			if (sessionToken && !usersStateValue.currentUser?.auth) {
+				getSession({
+					sessionToken,
+				});
+			} else {
+				setLoadingUserMemo(false);
+			}
 		}
-	}, []);
+	}, [userMounted.current]);
 
 	return {
 		loadingUser: loadingUserMemo,

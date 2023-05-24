@@ -2,6 +2,7 @@ import { ObjectId } from "mongodb";
 
 export interface Book {
 	_id: ObjectId;
+	id: string;
 	title: string;
 	authorId: string;
 	categories: string[];
@@ -18,6 +19,7 @@ export interface Book {
 
 export interface BookCategory {
 	_id: ObjectId;
+	id: string;
 	name: string;
 	description?: string;
 	updatedAt: Date | string;
@@ -26,6 +28,7 @@ export interface BookCategory {
 
 export interface BorrowedBook {
 	_id: ObjectId;
+	id: string;
 	userId: string;
 	bookId: string;
 	borrowStatus: "borrowed" | "pending" | "returned";
