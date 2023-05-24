@@ -4,7 +4,7 @@ import bookDb from "@/server/mongo/bookDb";
 import userDb from "@/server/mongo/userDb";
 import { UserAuth } from "@/utils/models/auth";
 import { Author } from "@/utils/models/author";
-import { Book } from "@/utils/models/book";
+import { Book, BookCategory } from "@/utils/models/book";
 import { SiteUser } from "@/utils/models/user";
 import { ISBNRegex } from "@/utils/regex";
 import { ObjectId } from "mongodb";
@@ -247,9 +247,86 @@ export default async function handler(
 					}
 				);
 
+				newBook.categories.map(async (category) => {
+					const existingCategory = (await bookCategoriesCollection.findOne({
+						name: category,
+					})) as unknown as BookCategory;
+
+					let newCategory: Partial<BookCategory> = {
+						updatedAt: requestedAt.toISOString(),
+					};
+
+					if (!existingCategory) {
+						const categoryId = new ObjectId();
+
+						newCategory = {
+							...newCategory,
+							_id: categoryId,
+							id: categoryId.toHexString(),
+							name: category,
+							description: "",
+							createdAt: requestedAt.toISOString(),
+						};
+					}
+
+					await bookCategoriesCollection.findOneAndUpdate(
+						{
+							name: category,
+						},
+						{
+							$set: newCategory,
+						},
+						{
+							upsert: true,
+						}
+					);
+				});
+
 				return res.status(200).json({
 					statusCode: 200,
 					book: bookData.value,
+				});
+
+				break;
+			}
+
+			case "DELETE": {
+				if (!bookId) {
+					return res.status(400).json({
+						statusCode: 400,
+						error: {
+							type: "Missing Book ID",
+							message: "Please enter book ID",
+						},
+					});
+				}
+
+				const existingBook = (await booksCollection.findOne({
+					id: bookId,
+				})) as unknown as Book;
+
+				if (!existingBook) {
+					return res.status(404).json({
+						statusCode: 404,
+						error: {
+							type: "Book Not Found",
+							message: "Book not found",
+						},
+						isDeleted: false,
+					});
+				}
+
+				const deletedBookState = await booksCollection.deleteOne({
+					id: bookId,
+				});
+
+				return res.status(200).json({
+					statusCode: 200,
+					success: {
+						type: "Books Deleted",
+						message: "Books deleted successfully",
+					},
+					isDeleted: deletedBookState.acknowledged,
 				});
 
 				break;
