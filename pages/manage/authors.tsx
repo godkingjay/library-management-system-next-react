@@ -13,6 +13,19 @@ import {
 	Button,
 	Stack,
 	Icon,
+	Modal,
+	ModalBody,
+	ModalCloseButton,
+	ModalContent,
+	ModalFooter,
+	ModalHeader,
+	ModalOverlay,
+	FormControl,
+	FormHelperText,
+	FormLabel,
+	Input,
+	Flex,
+	Textarea,
 } from "@chakra-ui/react";
 import axios from "axios";
 import moment from "moment";
@@ -22,6 +35,7 @@ import useUser from "@/hooks/useUser";
 import { AiOutlinePlus } from "react-icons/ai";
 import { FiEdit } from "react-icons/fi";
 import { MdOutlineDeleteOutline } from "react-icons/md";
+import { APIEndpointAuthorParameters } from "../api/authors/author";
 
 type ManageAuthorsPageProps = {};
 
@@ -35,16 +49,58 @@ const ManageAuthorsPage: React.FC<ManageAuthorsPageProps> = () => {
 	const [itemsPerPage, setItemsPerPage] = useState(10);
 	const [tableData, setTableData] = useState<Author[]>([]);
 	const [fetchingData, setFetchingData] = useState(false);
+	const [submitting, setSubmitting] = useState(false);
 	const [authorsModalOpen, setAuthorsModalOpen] =
 		useState<AuthorsModalTypes>("");
 
+	const [authorForm, setAuthorForm] = useState<
+		Pick<Author, "name" | "biography" | "birthdate">
+	>({
+		name: "",
+		biography: "",
+		birthdate: "",
+	});
+
 	const authorsMounted = useRef(false);
 
-	const handleAuthorModalOpen = (type: AuthorsModalTypes) => {
+	const handleAuthorsModalOpen = (type: AuthorsModalTypes) => {
 		setAuthorsModalOpen(type);
 	};
 
-	const fetchAuthors = useCallback(async (page: number) => {
+	const handleCreateAuthor = async (event: React.FormEvent<HTMLFormElement>) => {
+		event.preventDefault();
+
+		try {
+			if (!submitting) {
+				setSubmitting(true);
+
+				const { statusCode } = await axios
+					.post(apiConfig.apiEndpoint + "/authors/author", {
+						apiKey: usersStateValue.currentUser?.auth?.keys[0].key,
+						name: authorForm.name,
+						biography: authorForm.biography,
+						birthdate: authorForm.birthdate,
+					} as APIEndpointAuthorParameters)
+					.then((response) => response.data)
+					.catch((error) => {
+						throw new Error(
+							`=>API: Create Author Failed:\n${error.response.data.error.message}`
+						);
+					});
+
+				if (statusCode === 201) {
+					await fetchAuthors(cPage);
+				}
+
+				setSubmitting(false);
+			}
+		} catch (error: any) {
+			console.error(`=>API: Create Author Failed:\n${error}`);
+			setSubmitting(false);
+		}
+	};
+
+	const fetchAuthors = async (page: number) => {
 		try {
 			if (!fetchingData) {
 				setFetchingData(true);
@@ -61,10 +117,6 @@ const ManageAuthorsPage: React.FC<ManageAuthorsPageProps> = () => {
 						params: {
 							apiKey: usersStateValue.currentUser?.auth?.keys[0].key,
 							page: page,
-							fromName:
-								tableData.length > 0
-									? tableData[tableData.length - 1].name
-									: undefined,
 							limit: itemsPerPage,
 						} as APIEndpointAuthorsParameters,
 					})
@@ -81,12 +133,32 @@ const ManageAuthorsPage: React.FC<ManageAuthorsPageProps> = () => {
 			console.error(`=>API: Fetch Authors Failed:\n${error}`);
 			setFetchingData(false);
 		}
-	}, []);
+	};
 
-	const handlePageChange = useCallback(async (page: number) => {
+	const handlePageChange = async (page: number) => {
 		setCPage(page);
 		await fetchAuthors(page);
-	}, []);
+	};
+
+	const handleAuthorFormChange = (
+		event:
+			| React.ChangeEvent<HTMLInputElement>
+			| React.ChangeEvent<HTMLTextAreaElement>
+	) => {
+		const { name, value } = event.target;
+
+		if (name === "birthdate") {
+			setAuthorForm((prev) => ({
+				...prev,
+				[name]: new Date(value).toISOString(),
+			}));
+		} else {
+			setAuthorForm((prev) => ({
+				...prev,
+				[name]: value,
+			}));
+		}
+	};
 
 	useEffect(() => {
 		if (!authorsMounted.current && usersStateValue.currentUser?.auth) {
@@ -125,6 +197,7 @@ const ManageAuthorsPage: React.FC<ManageAuthorsPageProps> = () => {
 							leftIcon={<AiOutlinePlus />}
 							colorScheme="whatsapp"
 							variant="solid"
+							onClick={() => handleAuthorsModalOpen("add")}
 						>
 							Add Author
 						</Button>
@@ -246,6 +319,76 @@ const ManageAuthorsPage: React.FC<ManageAuthorsPageProps> = () => {
 					</div>
 				</Box>
 			</Box>
+
+			{/* 
+				
+				Sign Up Modal
+
+			*/}
+			<Modal
+				isOpen={authorsModalOpen === "add"}
+				onClose={() => handleAuthorsModalOpen("")}
+			>
+				<ModalOverlay />
+				<ModalContent>
+					<ModalHeader>Add Author</ModalHeader>
+					<ModalCloseButton />
+					<ModalBody>
+						<form onSubmit={(event) => !submitting && handleCreateAuthor(event)}>
+							<Flex
+								direction={"column"}
+								gap={4}
+							>
+								<FormControl isRequired>
+									<FormLabel>Name</FormLabel>
+									<Input
+										type="text"
+										name="name"
+										placeholder="Name"
+										maxLength={256}
+										disabled={submitting}
+										onChange={(event) =>
+											!submitting && handleAuthorFormChange(event)
+										}
+									/>
+								</FormControl>
+								<FormControl>
+									<FormLabel>Biography</FormLabel>
+									<Textarea
+										name="biography"
+										placeholder="Biography[Optional]"
+										maxLength={4000}
+										disabled={submitting}
+										onChange={(event) =>
+											!submitting && handleAuthorFormChange(event)
+										}
+									/>
+								</FormControl>
+								<FormControl>
+									<FormLabel>Birthdate</FormLabel>
+									<Input
+										type="date"
+										name="birthdate"
+										disabled={submitting}
+										onChange={(event) =>
+											!submitting && handleAuthorFormChange(event)
+										}
+									/>
+								</FormControl>
+								<div className="h-[1px] bg-gray-200 my-1"></div>
+								<Button
+									type="submit"
+									colorScheme="whatsapp"
+									disabled={submitting}
+								>
+									Add Author
+								</Button>
+							</Flex>
+						</form>
+					</ModalBody>
+					<ModalFooter></ModalFooter>
+				</ModalContent>
+			</Modal>
 		</>
 	);
 };

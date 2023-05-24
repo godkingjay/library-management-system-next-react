@@ -124,7 +124,7 @@ export default async function handler(
 					)
 					.toArray();
 
-				const totalCount = await authorsCollection.countDocuments(query);
+				const totalCount = await authorsCollection.countDocuments();
 
 				return res.status(200).json({
 					statusCode: 200,
