@@ -94,8 +94,8 @@ const ManageAuthorsPage: React.FC<ManageAuthorsPageProps> = () => {
 				const { statusCode } = await axios
 					.post(apiConfig.apiEndpoint + "/authors/author", {
 						apiKey: usersStateValue.currentUser?.auth?.keys[0].key,
-						name: authorForm.name,
-						biography: authorForm.biography,
+						name: authorForm.name.trim(),
+						biography: authorForm.biography?.trim(),
 						birthdate: authorForm.birthdate,
 					} as APIEndpointAuthorParameters)
 					.then((response) => response.data)
