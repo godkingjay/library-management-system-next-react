@@ -43,7 +43,7 @@ export default async function handler(
 			authorId = undefined,
 			bookId = undefined,
 			title = undefined,
-			categories = [],
+			categories: rawCategories = [],
 			amount = 0,
 			available = 0,
 			borrowed = 0,
@@ -51,6 +51,11 @@ export default async function handler(
 			ISBN = undefined,
 			publicationDate: rawPublicationDate = undefined,
 		}: APIEndpointBookParameters = req.body || req.query;
+
+		const categories =
+			typeof rawCategories === "string"
+				? JSON.parse(rawCategories)
+				: rawCategories;
 
 		const publicationDate =
 			typeof rawPublicationDate === "string"
@@ -140,7 +145,22 @@ export default async function handler(
 					});
 				}
 
-				if (!categories) {
+				const existingBook = (await booksCollection.findOne({
+					title,
+					authorId,
+				})) as unknown as Book;
+
+				if (existingBook) {
+					return res.status(400).json({
+						statusCode: 400,
+						error: {
+							type: "Book Already Exists",
+							message: "A book with the same title already exists",
+						},
+					});
+				}
+
+				if (!categories.length) {
 					return res.status(400).json({
 						statusCode: 400,
 						error: {
