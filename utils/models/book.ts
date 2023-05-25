@@ -39,7 +39,7 @@ export interface BookCategory {
 	createdAt: Date | string;
 }
 
-export interface BorrowedBook {
+export interface BookBorrow {
 	_id: ObjectId;
 	id: string;
 	userId: string;
