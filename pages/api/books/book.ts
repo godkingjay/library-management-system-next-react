@@ -21,6 +21,7 @@ export interface APIEndpointBookParameters {
 	authorId?: string;
 	bookId?: string;
 	title?: string;
+	description?: string;
 	categories?: string[];
 	amount?: number;
 	available?: number;
@@ -50,12 +51,13 @@ export default async function handler(
 			authorId = undefined,
 			bookId = undefined,
 			title = undefined,
+			description = "",
 			categories: rawCategories = [],
 			amount = 0,
 			available = 0,
 			borrowed = 0,
 			borrowedTimes = 0,
-			ISBN = undefined,
+			ISBN = "",
 			publicationDate: rawPublicationDate = undefined,
 			image = undefined,
 		}: APIEndpointBookParameters = req.body || req.query;
@@ -230,6 +232,7 @@ export default async function handler(
 					_id: bookId,
 					id: bookId.toHexString(),
 					title,
+					description,
 					authorId: authorData.id,
 					categories,
 					amount,
@@ -372,6 +375,10 @@ export default async function handler(
 
 				if (title) {
 					updatedBook.title = title;
+				}
+
+				if (description) {
+					updatedBook.description = description;
 				}
 
 				if (amount) {

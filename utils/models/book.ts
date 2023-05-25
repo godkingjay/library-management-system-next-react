@@ -4,6 +4,7 @@ export interface Book {
 	_id: ObjectId;
 	id: string;
 	title: string;
+	description?: string;
 	authorId: string;
 	categories: string[];
 	cover?: BookImage;
