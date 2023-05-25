@@ -6,7 +6,7 @@ export interface Book {
 	title: string;
 	authorId: string;
 	categories: string[];
-	coveUrl?: string;
+	cover?: BookImage;
 	amount: number;
 	available: number;
 	borrowed: number;
@@ -14,6 +14,19 @@ export interface Book {
 	ISBN?: string;
 	publicationDate?: Date | string;
 	updatedAt: Date | string;
+	createdAt: Date | string;
+}
+
+export interface BookImage {
+	bookId: string;
+	height: number;
+	width: number;
+	filePath: string;
+	fileName: string;
+	fileType: string;
+	fileUrl: string;
+	fileExtension?: string;
+	fileSize: number;
 	createdAt: Date | string;
 }
 

@@ -9,6 +9,12 @@ import { SiteUser } from "@/utils/models/user";
 import { ISBNRegex } from "@/utils/regex";
 import { ObjectId } from "mongodb";
 import { NextApiRequest, NextApiResponse } from "next";
+import fs from "fs";
+import path from "path";
+import { ImageOrVideoType } from "@/hooks/useInput";
+import { pipeline, Readable } from "stream";
+
+const uploadDir = path.join(process.cwd(), "assets", "images", "books");
 
 export interface APIEndpointBookParameters {
 	apiKey: string;
@@ -22,6 +28,7 @@ export interface APIEndpointBookParameters {
 	borrowedTimes?: number;
 	ISBN?: string;
 	publicationDate?: Date | string;
+	image?: ImageOrVideoType;
 }
 
 export default async function handler(
@@ -50,6 +57,7 @@ export default async function handler(
 			borrowedTimes = 0,
 			ISBN = undefined,
 			publicationDate: rawPublicationDate = undefined,
+			image = undefined,
 		}: APIEndpointBookParameters = req.body || req.query;
 
 		const categories: APIEndpointBookParameters["categories"] =
@@ -218,7 +226,7 @@ export default async function handler(
 
 				const bookId = new ObjectId();
 
-				const newBook: Book = {
+				let newBook: Book = {
 					_id: bookId,
 					id: bookId.toHexString(),
 					title,
@@ -233,6 +241,49 @@ export default async function handler(
 					updatedAt: requestedAt,
 					createdAt: requestedAt,
 				};
+
+				if (image) {
+					const response = await fetch(image.url);
+
+					if (response.ok) {
+						const blob = await response.blob();
+
+						const fileName = `${newBook.id}-${image.name}`;
+
+						const filePath = path.join(uploadDir, fileName);
+
+						const writeStream = fs.createWriteStream(filePath);
+
+						await new Promise<void>((resolve, reject) => {
+							pipeline(
+								Readable.from(blob.stream() as unknown as NodeJS.ReadableStream),
+								writeStream,
+								(error: any | null) => {
+									if (error) {
+										reject(error);
+									} else {
+										resolve();
+									}
+								}
+							);
+						});
+
+						const fileUrl = `/assets/images/books/${fileName}`;
+
+						newBook.cover = {
+							bookId: newBook.id,
+							fileName,
+							filePath,
+							fileUrl,
+							height: image.height,
+							width: image.width,
+							fileType: image.type,
+							fileSize: image.size,
+							fileExtension: image.name.split(".").pop() || "",
+							createdAt: requestedAt.toISOString(),
+						};
+					}
+				}
 
 				const bookData = await booksCollection.findOneAndUpdate(
 					{
@@ -369,6 +420,57 @@ export default async function handler(
 					updatedBook.publicationDate = publicationDate;
 				}
 
+				if (image) {
+					const response = await fetch(image.url);
+
+					if (response.ok) {
+						const blob = await response.blob();
+
+						const fileName = `${existingBook.id}-${image.name}`;
+
+						const filePath = path.join(uploadDir, fileName);
+
+						const writeStream = fs.createWriteStream(filePath);
+
+						await new Promise<void>((resolve, reject) => {
+							pipeline(
+								Readable.from(blob.stream() as unknown as NodeJS.ReadableStream),
+								writeStream,
+								(error: any | null) => {
+									if (error) {
+										reject(error);
+									} else {
+										resolve();
+									}
+								}
+							);
+						});
+
+						const fileUrl = `/assets/images/books/${fileName}`;
+
+						updatedBook.cover = {
+							bookId: existingBook.id,
+							fileName,
+							filePath,
+							fileUrl,
+							height: image.height,
+							width: image.width,
+							fileType: image.type,
+							fileSize: image.size,
+							fileExtension: image.name.split(".").pop() || "",
+							createdAt: requestedAt.toISOString(),
+						};
+					}
+
+					if (existingBook.cover) {
+						const existingCoverPath = existingBook.cover.filePath;
+
+						if (fs.existsSync(existingCoverPath)) {
+							fs.unlinkSync(existingCoverPath);
+						}
+					}
+				}
+
 				if (categories?.length) {
 					updatedBook.categories = categories;
 
@@ -462,6 +564,14 @@ export default async function handler(
 				const deletedBookState = await booksCollection.deleteOne({
 					id: bookId,
 				});
+
+				if (existingBook.cover) {
+					const existingCoverPath = existingBook.cover.filePath;
+
+					if (fs.existsSync(existingCoverPath)) {
+						fs.unlinkSync(existingCoverPath);
+					}
+				}
 
 				return res.status(200).json({
 					statusCode: 200,
