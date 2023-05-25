@@ -1,6 +1,9 @@
 import authDb from "@/server/mongo/authDb";
+import authorDb from "@/server/mongo/authorDb";
 import bookDb from "@/server/mongo/bookDb";
 import { UserAuth } from "@/utils/models/auth";
+import { Author } from "@/utils/models/author";
+import { Book, BookInfo } from "@/utils/models/book";
 import { CollationOptions } from "mongodb";
 import { NextApiRequest, NextApiResponse } from "next";
 
@@ -18,6 +21,8 @@ export default async function handler(
 ) {
 	try {
 		const { authCollection } = await authDb();
+
+		const { authorsCollection } = await authorDb();
 
 		const { booksCollection } = await bookDb();
 
@@ -45,6 +50,16 @@ export default async function handler(
 				error: {
 					type: "Database Connection Error",
 					message: "Could not connect to authentication database",
+				},
+			});
+		}
+
+		if (!authorsCollection) {
+			return res.status(500).json({
+				statusCode: 500,
+				error: {
+					type: "Database Connection Error",
+					message: "Could not connect to author database",
 				},
 			});
 		}
@@ -137,9 +152,24 @@ export default async function handler(
 
 				const totalCount = await booksCollection.countDocuments(countQuery);
 
+				const booksInfo: BookInfo[] = await Promise.all(
+					booksData.map(async (book) => {
+						const bookDoc = book as unknown as Book;
+
+						const authorData = (await authorsCollection.findOne({
+							id: bookDoc.authorId,
+						})) as unknown as Author;
+
+						return {
+							book: bookDoc,
+							author: authorData,
+						} as BookInfo;
+					})
+				);
+
 				return res.status(200).json({
 					statusCode: 200,
-					books: booksData,
+					books: booksInfo,
 					page: page,
 					totalPages: Math.ceil(totalCount / itemsPerPage),
 					totalCount,

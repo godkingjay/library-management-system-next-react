@@ -1,4 +1,10 @@
 import { ObjectId } from "mongodb";
+import { Author } from "./author";
+
+export interface BookInfo {
+	book: Book;
+	author: Author;
+}
 
 export interface Book {
 	_id: ObjectId;

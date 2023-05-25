@@ -1,17 +1,36 @@
 import ManageBreadcrumb from "@/components/Breadcrumb/ManageBreadcrumb";
-import SearchBar from "@/components/Input/Searchbar";
+import SearchBar from "@/components/Input/SearchBar";
 import useAuth from "@/hooks/useAuth";
 import { ImageOrVideoType } from "@/hooks/useInput";
 import useUser from "@/hooks/useUser";
-import { Book } from "@/utils/models/book";
+import { Book, BookInfo } from "@/utils/models/book";
 import { apiConfig } from "@/utils/site";
-import { Box, Button, Flex, Text } from "@chakra-ui/react";
+import {
+	Box,
+	Button,
+	Flex,
+	Grid,
+	GridItem,
+	Icon,
+	Table,
+	TableContainer,
+	Tbody,
+	Td,
+	Text,
+	Th,
+	Thead,
+	Tr,
+} from "@chakra-ui/react";
 import axios from "axios";
 import Head from "next/head";
 import React, { useEffect, useRef, useState } from "react";
-import { AiOutlinePlus } from "react-icons/ai";
+import { AiOutlineBook, AiOutlinePlus } from "react-icons/ai";
 import { APIEndpointBooksParameters } from "../api/books";
 import Pagination from "@/components/Table/Pagination";
+import { FiLoader } from "react-icons/fi";
+import Image from "next/image";
+import moment from "moment";
+import BookItem from "@/components/Table/Book/BookItem";
 
 type ManageBooksPageProps = {};
 
@@ -24,7 +43,7 @@ const ManageBooksPage: React.FC<ManageBooksPageProps> = () => {
 	const [cPage, setCPage] = useState(1);
 	const [tPages, setTPages] = useState(1);
 	const [itemsPerPage, setItemsPerPage] = useState(10);
-	const [booksData, setBooksData] = useState<Book[]>([]);
+	const [booksData, setBooksData] = useState<BookInfo[]>([]);
 
 	const [fetchingData, setFetchingData] = useState(false);
 	const [submitting, setSubmitting] = useState(false);
@@ -109,11 +128,6 @@ const ManageBooksPage: React.FC<ManageBooksPageProps> = () => {
 		setBooksModalOpen(type);
 	};
 
-	const handleDeleteBookModalOpen = (book: Book) => {
-		handleBooksModalOpen("delete");
-		setDeleteBookForm(book);
-	};
-
 	const handleEditBookModalOpen = (book: Book) => {
 		handleBooksModalOpen("edit");
 		setEditBookForm({
@@ -146,6 +160,11 @@ const ManageBooksPage: React.FC<ManageBooksPageProps> = () => {
 		});
 	};
 
+	const handleDeleteBookModalOpen = (book: Book) => {
+		handleBooksModalOpen("delete");
+		setDeleteBookForm(book);
+	};
+
 	const fetchBooks = async (page: number) => {
 		try {
 			if (!fetchingData) {
@@ -156,7 +175,7 @@ const ManageBooksPage: React.FC<ManageBooksPageProps> = () => {
 					totalPages,
 					totalCount,
 				}: {
-					books: Book[];
+					books: BookInfo[];
 					totalPages: number;
 					totalCount: number;
 				} = await axios
@@ -191,13 +210,28 @@ const ManageBooksPage: React.FC<ManageBooksPageProps> = () => {
 		}
 	};
 
+	const handleSearch = async (event: React.FormEvent<HTMLFormElement>) => {
+		event.preventDefault();
+
+		try {
+			if (!fetchingData) {
+				setCPage(1);
+				await fetchBooks(1);
+			}
+		} catch (error: any) {
+			console.error(`=>API: Search BooksfetchBooks Failed:\n${error}`);
+		}
+	};
+
 	const handlePageChange = async (page: number) => {
 		setCPage(page);
 		await fetchBooks(page);
 	};
 
-	const searchTextChangeHandler = (book: string) => {
-		setSearchText(book);
+	const handleSearchChange = (text: string) => {
+		if (!fetchingData) {
+			setSearchText(text);
+		}
 	};
 
 	useEffect(() => {
@@ -211,7 +245,7 @@ const ManageBooksPage: React.FC<ManageBooksPageProps> = () => {
 
 			fetchBooks(cPage);
 		}
-	}, []);
+	}, [loadingUser]);
 
 	console.log(booksData);
 
@@ -246,14 +280,48 @@ const ManageBooksPage: React.FC<ManageBooksPageProps> = () => {
 						<ManageBreadcrumb />
 					</Flex>
 					<Flex className="flex flex-col gap-y-4 shadow-page-box-1 bg-white rounded-lg p-4">
-						<SearchBar
-							placeholder="Search Book..."
-							onSearch={searchTextChangeHandler}
-						/>
+						<form
+							onSubmit={(event) => !fetchingData && handleSearch(event)}
+							className="flex flex-row gap-x-2 items-center"
+						>
+							<Flex
+								direction={"column"}
+								flex={1}
+							>
+								<SearchBar
+									placeholder={"Search Author..."}
+									onSearch={handleSearchChange}
+								/>
+							</Flex>
+							<Button
+								type="submit"
+								colorScheme="linkedin"
+							>
+								Search
+							</Button>
+						</form>
 						<Flex
 							direction="row"
 							justifyContent={"end"}
+							gap={2}
+							className="items-center"
 						>
+							<div
+								className="
+								flex-1 flex-col
+								hidden
+								data-[search=true]:flex
+							"
+								data-search={searchResultDetails.text.trim().length > 0}
+							>
+								<p className="w-full text-sm max-w-full inline text-gray-500 truncate break-words whitespace-pre-wrap">
+									<span>Showing {booksData.length.toString()} out of </span>
+									<span>
+										{searchResultDetails.total.toString()} results for{" "}
+									</span>
+									<span>"{searchResultDetails.text}"</span>
+								</p>
+							</div>
 							<Button
 								leftIcon={<AiOutlinePlus />}
 								colorScheme="whatsapp"
@@ -270,6 +338,94 @@ const ManageBooksPage: React.FC<ManageBooksPageProps> = () => {
 						 *
 						 */}
 						<Flex className="flex-col gap-y-2">
+							<TableContainer>
+								<Table
+									className="overflow-x-scroll"
+									// variant={"striped"}
+									// colorScheme="gray"
+								>
+									<Thead>
+										<Tr>
+											<Th textAlign={"center"}>#</Th>
+											<Th>Cover</Th>
+											<Th>Title</Th>
+											<Th>Description</Th>
+											<Th textAlign={"center"}>Author</Th>
+											<Th textAlign={"center"}>ISBN</Th>
+											<Th textAlign={"center"}>Categories</Th>
+											<Th textAlign={"center"}>Amount</Th>
+											<Th textAlign={"center"}>Available</Th>
+											<Th textAlign={"center"}>Borrows</Th>
+											<Th textAlign={"center"}>Borrowed Times</Th>
+											<Th textAlign={"center"}>Published At</Th>
+											<Th textAlign={"center"}>Updated At</Th>
+											<Th textAlign={"center"}>Added At</Th>
+											<Th textAlign={"center"}>Action</Th>
+										</Tr>
+									</Thead>
+									<Tbody>
+										{fetchingData ||
+										!booksMounted.current ||
+										loadingUser ||
+										!usersStateValue.currentUser?.auth ? (
+											<>
+												<Tr>
+													<Td
+														colSpan={15}
+														textAlign={"center"}
+														className="text-gray-500 font-bold"
+													>
+														<Flex className="justify-center flex flex-row items-center gap-x-4">
+															<Icon
+																as={FiLoader}
+																className="h-12 w-12 animate-spin"
+															/>
+															<Text>Loading Authors...</Text>
+														</Flex>
+													</Td>
+												</Tr>
+											</>
+										) : (
+											<>
+												{booksData.length > 0 ? (
+													<>
+														{booksData.map((item, index) => (
+															<>
+																<React.Fragment key={item.book.id}>
+																	<BookItem
+																		index={
+																			index + 1 + itemsPerPage * (cPage - 1)
+																		}
+																		bookInfo={item}
+																		onEdit={() =>
+																			!updating && handleEditBookModalOpen
+																		}
+																		onDelete={() =>
+																			!updating && handleDeleteBookModalOpen
+																		}
+																	/>
+																</React.Fragment>
+															</>
+														))}
+													</>
+												) : (
+													<>
+														<Tr>
+															<Td
+																colSpan={15}
+																textAlign={"center"}
+																className="text-lg text-gray-500 font-bold"
+															>
+																No Book Data
+															</Td>
+														</Tr>
+													</>
+												)}
+											</>
+										)}
+									</Tbody>
+								</Table>
+							</TableContainer>
 							<div className="w-full flex flex-col items-center">
 								<Pagination
 									currentPage={cPage}

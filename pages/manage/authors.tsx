@@ -46,8 +46,7 @@ import { FiLoader } from "react-icons/fi";
 import useAuth from "@/hooks/useAuth";
 import ManageBreadcrumb from "@/components/Breadcrumb/ManageBreadcrumb";
 import Head from "next/head";
-import SearchBar from "@/components/Input/Searchbar";
-import { BsSearch } from "react-icons/bs";
+import SearchBar from "@/components/Input/SearchBar";
 
 type ManageAuthorsPageProps = {};
 
