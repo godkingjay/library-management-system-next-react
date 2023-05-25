@@ -44,6 +44,7 @@ import AuthorItem from "@/components/Table/Author/AuthorItem";
 import { FiLoader } from "react-icons/fi";
 import useAuth from "@/hooks/useAuth";
 import ManageBreadcrumb from "@/components/Breadcrumb/ManageBreadcrumb";
+import Head from "next/head";
 
 type ManageAuthorsPageProps = {};
 
@@ -311,6 +312,9 @@ const ManageAuthorsPage: React.FC<ManageAuthorsPageProps> = () => {
 
 	return (
 		<>
+			<Head>
+				<title>Manage Authors | LibMS</title>
+			</Head>
 			<Box
 				display="flex"
 				justifyContent="center"
@@ -330,7 +334,16 @@ const ManageAuthorsPage: React.FC<ManageAuthorsPageProps> = () => {
             sm:rounded-2xl
           "
 				>
-					<ManageBreadcrumb />
+					<Flex className="flex flex-col">
+						<Text
+							fontSize={"2xl"}
+							fontWeight={"bold"}
+							className="text-gray-700"
+						>
+							Authors
+						</Text>
+						<ManageBreadcrumb />
+					</Flex>
 
 					<Stack
 						direction="row"

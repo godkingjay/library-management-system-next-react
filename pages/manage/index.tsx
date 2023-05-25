@@ -15,17 +15,21 @@ import { BsChevronRight, BsVectorPen } from "react-icons/bs";
 import { BiCategory } from "react-icons/bi";
 import Link from "next/link";
 import ManageBreadcrumb from "@/components/Breadcrumb/ManageBreadcrumb";
+import Head from "next/head";
 
 type ManagePageProps = {};
 
 const ManagePage: React.FC<ManagePageProps> = () => {
 	return (
 		<>
+			<Head>
+				<title>Dashboard | LibMS</title>
+			</Head>
 			<Box
 				display="flex"
 				justifyContent="center"
 				alignItems="center"
-				className="p-4 sm:p-8"
+				className="p-4"
 			>
 				<Box
 					maxWidth="5xl"
@@ -35,7 +39,17 @@ const ManagePage: React.FC<ManagePageProps> = () => {
             flex flex-col gap-y-4
           "
 				>
-					<ManageBreadcrumb />
+					<Flex className="flex flex-col">
+						<Text
+							fontSize={"2xl"}
+							fontWeight={"bold"}
+							className="text-gray-700"
+						>
+							Dashboard
+						</Text>
+						<div className="h-[1px] w-full bg-gray-300 mb-2	"></div>
+						<ManageBreadcrumb />
+					</Flex>
 					<Grid
 						gap={6}
 						flex={1}
