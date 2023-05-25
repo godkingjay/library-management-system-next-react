@@ -9,14 +9,27 @@ import {
 	Box,
 	Button,
 	Flex,
+	FormControl,
+	FormLabel,
 	Grid,
 	GridItem,
 	Icon,
+	Input,
+	Modal,
+	ModalBody,
+	ModalCloseButton,
+	ModalContent,
+	ModalFooter,
+	ModalHeader,
+	ModalOverlay,
+	NumberInput,
+	NumberInputField,
 	Table,
 	TableContainer,
 	Tbody,
 	Td,
 	Text,
+	Textarea,
 	Th,
 	Thead,
 	Tr,
@@ -31,6 +44,8 @@ import { FiLoader } from "react-icons/fi";
 import Image from "next/image";
 import moment from "moment";
 import BookItem from "@/components/Table/Book/BookItem";
+import { APIEndpointBookParameters } from "../api/books/book";
+import { ISBNRegex } from "@/utils/regex";
 
 type ManageBooksPageProps = {};
 
@@ -72,7 +87,7 @@ const ManageBooksPage: React.FC<ManageBooksPageProps> = () => {
 			| "publicationDate"
 			| "categories"
 		> & {
-			cover: ImageOrVideoType | null;
+			image: ImageOrVideoType | null;
 		}
 	>({
 		authorId: "",
@@ -85,7 +100,7 @@ const ManageBooksPage: React.FC<ManageBooksPageProps> = () => {
 		borrowedTimes: 0,
 		publicationDate: "",
 		categories: [],
-		cover: null,
+		image: null,
 	});
 
 	const [deleteBookForm, setDeleteBookForm] = useState<Book | null>(null);
@@ -165,6 +180,48 @@ const ManageBooksPage: React.FC<ManageBooksPageProps> = () => {
 		setDeleteBookForm(book);
 	};
 
+	const handleCreateBook = async (event: React.FormEvent<HTMLFormElement>) => {
+		event.preventDefault();
+
+		try {
+			if (!submitting) {
+				setSubmitting(true);
+
+				const { statusCode } = await axios
+					.post(apiConfig.apiEndpoint + "/books/book", {
+						apiKey: usersStateValue.currentUser?.auth?.keys[0].key,
+						authorId: bookForm.authorId,
+						title: bookForm.title,
+						description: bookForm.description,
+						ISBN: bookForm.ISBN,
+						amount: bookForm.amount,
+						available: bookForm.available,
+						borrows: bookForm.borrows,
+						borrowedTimes: bookForm.borrowedTimes,
+						publicationDate: bookForm.publicationDate,
+						categories: bookForm.categories,
+						image: bookForm.image,
+					} as APIEndpointBookParameters)
+					.then((response) => response.data)
+					.catch((error) => {
+						throw new Error(
+							`=>API: Create Book Failed:\n${error.response.data.error.message}`
+						);
+					});
+
+				if (statusCode === 201) {
+					await fetchBooks(cPage);
+					handleBooksModalOpen("");
+				}
+
+				setSubmitting(false);
+			}
+		} catch (error: any) {
+			console.error(`=>API: Create Book Failed:\n${error}`);
+			setSubmitting(false);
+		}
+	};
+
 	const fetchBooks = async (page: number) => {
 		try {
 			if (!fetchingData) {
@@ -228,6 +285,26 @@ const ManageBooksPage: React.FC<ManageBooksPageProps> = () => {
 		await fetchBooks(page);
 	};
 
+	const handleBookFormChange = (
+		event:
+			| React.ChangeEvent<HTMLInputElement>
+			| React.ChangeEvent<HTMLTextAreaElement>
+	) => {
+		const { name, value } = event.target;
+
+		if (name === "publicationDate") {
+			setBookForm((prev) => ({
+				...prev,
+				[name]: new Date(value).toISOString(),
+			}));
+		} else {
+			setBookForm((prev) => ({
+				...prev,
+				[name]: value,
+			}));
+		}
+	};
+
 	const handleSearchChange = (text: string) => {
 		if (!fetchingData) {
 			setSearchText(text);
@@ -289,7 +366,7 @@ const ManageBooksPage: React.FC<ManageBooksPageProps> = () => {
 								flex={1}
 							>
 								<SearchBar
-									placeholder={"Search Author..."}
+									placeholder={"Search Book..."}
 									onSearch={handleSearchChange}
 								/>
 							</Flex>
@@ -380,7 +457,7 @@ const ManageBooksPage: React.FC<ManageBooksPageProps> = () => {
 																as={FiLoader}
 																className="h-12 w-12 animate-spin"
 															/>
-															<Text>Loading Authors...</Text>
+															<Text>Loading Books...</Text>
 														</Flex>
 													</Td>
 												</Tr>
@@ -437,6 +514,140 @@ const ManageBooksPage: React.FC<ManageBooksPageProps> = () => {
 					</Flex>
 				</Box>
 			</Box>
+
+			{/* 
+				
+				Add Author Modal
+
+			*/}
+			<Modal
+				isOpen={booksModalOpen === "add"}
+				onClose={() => handleBooksModalOpen("")}
+			>
+				<ModalOverlay />
+				<ModalContent>
+					<ModalHeader>Add Author</ModalHeader>
+					<ModalCloseButton />
+					<ModalBody>
+						<form onSubmit={(event) => !submitting && handleCreateBook(event)}>
+							<Flex
+								direction={"column"}
+								gap={4}
+							>
+								<FormControl isRequired>
+									<FormLabel>Title</FormLabel>
+									<Input
+										type="text"
+										name="title"
+										placeholder="Title"
+										maxLength={256}
+										disabled={submitting}
+										isDisabled={submitting}
+										_disabled={{
+											filter: "grayscale(100%)",
+										}}
+										value={bookForm.title}
+										onChange={(event) =>
+											!submitting && handleBookFormChange(event)
+										}
+									/>
+								</FormControl>
+								<FormControl isRequired>
+									<FormLabel>ISBN</FormLabel>
+									<NumberInput
+										isDisabled={submitting}
+										_disabled={{
+											filter: "grayscale(100%)",
+										}}
+										clampValueOnBlur={false}
+									>
+										<NumberInputField
+											name="ISBN"
+											placeholder="ISBN(10-13)"
+											minLength={10}
+											maxLength={13}
+											disabled={submitting}
+											_disabled={{
+												filter: "grayscale(100%)",
+											}}
+											value={bookForm.ISBN}
+											onChange={(value) =>
+												!submitting && handleBookFormChange(value)
+											}
+											className="
+												data-[error=true]:text-red-500
+												data-[error=true]:border-red-500
+											"
+											data-error={
+												bookForm.ISBN && !ISBNRegex.test(bookForm.ISBN!)
+											}
+										/>
+									</NumberInput>
+								</FormControl>
+								<FormControl>
+									<FormLabel>Description</FormLabel>
+									<Textarea
+										name="description"
+										placeholder="Description[Optional]"
+										maxLength={4000}
+										disabled={submitting}
+										isDisabled={submitting}
+										_disabled={{
+											filter: "grayscale(100%)",
+										}}
+										value={bookForm.description}
+										onChange={(event) =>
+											!submitting && handleBookFormChange(event)
+										}
+									/>
+								</FormControl>
+								<FormControl isRequired>
+									<FormLabel>Publication Date</FormLabel>
+									<Input
+										type="date"
+										name="publicationDate"
+										disabled={submitting}
+										isDisabled={submitting}
+										_disabled={{
+											filter: "grayscale(100%)",
+										}}
+										onChange={(event) =>
+											!submitting && handleBookFormChange(event)
+										}
+									/>
+								</FormControl>
+								<div className="h-[1px] bg-gray-200 my-1"></div>
+								<Button
+									type="submit"
+									colorScheme="whatsapp"
+									disabled={
+										submitting ||
+										!bookForm.title ||
+										!bookForm.authorId ||
+										!bookForm.ISBN ||
+										!bookForm.publicationDate
+									}
+									loadingText="Adding Book"
+									isLoading={submitting}
+									isDisabled={
+										submitting ||
+										!bookForm.title ||
+										!bookForm.authorId ||
+										!bookForm.ISBN ||
+										!bookForm.publicationDate
+									}
+									_disabled={{
+										filter: "grayscale(100%)",
+									}}
+								>
+									Add Book
+								</Button>
+							</Flex>
+						</form>
+					</ModalBody>
+					<ModalFooter></ModalFooter>
+				</ModalContent>
+			</Modal>
 		</>
 	);
 };
