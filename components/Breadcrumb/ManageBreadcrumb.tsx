@@ -18,7 +18,7 @@ const ManageBreadcrumb: React.FC<ManageBreadcrumbProps> = () => {
 
 	return (
 		<>
-			<Flex className="bg-white p-2 shadow-page-box-1 rounded-md text-sm text-gray-500">
+			<Flex className="bg-white p-2 shadow-page-box-1 rounded-md text-gray-500">
 				<Breadcrumb
 					spacing="8px"
 					separator={<BsChevronRight color="gray.500" />}
