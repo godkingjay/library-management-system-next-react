@@ -45,6 +45,8 @@ import { FiLoader } from "react-icons/fi";
 import useAuth from "@/hooks/useAuth";
 import ManageBreadcrumb from "@/components/Breadcrumb/ManageBreadcrumb";
 import Head from "next/head";
+import SearchBar from "@/components/Input/Searchbar";
+import { BsSearch } from "react-icons/bs";
 
 type ManageAuthorsPageProps = {};
 
@@ -63,6 +65,8 @@ const ManageAuthorsPage: React.FC<ManageAuthorsPageProps> = () => {
 	const [submitting, setSubmitting] = useState(false);
 	const [updating, setUpdating] = useState(false);
 	const [deleting, setDeleting] = useState(false);
+
+	const [searchText, setSearchText] = useState("");
 
 	const [authorsModalOpen, setAuthorsModalOpen] =
 		useState<AuthorsModalTypes>("");
@@ -206,6 +210,7 @@ const ManageAuthorsPage: React.FC<ManageAuthorsPageProps> = () => {
 					.get(apiConfig.apiEndpoint + "/authors/", {
 						params: {
 							apiKey: usersStateValue.currentUser?.auth?.keys[0].key,
+							name: searchText,
 							page: page,
 							limit: itemsPerPage,
 						} as APIEndpointAuthorsParameters,
@@ -257,6 +262,19 @@ const ManageAuthorsPage: React.FC<ManageAuthorsPageProps> = () => {
 		}
 	};
 
+	const handleSearch = async (event: React.FormEvent<HTMLFormElement>) => {
+		event.preventDefault();
+
+		try {
+			if (!fetchingData) {
+				setCPage(1);
+				await fetchAuthors(1);
+			}
+		} catch (error: any) {
+			console.error(`=>API: Search Authors Failed:\n${error}`);
+		}
+	};
+
 	const handlePageChange = async (page: number) => {
 		setCPage(page);
 		await fetchAuthors(page);
@@ -299,6 +317,12 @@ const ManageAuthorsPage: React.FC<ManageAuthorsPageProps> = () => {
 				...prev,
 				[name]: value,
 			}));
+		}
+	};
+
+	const handleSearchChange = (text: string) => {
+		if (!fetchingData) {
+			setSearchText(text);
 		}
 	};
 
@@ -345,7 +369,25 @@ const ManageAuthorsPage: React.FC<ManageAuthorsPageProps> = () => {
 						<ManageBreadcrumb />
 					</Flex>
 
-					<Stack
+					<form
+						onSubmit={(event) => !fetchingData && handleSearch(event)}
+						className="flex flex-row gap-x-2 items-center"
+					>
+						<Flex
+							direction={"column"}
+							flex={1}
+						>
+							<SearchBar onSearch={handleSearchChange} />
+						</Flex>
+						<Button
+							type="submit"
+							colorScheme="linkedin"
+						>
+							Search
+						</Button>
+					</form>
+
+					<Flex
 						direction="row"
 						justifyContent={"end"}
 					>
@@ -357,7 +399,7 @@ const ManageAuthorsPage: React.FC<ManageAuthorsPageProps> = () => {
 						>
 							Add Author
 						</Button>
-					</Stack>
+					</Flex>
 					<TableContainer>
 						<Table
 							className="overflow-x-scroll"

@@ -78,8 +78,12 @@ export default async function handler(
 		switch (req.method) {
 			case "GET": {
 				let query: any = {};
+				let countQuery: any = {};
 
 				if (name) {
+					countQuery.name = {
+						$regex: new RegExp(name, "i"),
+					};
 					query.name = {
 						$regex: new RegExp(name, "i"),
 					};
@@ -131,7 +135,9 @@ export default async function handler(
 					)
 					.toArray();
 
-				const totalCount = await authorsCollection.countDocuments();
+				const totalCount = await authorsCollection.countDocuments({
+					...countQuery,
+				});
 
 				return res.status(200).json({
 					statusCode: 200,
