@@ -1,7 +1,7 @@
 import ManageBreadcrumb from "@/components/Breadcrumb/ManageBreadcrumb";
 import SearchBar from "@/components/Input/SearchBar";
 import useAuth from "@/hooks/useAuth";
-import { ImageOrVideoType } from "@/hooks/useInput";
+import useInput, { ImageOrVideoType } from "@/hooks/useInput";
 import useUser from "@/hooks/useUser";
 import { Book, BookInfo } from "@/utils/models/book";
 import { apiConfig } from "@/utils/site";
@@ -46,6 +46,7 @@ import moment from "moment";
 import BookItem from "@/components/Table/Book/BookItem";
 import { APIEndpointBookParameters } from "../api/books/book";
 import { ISBNRegex } from "@/utils/regex";
+import { validImageTypes } from "@/utils/types/file";
 
 type ManageBooksPageProps = {};
 
@@ -54,6 +55,7 @@ export type BooksModalTypes = "" | "add" | "edit" | "delete";
 const ManageBooksPage: React.FC<ManageBooksPageProps> = () => {
 	const { loadingUser } = useAuth();
 	const { usersStateValue } = useUser();
+	const { uploadImageOrVideo } = useInput();
 
 	const [cPage, setCPage] = useState(1);
 	const [tPages, setTPages] = useState(1);
@@ -138,6 +140,9 @@ const ManageBooksPage: React.FC<ManageBooksPageProps> = () => {
 	> | null>(null);
 
 	const booksMounted = useRef(false);
+
+	const bookFormUploadImageRef = useRef<HTMLInputElement>(null);
+	const bookUpdateFormUploadImageRef = useRef<HTMLInputElement>(null);
 
 	const handleBooksModalOpen = (type: BooksModalTypes) => {
 		setBooksModalOpen(type);
@@ -305,6 +310,27 @@ const ManageBooksPage: React.FC<ManageBooksPageProps> = () => {
 		}
 	};
 
+	const handleBookFormUploadImage = async (
+		event: React.ChangeEvent<HTMLInputElement>
+	) => {
+		if (event.target.files?.length) {
+			const image = event.target.files[0];
+
+			if (image) {
+				const imageData = await uploadImageOrVideo(image);
+
+				if (imageData) {
+					setBookForm((prev) => ({
+						...prev,
+						image: imageData,
+					}));
+				}
+			}
+
+			event.target.value = "";
+		}
+	};
+
 	const handleSearchChange = (text: string) => {
 		if (!fetchingData) {
 			setSearchText(text);
@@ -324,7 +350,7 @@ const ManageBooksPage: React.FC<ManageBooksPageProps> = () => {
 		}
 	}, [loadingUser]);
 
-	console.log(booksData);
+	console.log(bookForm);
 
 	return (
 		<>
@@ -534,6 +560,64 @@ const ManageBooksPage: React.FC<ManageBooksPageProps> = () => {
 								direction={"column"}
 								gap={4}
 							>
+								<div className="flex p-4 border-2 border-gray-200 border-dashed rounded-lg items-center justify-center flex-col">
+									<div
+										className="
+										aspect-[3/4] max-2-[128px] border border-gray-200 p-4 flex flex-col items-center justify-center overflow-hidden rounded-xl relative
+										group
+										hover:border-blue-500
+										focus-within:border-blue-500
+									"
+									>
+										{bookForm.image && (
+											<>
+												<Image
+													src={bookForm.image.url}
+													alt={bookForm.image.name}
+													sizes="256px"
+													fill
+													loading="lazy"
+													className="
+														bg-center bg-cover object-cover rounded-md
+														duration-200
+														group-hover:brightness-50
+														group-focus-within:brightness-50
+														group-hover:scale-125
+														group-focus-within:scale-125
+													"
+												/>
+											</>
+										)}
+										<Button
+											size={"sm"}
+											onClick={() =>
+												!submitting && bookFormUploadImageRef.current!.click()
+											}
+											rounded={"full"}
+											colorScheme={"messenger"}
+											variant={bookForm.image ? "solid" : "outline"}
+											opacity={bookForm.image ? 0 : 1}
+											borderStyle={"dashed"}
+											zIndex={10}
+											className="group-hover:opacity-100 group-focus-within:opacity-100"
+										>
+											Upload Cover
+										</Button>
+									</div>
+									<input
+										type="file"
+										name="cover"
+										id="cover"
+										accept={validImageTypes.ext.join(",")}
+										ref={bookFormUploadImageRef}
+										disabled={submitting}
+										title="Upload Book Cover"
+										onChange={(event) =>
+											!submitting && handleBookFormUploadImage(event)
+										}
+										hidden
+									/>
+								</div>
 								<FormControl isRequired>
 									<FormLabel>Title</FormLabel>
 									<Input
