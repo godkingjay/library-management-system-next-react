@@ -15,7 +15,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
 
 	return (
 		<>
-			<div className="relative min-h-screen bg-gray-50 w-full max-w-full m-0 p-0 flex flex-col">
+			<div className="relative min-h-screen bg-gray-100 w-full max-w-full m-0 p-0 flex flex-col">
 				{usersStateValue.currentUser && (
 					<>
 						<NavigationBar />
