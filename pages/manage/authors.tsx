@@ -519,7 +519,7 @@ const ManageAuthorsPage: React.FC<ManageAuthorsPageProps> = () => {
 
 			{/* 
 				
-				Sign Up Modal
+				Add Author Modal
 
 			*/}
 			<Modal
