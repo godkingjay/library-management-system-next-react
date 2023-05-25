@@ -32,6 +32,7 @@ import {
 	AlertDialogOverlay,
 	Text,
 	Icon,
+	Highlight,
 } from "@chakra-ui/react";
 import axios from "axios";
 import moment from "moment";
@@ -67,6 +68,11 @@ const ManageAuthorsPage: React.FC<ManageAuthorsPageProps> = () => {
 	const [deleting, setDeleting] = useState(false);
 
 	const [searchText, setSearchText] = useState("");
+
+	const [searchResultDetails, setSearchResultDetails] = useState({
+		text: "",
+		total: 0,
+	});
 
 	const [authorsModalOpen, setAuthorsModalOpen] =
 		useState<AuthorsModalTypes>("");
@@ -202,10 +208,11 @@ const ManageAuthorsPage: React.FC<ManageAuthorsPageProps> = () => {
 				const {
 					authors,
 					totalPages,
+					totalCount,
 				}: {
 					authors: Author[];
-					currentPage: number;
 					totalPages: number;
+					totalCount: number;
 				} = await axios
 					.get(apiConfig.apiEndpoint + "/authors/", {
 						params: {
@@ -215,12 +222,20 @@ const ManageAuthorsPage: React.FC<ManageAuthorsPageProps> = () => {
 							limit: itemsPerPage,
 						} as APIEndpointAuthorsParameters,
 					})
-					.then((response) => response.data);
+					.then((response) => response.data)
+					.catch((error) => {
+						throw new Error(
+							`=>API: Fetch Authors Failed:\n${error.response.data.error.message}`
+						);
+					});
 
-				if (authors.length) {
-					setTableData(authors);
-					setTPages(totalPages);
-				}
+				setTableData(authors);
+				setTPages(totalPages > 0 ? totalPages : 1);
+
+				setSearchResultDetails({
+					text: searchText,
+					total: totalCount,
+				});
 
 				setFetchingData(false);
 			}
@@ -390,7 +405,23 @@ const ManageAuthorsPage: React.FC<ManageAuthorsPageProps> = () => {
 					<Flex
 						direction="row"
 						justifyContent={"end"}
+						gap={2}
+						className="items-center"
 					>
+						<div
+							className="
+								flex-1 flex-col
+								hidden
+								data-[search=true]:flex
+							"
+							data-search={searchResultDetails.text.trim().length > 0}
+						>
+							<p className="w-full text-sm max-w-full inline text-gray-500 truncate break-words whitespace-pre-wrap">
+								<span>Showing {tableData.length.toString()} out of </span>
+								<span>{searchResultDetails.total.toString()} results for </span>
+								<span>"{searchResultDetails.text}"</span>
+							</p>
+						</div>
 						<Button
 							leftIcon={<AiOutlinePlus />}
 							colorScheme="whatsapp"
