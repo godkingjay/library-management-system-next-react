@@ -17,8 +17,11 @@ import {
 	Text,
 	useClipboard,
 	Tooltip,
+	Badge,
+	Box,
 } from "@chakra-ui/react";
 import moment from "moment";
+import Image from "next/image";
 import React from "react";
 import { FiEdit } from "react-icons/fi";
 import { MdContentCopy, MdOutlineDeleteOutline } from "react-icons/md";
@@ -95,7 +98,26 @@ const BookItem: React.FC<BookItemProps> = ({
 				{/**
 				 * Cover
 				 */}
-				<Td className="text-sm">Cover</Td>
+				<Td className="text-sm">
+					{bookInfo.book.cover ? (
+						<>
+							<Box className="flex flex-col aspect-[2/3] min-w-[64px] bg-gray-200 items justify-center relative rounded-lg overflow-hidden">
+								<Image
+									src={bookInfo.book.cover.fileUrl}
+									alt={bookInfo.book.title}
+									sizes="256px"
+									fill
+									loading="lazy"
+									className="w-full bg-center object-cover"
+								/>
+							</Box>
+						</>
+					) : (
+						<>
+							<Badge colorScheme="red">None</Badge>
+						</>
+					)}
+				</Td>
 				<Td className="text-sm">{bookInfo.book.title}</Td>
 				<Td className="text-sm break-words whitespace-pre">
 					{bookInfo.book.description?.length
@@ -105,12 +127,49 @@ const BookItem: React.FC<BookItemProps> = ({
 						: "---"}
 				</Td>
 				<Td className="text-sm">{bookInfo.author.name}</Td>
-				<Td className="text-sm">{bookInfo.book.ISBN}</Td>
-				<Td className="text-sm">{bookInfo.book.categories.toString()}</Td>
-				<Td className="text-sm">{bookInfo.book.amount}</Td>
-				<Td className="text-sm">{bookInfo.book.available}</Td>
-				<Td className="text-sm">{bookInfo.book.borrows}</Td>
-				<Td className="text-sm">{bookInfo.book.borrowedTimes}</Td>
+				<Td
+					className="text-sm"
+					textAlign={"center"}
+				>
+					{bookInfo.book.ISBN}
+				</Td>
+				<Td className="text-sm">
+					{bookInfo.book.categories.length > 0 ? (
+						bookInfo.book.categories.map((category) => (
+							<>
+								<Badge colorScheme="blue">{category}</Badge>
+							</>
+						))
+					) : (
+						<>
+							<Badge colorScheme="red">None</Badge>
+						</>
+					)}
+				</Td>
+				<Td
+					className="text-sm"
+					textAlign={"center"}
+				>
+					{bookInfo.book.amount}
+				</Td>
+				<Td
+					className="text-sm"
+					textAlign={"center"}
+				>
+					{bookInfo.book.available}
+				</Td>
+				<Td
+					className="text-sm"
+					textAlign={"center"}
+				>
+					{bookInfo.book.borrows}
+				</Td>
+				<Td
+					className="text-sm"
+					textAlign={"center"}
+				>
+					{bookInfo.book.borrowedTimes}
+				</Td>
 				<Td
 					className="text-sm"
 					textAlign={"center"}
