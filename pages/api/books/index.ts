@@ -117,7 +117,7 @@ export default async function handler(
 					numericOrdering: true,
 				};
 
-				const authorsData = await booksCollection
+				const booksData = await booksCollection
 					.find({
 						...query,
 					})
@@ -139,9 +139,10 @@ export default async function handler(
 
 				return res.status(200).json({
 					statusCode: 200,
-					authors: authorsData,
+					books: booksData,
 					page: page,
 					totalPages: Math.ceil(totalCount / itemsPerPage),
+					totalCount,
 				});
 
 				break;
