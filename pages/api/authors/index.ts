@@ -23,11 +23,14 @@ export default async function handler(
 
 		const {
 			apiKey,
-			name = undefined,
+			name: rawName = undefined,
 			fromName = undefined,
 			page = 1,
 			limit = 10,
 		}: APIEndpointAuthorsParameters = req.body || req.query;
+
+		const name: APIEndpointAuthorsParameters["name"] =
+			typeof rawName === "string" ? rawName.trim() : undefined;
 
 		if (!apiKey) {
 			return res.status(400).json({
@@ -144,6 +147,7 @@ export default async function handler(
 					authors: authorsData,
 					page: page,
 					totalPages: Math.ceil(totalCount / itemsPerPage),
+					totalCount,
 				});
 
 				break;
