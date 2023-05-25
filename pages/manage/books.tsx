@@ -4,18 +4,19 @@ import useAuth from "@/hooks/useAuth";
 import { ImageOrVideoType } from "@/hooks/useInput";
 import useUser from "@/hooks/useUser";
 import { Book } from "@/utils/models/book";
+import { apiConfig } from "@/utils/site";
 import { Box, Button, Flex, Text } from "@chakra-ui/react";
+import axios from "axios";
 import Head from "next/head";
-import React, { useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { AiOutlinePlus } from "react-icons/ai";
+import { APIEndpointBooksParameters } from "../api/books";
 
 type ManageBooksPageProps = {};
 
 export type BooksModalTypes = "" | "add" | "edit" | "delete";
 
 const ManageBooksPage: React.FC<ManageBooksPageProps> = () => {
-	const [searchText, setSearchText] = useState("");
-
 	const { loadingUser } = useAuth();
 	const { usersStateValue } = useUser();
 
@@ -28,6 +29,12 @@ const ManageBooksPage: React.FC<ManageBooksPageProps> = () => {
 	const [submitting, setSubmitting] = useState(false);
 	const [updating, setUpdating] = useState(false);
 	const [deleting, setDeleting] = useState(false);
+
+	const [searchText, setSearchText] = useState("");
+	const [searchResultDetails, setSearchResultDetails] = useState({
+		text: "",
+		total: 0,
+	});
 
 	const [booksModalOpen, setBooksModalOpen] = useState<BooksModalTypes>("");
 
@@ -79,11 +86,128 @@ const ManageBooksPage: React.FC<ManageBooksPageProps> = () => {
 		| "cover"
 	> | null>(null);
 
+	const [editUpdateBookForm, setEditUpdateBookForm] = useState<Pick<
+		Book,
+		| "id"
+		| "authorId"
+		| "title"
+		| "description"
+		| "ISBN"
+		| "amount"
+		| "available"
+		| "borrows"
+		| "borrowedTimes"
+		| "publicationDate"
+		| "categories"
+		| "cover"
+	> | null>(null);
+
 	const booksMounted = useRef(false);
+
+	const handleBooksModalOpen = (type: BooksModalTypes) => {
+		setBooksModalOpen(type);
+	};
+
+	const handleDeleteBookModalOpen = (book: Book) => {
+		handleBooksModalOpen("delete");
+		setDeleteBookForm(book);
+	};
+
+	const handleEditBookModalOpen = (book: Book) => {
+		handleBooksModalOpen("edit");
+		setEditBookForm({
+			id: book.id,
+			authorId: book.authorId,
+			title: book.title,
+			description: book.description,
+			ISBN: book.ISBN,
+			amount: book.amount,
+			available: book.available,
+			borrows: book.borrows,
+			borrowedTimes: book.borrowedTimes,
+			publicationDate: book.publicationDate,
+			categories: book.categories,
+			cover: book.cover,
+		});
+		setEditUpdateBookForm({
+			id: book.id,
+			authorId: book.authorId,
+			title: book.title,
+			description: book.description,
+			ISBN: book.ISBN,
+			amount: book.amount,
+			available: book.available,
+			borrows: book.borrows,
+			borrowedTimes: book.borrowedTimes,
+			publicationDate: book.publicationDate,
+			categories: book.categories,
+			cover: book.cover,
+		});
+	};
+
+	const fetchBooks = async (page: number) => {
+		try {
+			if (!fetchingData) {
+				setFetchingData(true);
+
+				const {
+					books,
+					totalPages,
+					totalCount,
+				}: {
+					books: Book[];
+					totalPages: number;
+					totalCount: number;
+				} = await axios
+					.get(apiConfig.apiEndpoint + "/books/", {
+						params: {
+							apiKey: usersStateValue.currentUser?.auth?.keys[0].key,
+							title: searchText,
+							page: page,
+							limit: itemsPerPage,
+						} as APIEndpointBooksParameters,
+					})
+					.then((response) => response.data)
+					.catch((error) => {
+						throw new Error(
+							`=>API: Fetch Books Failed:\n${error.response.data.error.message}`
+						);
+					});
+
+				setBooksData(books);
+				setTPages(totalPages > 0 ? totalPages : 1);
+
+				setSearchResultDetails({
+					text: searchText,
+					total: totalCount,
+				});
+
+				setFetchingData(false);
+			}
+		} catch (error: any) {
+			console.error(`=>API: Fetch Books Failed:\n${error}`);
+			setFetchingData(false);
+		}
+	};
 
 	const searchTextChangeHandler = (book: string) => {
 		setSearchText(book);
 	};
+
+	useEffect(() => {
+		if (
+			!booksMounted.current &&
+			usersStateValue.currentUser?.auth &&
+			!fetchingData &&
+			!loadingUser
+		) {
+			booksMounted.current = true;
+
+			fetchBooks(cPage);
+		}
+	}, []);
+
+	console.log(booksData);
 
 	return (
 		<>
@@ -125,12 +249,18 @@ const ManageBooksPage: React.FC<ManageBooksPageProps> = () => {
 								leftIcon={<AiOutlinePlus />}
 								colorScheme="whatsapp"
 								variant="solid"
-								// onClick={() => handleAuthorsModalOpen("add")}
+								onClick={() => handleBooksModalOpen("add")}
 							>
 								Add Book
 							</Button>
 						</Flex>
 					</Flex>
+
+					{/**
+					 *
+					 * Books
+					 *
+					 */}
 				</Box>
 			</Box>
 		</>
