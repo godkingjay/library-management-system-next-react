@@ -43,6 +43,7 @@ import { APIEndpointAuthorParameters } from "../api/authors/author";
 import AuthorItem from "@/components/Table/Author/AuthorItem";
 import { FiLoader } from "react-icons/fi";
 import useAuth from "@/hooks/useAuth";
+import ManageBreadcrumb from "@/components/Breadcrumb/ManageBreadcrumb";
 
 type ManageAuthorsPageProps = {};
 
@@ -329,6 +330,8 @@ const ManageAuthorsPage: React.FC<ManageAuthorsPageProps> = () => {
             sm:rounded-2xl
           "
 				>
+					<ManageBreadcrumb />
+
 					<Stack
 						direction="row"
 						justifyContent={"end"}
