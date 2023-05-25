@@ -32,6 +32,7 @@ import {
 	AlertDialogOverlay,
 	Text,
 	Icon,
+	Highlight,
 } from "@chakra-ui/react";
 import axios from "axios";
 import moment from "moment";
@@ -43,6 +44,9 @@ import { APIEndpointAuthorParameters } from "../api/authors/author";
 import AuthorItem from "@/components/Table/Author/AuthorItem";
 import { FiLoader } from "react-icons/fi";
 import useAuth from "@/hooks/useAuth";
+import ManageBreadcrumb from "@/components/Breadcrumb/ManageBreadcrumb";
+import Head from "next/head";
+import SearchBar from "@/components/Input/SearchBar";
 
 type ManageAuthorsPageProps = {};
 
@@ -61,6 +65,13 @@ const ManageAuthorsPage: React.FC<ManageAuthorsPageProps> = () => {
 	const [submitting, setSubmitting] = useState(false);
 	const [updating, setUpdating] = useState(false);
 	const [deleting, setDeleting] = useState(false);
+
+	const [searchText, setSearchText] = useState("");
+
+	const [searchResultDetails, setSearchResultDetails] = useState({
+		text: "",
+		total: 0,
+	});
 
 	const [authorsModalOpen, setAuthorsModalOpen] =
 		useState<AuthorsModalTypes>("");
@@ -196,24 +207,34 @@ const ManageAuthorsPage: React.FC<ManageAuthorsPageProps> = () => {
 				const {
 					authors,
 					totalPages,
+					totalCount,
 				}: {
 					authors: Author[];
-					currentPage: number;
 					totalPages: number;
+					totalCount: number;
 				} = await axios
 					.get(apiConfig.apiEndpoint + "/authors/", {
 						params: {
 							apiKey: usersStateValue.currentUser?.auth?.keys[0].key,
+							name: searchText,
 							page: page,
 							limit: itemsPerPage,
 						} as APIEndpointAuthorsParameters,
 					})
-					.then((response) => response.data);
+					.then((response) => response.data)
+					.catch((error) => {
+						throw new Error(
+							`=>API: Fetch Authors Failed:\n${error.response.data.error.message}`
+						);
+					});
 
-				if (authors.length) {
-					setTableData(authors);
-					setTPages(totalPages);
-				}
+				setTableData(authors);
+				setTPages(totalPages > 0 ? totalPages : 1);
+
+				setSearchResultDetails({
+					text: searchText,
+					total: totalCount,
+				});
 
 				setFetchingData(false);
 			}
@@ -252,6 +273,19 @@ const ManageAuthorsPage: React.FC<ManageAuthorsPageProps> = () => {
 		} catch (error: any) {
 			console.error(`=>API: Delete Author Failed:\n${error}`);
 			setDeleting(false);
+		}
+	};
+
+	const handleSearch = async (event: React.FormEvent<HTMLFormElement>) => {
+		event.preventDefault();
+
+		try {
+			if (!fetchingData) {
+				setCPage(1);
+				await fetchAuthors(1);
+			}
+		} catch (error: any) {
+			console.error(`=>API: Search Authors Failed:\n${error}`);
 		}
 	};
 
@@ -300,6 +334,12 @@ const ManageAuthorsPage: React.FC<ManageAuthorsPageProps> = () => {
 		}
 	};
 
+	const handleSearchChange = (text: string) => {
+		if (!fetchingData) {
+			setSearchText(text);
+		}
+	};
+
 	useEffect(() => {
 		if (!authorsMounted.current && usersStateValue.currentUser?.auth) {
 			authorsMounted.current = true;
@@ -310,6 +350,9 @@ const ManageAuthorsPage: React.FC<ManageAuthorsPageProps> = () => {
 
 	return (
 		<>
+			<Head>
+				<title>Manage Authors | LibMS</title>
+			</Head>
 			<Box
 				display="flex"
 				justifyContent="center"
@@ -329,10 +372,58 @@ const ManageAuthorsPage: React.FC<ManageAuthorsPageProps> = () => {
             sm:rounded-2xl
           "
 				>
-					<Stack
+					<Flex className="flex flex-col">
+						<Text
+							fontSize={"2xl"}
+							fontWeight={"bold"}
+							className="text-gray-700"
+						>
+							Authors
+						</Text>
+						<ManageBreadcrumb />
+					</Flex>
+
+					<form
+						onSubmit={(event) => !fetchingData && handleSearch(event)}
+						className="flex flex-row gap-x-2 items-center"
+					>
+						<Flex
+							direction={"column"}
+							flex={1}
+						>
+							<SearchBar
+								placeholder={"Search Author..."}
+								onSearch={handleSearchChange}
+							/>
+						</Flex>
+						<Button
+							type="submit"
+							colorScheme="linkedin"
+						>
+							Search
+						</Button>
+					</form>
+
+					<Flex
 						direction="row"
 						justifyContent={"end"}
+						gap={2}
+						className="items-center"
 					>
+						<div
+							className="
+								flex-1 flex-col
+								hidden
+								data-[search=true]:flex
+							"
+							data-search={searchResultDetails.text.trim().length > 0}
+						>
+							<p className="w-full text-sm max-w-full inline text-gray-500 truncate break-words whitespace-pre-wrap">
+								<span>Showing {tableData.length.toString()} out of </span>
+								<span>{searchResultDetails.total.toString()} results for </span>
+								<span>"{searchResultDetails.text}"</span>
+							</p>
+						</div>
 						<Button
 							leftIcon={<AiOutlinePlus />}
 							colorScheme="whatsapp"
@@ -341,12 +432,12 @@ const ManageAuthorsPage: React.FC<ManageAuthorsPageProps> = () => {
 						>
 							Add Author
 						</Button>
-					</Stack>
+					</Flex>
 					<TableContainer>
 						<Table
 							className="overflow-x-scroll"
-							variant={"striped"}
-							colorScheme="gray"
+							// variant={"striped"}
+							// colorScheme="gray"
 						>
 							<Thead>
 								<Tr>
@@ -428,7 +519,7 @@ const ManageAuthorsPage: React.FC<ManageAuthorsPageProps> = () => {
 
 			{/* 
 				
-				Sign Up Modal
+				Add Author Modal
 
 			*/}
 			<Modal
@@ -576,7 +667,11 @@ const ManageAuthorsPage: React.FC<ManageAuthorsPageProps> = () => {
 										whiteSpace={"pre-wrap"}
 										isTruncated
 									>
-										{deleteForm?.name}
+										{deleteForm?.biography?.length && deleteForm
+											? deleteForm.biography.length > 256
+												? deleteForm.biography.slice(0, 256) + "..."
+												: deleteForm.biography
+											: "---"}
 									</Text>
 								</Flex>
 								<Flex

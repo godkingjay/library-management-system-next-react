@@ -1,19 +1,39 @@
 import { ObjectId } from "mongodb";
+import { Author } from "./author";
+
+export interface BookInfo {
+	book: Book;
+	author: Author;
+}
 
 export interface Book {
 	_id: ObjectId;
 	id: string;
 	title: string;
+	description?: string;
 	authorId: string;
 	categories: string[];
-	coveUrl?: string;
+	cover?: BookImage;
 	amount: number;
 	available: number;
-	borrowed: number;
+	borrows: number;
 	borrowedTimes: number;
 	ISBN?: string;
 	publicationDate?: Date | string;
 	updatedAt: Date | string;
+	createdAt: Date | string;
+}
+
+export interface BookImage {
+	bookId: string;
+	height: number;
+	width: number;
+	filePath: string;
+	fileName: string;
+	fileType: string;
+	fileUrl: string;
+	fileExtension?: string;
+	fileSize: number;
 	createdAt: Date | string;
 }
 
@@ -26,7 +46,7 @@ export interface BookCategory {
 	createdAt: Date | string;
 }
 
-export interface BorrowedBook {
+export interface BookBorrow {
 	_id: ObjectId;
 	id: string;
 	userId: string;

@@ -19,6 +19,10 @@ h6 {
 }
 
 @layer components {
+	html {
+		@apply bg-gray-100;
+	}
+
 	.limit-width {
 		max-width: 1536px;
 	}

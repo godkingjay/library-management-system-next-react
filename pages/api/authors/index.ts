@@ -1,6 +1,7 @@
 import authDb from "@/server/mongo/authDb";
 import authorDb from "@/server/mongo/authorDb";
 import { UserAuth } from "@/utils/models/auth";
+import { CollationOptions } from "mongodb";
 import { NextApiRequest, NextApiResponse } from "next";
 
 export interface APIEndpointAuthorsParameters {
@@ -22,11 +23,14 @@ export default async function handler(
 
 		const {
 			apiKey,
-			name = undefined,
+			name: rawName = undefined,
 			fromName = undefined,
 			page = 1,
 			limit = 10,
 		}: APIEndpointAuthorsParameters = req.body || req.query;
+
+		const name: APIEndpointAuthorsParameters["name"] =
+			typeof rawName === "string" ? rawName.trim() : undefined;
 
 		if (!apiKey) {
 			return res.status(400).json({
@@ -77,8 +81,12 @@ export default async function handler(
 		switch (req.method) {
 			case "GET": {
 				let query: any = {};
+				let countQuery: any = {};
 
 				if (name) {
+					countQuery.name = {
+						$regex: new RegExp(name, "i"),
+					};
 					query.name = {
 						$regex: new RegExp(name, "i"),
 					};
@@ -107,6 +115,11 @@ export default async function handler(
 
 				const skip = (pageNumber - 1) * itemsPerPage;
 
+				const collationOptions: CollationOptions = {
+					locale: "en",
+					numericOrdering: true,
+				};
+
 				const authorsData = await authorsCollection
 					.find({
 						...query,
@@ -114,6 +127,7 @@ export default async function handler(
 					.sort({
 						name: 1,
 					})
+					.collation(collationOptions)
 					.skip(skip)
 					.limit(
 						typeof limit === "number"
@@ -124,13 +138,16 @@ export default async function handler(
 					)
 					.toArray();
 
-				const totalCount = await authorsCollection.countDocuments();
+				const totalCount = await authorsCollection.countDocuments({
+					...countQuery,
+				});
 
 				return res.status(200).json({
 					statusCode: 200,
 					authors: authorsData,
 					page: page,
 					totalPages: Math.ceil(totalCount / itemsPerPage),
+					totalCount,
 				});
 
 				break;
