@@ -29,8 +29,8 @@ import { MdContentCopy, MdOutlineDeleteOutline } from "react-icons/md";
 type BookItemProps = {
 	index: number;
 	bookInfo: BookInfo;
-	onEdit?: (book: Book) => void;
-	onDelete?: (book: Book) => void;
+	onEdit?: (bookInfo: BookInfo) => void;
+	onDelete?: (bookInfo: BookInfo) => void;
 };
 
 const BookItem: React.FC<BookItemProps> = ({
@@ -226,7 +226,7 @@ const BookItem: React.FC<BookItemProps> = ({
 							variant="solid"
 							size={"sm"}
 							padding={1}
-							onClick={() => onEdit && onEdit(bookInfo.book)}
+							onClick={() => onEdit && onEdit(bookInfo)}
 						>
 							<Icon as={FiEdit} />
 						</Button>
@@ -239,7 +239,7 @@ const BookItem: React.FC<BookItemProps> = ({
 							variant="solid"
 							size={"sm"}
 							padding={1}
-							onClick={() => onDelete && onDelete(bookInfo.book)}
+							onClick={() => onDelete && onDelete(bookInfo)}
 						>
 							<Icon as={MdOutlineDeleteOutline} />
 						</Button>

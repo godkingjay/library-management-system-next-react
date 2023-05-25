@@ -15,6 +15,9 @@ import {
 	GridItem,
 	Icon,
 	Input,
+	List,
+	ListIcon,
+	ListItem,
 	Modal,
 	ModalBody,
 	ModalCloseButton,
@@ -47,6 +50,9 @@ import BookItem from "@/components/Table/Book/BookItem";
 import { APIEndpointBookParameters } from "../api/books/book";
 import { ISBNRegex } from "@/utils/regex";
 import { validImageTypes } from "@/utils/types/file";
+import { Author } from "@/utils/models/author";
+import { APIEndpointAuthorsParameters } from "../api/authors";
+import { BiSearch } from "react-icons/bi";
 
 type ManageBooksPageProps = {};
 
@@ -72,6 +78,29 @@ const ManageBooksPage: React.FC<ManageBooksPageProps> = () => {
 		text: "",
 		total: 0,
 	});
+
+	const [bookFormSearchAuthor, setBookFormSearchAuthor] = useState("");
+	const [bookFormSearchAuthorResult, setBookFormSearchAuthorResult] = useState<{
+		text: string;
+		total: number;
+		authors: Author[];
+	}>({
+		text: "",
+		total: 0,
+		authors: [],
+	});
+
+	const [editBookFormSearchAuthor, setEditBookFormSearchAuthor] = useState("");
+	const [editBookFormSearchAuthorResult, setEditBookFormSearchAuthorResult] =
+		useState<{
+			text: string;
+			total: number;
+			authors: Author[];
+		}>({
+			text: "",
+			total: 0,
+			authors: [],
+		});
 
 	const [booksModalOpen, setBooksModalOpen] = useState<BooksModalTypes>("");
 
@@ -107,37 +136,67 @@ const ManageBooksPage: React.FC<ManageBooksPageProps> = () => {
 
 	const [deleteBookForm, setDeleteBookForm] = useState<Book | null>(null);
 
-	const [editBookForm, setEditBookForm] = useState<Pick<
-		Book,
-		| "id"
-		| "authorId"
-		| "title"
-		| "description"
-		| "ISBN"
-		| "amount"
-		| "available"
-		| "borrows"
-		| "borrowedTimes"
-		| "publicationDate"
-		| "categories"
-		| "cover"
-	> | null>(null);
+	const [editBookForm, setEditBookForm] = useState<
+		Pick<
+			Book,
+			| "id"
+			| "authorId"
+			| "title"
+			| "description"
+			| "ISBN"
+			| "amount"
+			| "available"
+			| "borrows"
+			| "borrowedTimes"
+			| "publicationDate"
+			| "categories"
+			| "cover"
+		>
+	>({
+		id: "",
+		authorId: "",
+		title: "",
+		description: "",
+		ISBN: "",
+		available: 0,
+		amount: 0,
+		borrows: 0,
+		borrowedTimes: 0,
+		publicationDate: "",
+		categories: [],
+		cover: undefined,
+	});
 
-	const [editUpdateBookForm, setEditUpdateBookForm] = useState<Pick<
-		Book,
-		| "id"
-		| "authorId"
-		| "title"
-		| "description"
-		| "ISBN"
-		| "amount"
-		| "available"
-		| "borrows"
-		| "borrowedTimes"
-		| "publicationDate"
-		| "categories"
-		| "cover"
-	> | null>(null);
+	const [editUpdateBookForm, setEditUpdateBookForm] = useState<
+		Pick<
+			Book,
+			| "id"
+			| "authorId"
+			| "title"
+			| "description"
+			| "ISBN"
+			| "amount"
+			| "available"
+			| "borrows"
+			| "borrowedTimes"
+			| "publicationDate"
+			| "categories"
+			| "cover"
+		>
+	>({
+		id: "",
+		authorId: "",
+		title: "",
+		description: "",
+		ISBN: "",
+		available: 0,
+		amount: 0,
+		borrows: 0,
+		borrowedTimes: 0,
+		publicationDate: "",
+		categories: [],
+		cover: undefined,
+	});
 
 	const booksMounted = useRef(false);
 
@@ -148,41 +207,42 @@ const ManageBooksPage: React.FC<ManageBooksPageProps> = () => {
 		setBooksModalOpen(type);
 	};
 
-	const handleEditBookModalOpen = (book: Book) => {
+	const handleEditBookModalOpen = (bookInfo: BookInfo) => {
 		handleBooksModalOpen("edit");
 		setEditBookForm({
-			id: book.id,
-			authorId: book.authorId,
-			title: book.title,
-			description: book.description,
-			ISBN: book.ISBN,
-			amount: book.amount,
-			available: book.available,
-			borrows: book.borrows,
-			borrowedTimes: book.borrowedTimes,
-			publicationDate: book.publicationDate,
-			categories: book.categories,
-			cover: book.cover,
+			id: bookInfo.book.id,
+			authorId: bookInfo.book.authorId,
+			title: bookInfo.book.title,
+			description: bookInfo.book.description,
+			ISBN: bookInfo.book.ISBN,
+			amount: bookInfo.book.amount,
+			available: bookInfo.book.available,
+			borrows: bookInfo.book.borrows,
+			borrowedTimes: bookInfo.book.borrowedTimes,
+			publicationDate: bookInfo.book.publicationDate,
+			categories: bookInfo.book.categories,
+			cover: bookInfo.book.cover,
 		});
 		setEditUpdateBookForm({
-			id: book.id,
-			authorId: book.authorId,
-			title: book.title,
-			description: book.description,
-			ISBN: book.ISBN,
-			amount: book.amount,
-			available: book.available,
-			borrows: book.borrows,
-			borrowedTimes: book.borrowedTimes,
-			publicationDate: book.publicationDate,
-			categories: book.categories,
-			cover: book.cover,
+			id: bookInfo.book.id,
+			authorId: bookInfo.book.authorId,
+			title: bookInfo.book.title,
+			description: bookInfo.book.description,
+			ISBN: bookInfo.book.ISBN,
+			amount: bookInfo.book.amount,
+			available: bookInfo.book.available,
+			borrows: bookInfo.book.borrows,
+			borrowedTimes: bookInfo.book.borrowedTimes,
+			publicationDate: bookInfo.book.publicationDate,
+			categories: bookInfo.book.categories,
+			cover: bookInfo.book.cover,
 		});
+		setEditBookFormSearchAuthor(bookInfo.author.name);
 	};
 
-	const handleDeleteBookModalOpen = (book: Book) => {
+	const handleDeleteBookModalOpen = (bookInfo: BookInfo) => {
 		handleBooksModalOpen("delete");
-		setDeleteBookForm(book);
+		setDeleteBookForm(bookInfo.book);
 	};
 
 	const handleCreateBook = async (event: React.FormEvent<HTMLFormElement>) => {
@@ -272,6 +332,64 @@ const ManageBooksPage: React.FC<ManageBooksPageProps> = () => {
 		}
 	};
 
+	const fetchAuthors = async (page: number, searchAuthorText: string) => {
+		try {
+			const {
+				authors,
+				totalPages,
+				totalCount,
+			}: {
+				authors: Author[];
+				totalPages: number;
+				totalCount: number;
+			} = await axios
+				.get(apiConfig.apiEndpoint + "/authors/", {
+					params: {
+						apiKey: usersStateValue.currentUser?.auth?.keys[0].key,
+						name: searchAuthorText ? searchAuthorText : undefined,
+						page: page,
+						limit: itemsPerPage,
+					} as APIEndpointAuthorsParameters,
+				})
+				.then((response) => response.data)
+				.catch((error) => {
+					throw new Error(
+						`=>API: Fetch Authors Failed:\n${error.response.data.error.message}`
+					);
+				});
+
+			switch (booksModalOpen) {
+				case "add": {
+					setBookFormSearchAuthorResult((prev) => ({
+						...prev,
+						text: searchAuthorText,
+						total: totalCount,
+						authors: authors,
+					}));
+
+					break;
+				}
+
+				case "edit": {
+					setEditBookFormSearchAuthorResult((prev) => ({
+						...prev,
+						text: searchAuthorText,
+						total: totalCount,
+						authors: authors,
+					}));
+
+					break;
+				}
+
+				default: {
+					break;
+				}
+			}
+		} catch (error: any) {
+			console.error(`=>API: Fetch Authors Failed:\n${error}`);
+		}
+	};
+
 	const handleSearch = async (event: React.FormEvent<HTMLFormElement>) => {
 		event.preventDefault();
 
@@ -337,6 +455,64 @@ const ManageBooksPage: React.FC<ManageBooksPageProps> = () => {
 		}
 	};
 
+	const handleSearchAuthorFormChange = async (
+		event: React.ChangeEvent<HTMLInputElement>
+	) => {
+		if (!submitting && !fetchingData && !updating && !deleting) {
+			switch (booksModalOpen) {
+				case "add": {
+					setBookFormSearchAuthor(event.target.value);
+					await fetchAuthors(1, event.target.value);
+
+					break;
+				}
+
+				case "edit": {
+					setEditBookFormSearchAuthor(event.target.value);
+					await fetchAuthors(1, event.target.value);
+
+					break;
+				}
+
+				default: {
+					break;
+				}
+			}
+		}
+	};
+
+	const handleSearchAuthorFormSelect = (author: Author) => {
+		if (!submitting && !fetchingData && !updating && !deleting) {
+			switch (booksModalOpen) {
+				case "add": {
+					setBookForm((prev) => ({
+						...prev,
+						authorId: author.id,
+					}));
+
+					setBookFormSearchAuthor(author.name);
+
+					break;
+				}
+
+				case "edit": {
+					setEditUpdateBookForm((prev) => ({
+						...prev,
+						authorId: author.id,
+					}));
+
+					setEditBookFormSearchAuthor(author.name);
+
+					break;
+				}
+
+				default: {
+					break;
+				}
+			}
+		}
+	};
+
 	useEffect(() => {
 		if (
 			!booksMounted.current &&
@@ -349,8 +525,6 @@ const ManageBooksPage: React.FC<ManageBooksPageProps> = () => {
 			fetchBooks(cPage);
 		}
 	}, [loadingUser]);
-
-	console.log(bookForm);
 
 	return (
 		<>
@@ -563,11 +737,11 @@ const ManageBooksPage: React.FC<ManageBooksPageProps> = () => {
 								<div className="flex p-4 border-2 border-gray-200 border-dashed rounded-lg items-center justify-center flex-col">
 									<div
 										className="
-										aspect-[3/4] max-2-[128px] border border-gray-200 p-4 flex flex-col items-center justify-center overflow-hidden rounded-xl relative
-										group
-										hover:border-blue-500
-										focus-within:border-blue-500
-									"
+											aspect-[3/4] max-2-[128px] border border-gray-200 p-4 flex flex-col items-center justify-center overflow-hidden rounded-xl relative
+											group
+											hover:border-blue-500
+											focus-within:border-blue-500
+										"
 									>
 										{bookForm.image && (
 											<>
@@ -635,6 +809,72 @@ const ManageBooksPage: React.FC<ManageBooksPageProps> = () => {
 											!submitting && handleBookFormChange(event)
 										}
 									/>
+								</FormControl>
+								<FormControl
+									className="group"
+									isRequired
+								>
+									<FormLabel>Author</FormLabel>
+									<Input
+										placeholder="Search..."
+										value={bookFormSearchAuthor}
+										onChange={(event) =>
+											!submitting && handleSearchAuthorFormChange(event)
+										}
+										autoFocus
+									/>
+									<>
+										<List
+											maxH="200px"
+											overflowY="auto"
+											boxShadow="md"
+											rounded={"md"}
+										>
+											{bookFormSearchAuthorResult.authors.length > 0 ? (
+												<>
+													{bookFormSearchAuthorResult.authors.map((result) => (
+														<>
+															<ListItem
+																key={result.id}
+																display={"flex"}
+																alignItems={"center"}
+																title={result.name}
+																px={4}
+																py={2}
+																cursor="pointer"
+																className="hover:bg-blue-100 hover:text-blue-500"
+																onClick={() =>
+																	handleSearchAuthorFormSelect(result)
+																}
+															>
+																<Text className="flex-1 truncate">
+																	{result.name}
+																</Text>
+																<ListIcon
+																	as={BiSearch}
+																	color="gray.500"
+																/>
+															</ListItem>
+														</>
+													))}
+												</>
+											) : (
+												<>
+													<ListItem
+														display={"flex"}
+														alignItems={"center"}
+														title="No authors found"
+														px={4}
+														py={2}
+													>
+														<Text className="flex-1 text-center font-semibold text-gray-500 truncate">
+															No authors found
+														</Text>
+													</ListItem>
+												</>
+											)}
+										</List>
+									</>
 								</FormControl>
 								<FormControl isRequired>
 									<FormLabel>ISBN</FormLabel>
