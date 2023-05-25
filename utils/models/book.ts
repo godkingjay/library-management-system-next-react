@@ -10,7 +10,7 @@ export interface Book {
 	cover?: BookImage;
 	amount: number;
 	available: number;
-	borrowed: number;
+	borrows: number;
 	borrowedTimes: number;
 	ISBN?: string;
 	publicationDate?: Date | string;

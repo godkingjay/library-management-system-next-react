@@ -34,12 +34,13 @@ const ManageBooksPage: React.FC<ManageBooksPageProps> = () => {
 	const [bookForm, setBookForm] = useState<
 		Pick<
 			Book,
+			| "authorId"
 			| "title"
 			| "description"
-			| "amount"
 			| "ISBN"
+			| "amount"
 			| "available"
-			| "authorId"
+			| "borrows"
 			| "borrowedTimes"
 			| "publicationDate"
 			| "categories"
@@ -47,17 +48,36 @@ const ManageBooksPage: React.FC<ManageBooksPageProps> = () => {
 			cover: ImageOrVideoType | null;
 		}
 	>({
+		authorId: "",
 		title: "",
 		description: "",
-		amount: 0,
 		ISBN: "",
 		available: 0,
-		authorId: "",
+		amount: 0,
+		borrows: 0,
 		borrowedTimes: 0,
 		publicationDate: "",
 		categories: [],
 		cover: null,
 	});
+
+	const [deleteBookForm, setDeleteBookForm] = useState<Book | null>(null);
+
+	const [editBookForm, setEditBookForm] = useState<Pick<
+		Book,
+		| "id"
+		| "authorId"
+		| "title"
+		| "description"
+		| "ISBN"
+		| "amount"
+		| "available"
+		| "borrows"
+		| "borrowedTimes"
+		| "publicationDate"
+		| "categories"
+		| "cover"
+	> | null>(null);
 
 	const booksMounted = useRef(false);
 

@@ -25,7 +25,7 @@ export interface APIEndpointBookParameters {
 	categories?: string[];
 	amount?: number;
 	available?: number;
-	borrowed?: number;
+	borrows?: number;
 	borrowedTimes?: number;
 	ISBN?: string;
 	publicationDate?: Date | string;
@@ -55,7 +55,7 @@ export default async function handler(
 			categories: rawCategories = [],
 			amount = 0,
 			available = 0,
-			borrowed = 0,
+			borrows = 0,
 			borrowedTimes = 0,
 			ISBN = "",
 			publicationDate: rawPublicationDate = undefined,
@@ -237,7 +237,7 @@ export default async function handler(
 					categories,
 					amount,
 					available,
-					borrowed,
+					borrows,
 					borrowedTimes,
 					ISBN,
 					publicationDate,
@@ -389,8 +389,8 @@ export default async function handler(
 					updatedBook.available = available;
 				}
 
-				if (borrowed) {
-					updatedBook.borrowed = borrowed;
+				if (borrows) {
+					updatedBook.borrows = borrows;
 				}
 
 				if (borrowedTimes) {
