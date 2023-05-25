@@ -29,6 +29,7 @@ const ManageBreadcrumb: React.FC<ManageBreadcrumbProps> = () => {
 							isCurrentPage={index === paths.length - 1}
 							data-current={index === paths.length - 1}
 							className="
+                data-[current='true']:font-semibold
                 data-[current='true']:text-gray-700
                 data-[current='false']:hover:text-blue-500
                 data-[current='false']:hover:underline
