@@ -392,7 +392,10 @@ const ManageAuthorsPage: React.FC<ManageAuthorsPageProps> = () => {
 							direction={"column"}
 							flex={1}
 						>
-							<SearchBar onSearch={handleSearchChange} />
+							<SearchBar
+								placeholder={"Search Author..."}
+								onSearch={handleSearchChange}
+							/>
 						</Flex>
 						<Button
 							type="submit"

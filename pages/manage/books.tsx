@@ -11,6 +11,7 @@ import Head from "next/head";
 import React, { useEffect, useRef, useState } from "react";
 import { AiOutlinePlus } from "react-icons/ai";
 import { APIEndpointBooksParameters } from "../api/books";
+import Pagination from "@/components/Table/Pagination";
 
 type ManageBooksPageProps = {};
 
@@ -190,6 +191,11 @@ const ManageBooksPage: React.FC<ManageBooksPageProps> = () => {
 		}
 	};
 
+	const handlePageChange = async (page: number) => {
+		setCPage(page);
+		await fetchBooks(page);
+	};
+
 	const searchTextChangeHandler = (book: string) => {
 		setSearchText(book);
 	};
@@ -240,7 +246,10 @@ const ManageBooksPage: React.FC<ManageBooksPageProps> = () => {
 						<ManageBreadcrumb />
 					</Flex>
 					<Flex className="flex flex-col gap-y-4 shadow-page-box-1 bg-white rounded-lg p-4">
-						<SearchBar onSearch={searchTextChangeHandler} />
+						<SearchBar
+							placeholder="Search Book..."
+							onSearch={searchTextChangeHandler}
+						/>
 						<Flex
 							direction="row"
 							justifyContent={"end"}
@@ -254,13 +263,22 @@ const ManageBooksPage: React.FC<ManageBooksPageProps> = () => {
 								Add Book
 							</Button>
 						</Flex>
-					</Flex>
 
-					{/**
-					 *
-					 * Books
-					 *
-					 */}
+						{/**
+						 *
+						 * Books
+						 *
+						 */}
+						<Flex className="flex-col gap-y-2">
+							<div className="w-full flex flex-col items-center">
+								<Pagination
+									currentPage={cPage}
+									totalPages={tPages > 1 ? tPages : 1}
+									onPageChange={handlePageChange}
+								/>
+							</div>
+						</Flex>
+					</Flex>
 				</Box>
 			</Box>
 		</>

@@ -9,10 +9,14 @@ import {
 import { BiSearchAlt } from "react-icons/bi";
 
 interface SearchBarProps {
+	placeholder?: string;
 	onSearch: (query: string) => void;
 }
 
-const SearchBar: React.FC<SearchBarProps> = ({ onSearch }) => {
+const SearchBar: React.FC<SearchBarProps> = ({
+	placeholder = "Search...",
+	onSearch,
+}) => {
 	const handleSearch = (event: React.ChangeEvent<HTMLInputElement>) => {
 		const query = event.target.value;
 		onSearch(query);
@@ -29,10 +33,9 @@ const SearchBar: React.FC<SearchBarProps> = ({ onSearch }) => {
 				</InputLeftElement>
 				<Input
 					type="text"
-					placeholder="Search Book..."
+					placeholder={placeholder}
 					onChange={handleSearch}
 				/>
-				{/* Add a button or submit functionality if needed */}
 			</InputGroup>
 		</Box>
 	);
