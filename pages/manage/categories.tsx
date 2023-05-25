@@ -1,11 +1,13 @@
 import ManageBreadcrumb from "@/components/Breadcrumb/ManageBreadcrumb";
 import { Box, Flex, Text } from "@chakra-ui/react";
 import Head from "next/head";
-import React from "react";
+import React, { useState } from "react";
 
 type ManageCategoriesPageProps = {};
 
 const ManageCategoriesPage: React.FC<ManageCategoriesPageProps> = () => {
+	const [searchText, setSearchText] = useState("");
+
 	return (
 		<>
 			<Head>
@@ -35,6 +37,7 @@ const ManageCategoriesPage: React.FC<ManageCategoriesPageProps> = () => {
 						</Text>
 						<div className="h-[1px] w-full bg-gray-300 mb-2"></div>
 						<ManageBreadcrumb />
+						<Flex className="flex-col gap-y-4"></Flex>
 					</Flex>
 				</Box>
 			</Box>
