@@ -6,6 +6,7 @@ import { UserAuth } from "@/utils/models/auth";
 import { Author } from "@/utils/models/author";
 import { SiteUser } from "@/utils/models/user";
 import { NextApiRequest, NextApiResponse } from "next";
+import bookDb from "@/server/mongo/bookDb";
 
 export interface APIEndpointAuthorParameters {
 	apiKey: string;
@@ -25,6 +26,8 @@ export default async function handler(
 		const { usersCollection } = await userDb();
 
 		const { authorsCollection } = await authorDb();
+
+		const { booksCollection } = await bookDb();
 
 		const {
 			apiKey,
@@ -195,8 +198,6 @@ export default async function handler(
 
 				const existingAuthor = (await authorsCollection.findOne({
 					name,
-					biography,
-					birthdate,
 				})) as unknown as Author;
 
 				if (existingAuthor) {
@@ -225,6 +226,10 @@ export default async function handler(
 					updatedAuthor.birthdate = birthdate;
 				}
 
+				const oldAuthorData = (await authorsCollection.findOne({
+					id: authorId,
+				})) as unknown as Author;
+
 				const updatedAuthorData = await authorsCollection.findOneAndUpdate(
 					{
 						id: authorId,
@@ -236,6 +241,19 @@ export default async function handler(
 						returnDocument: "after",
 					}
 				);
+
+				if (name) {
+					await booksCollection.updateMany(
+						{
+							author: oldAuthorData.name,
+						},
+						{
+							$set: {
+								author: name,
+							},
+						}
+					);
+				}
 
 				return res.status(200).json({
 					statusCode: 200,
