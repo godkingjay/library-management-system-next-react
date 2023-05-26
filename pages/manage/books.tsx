@@ -6,6 +6,12 @@ import useUser from "@/hooks/useUser";
 import { Book, BookInfo } from "@/utils/models/book";
 import { apiConfig } from "@/utils/site";
 import {
+	AlertDialog,
+	AlertDialogBody,
+	AlertDialogContent,
+	AlertDialogFooter,
+	AlertDialogHeader,
+	AlertDialogOverlay,
 	Box,
 	Button,
 	Flex,
@@ -199,6 +205,7 @@ const ManageBooksPage: React.FC<ManageBooksPageProps> = () => {
 	});
 
 	const booksMounted = useRef(false);
+	const deleteRef = useRef(null);
 
 	const bookFormUploadImageRef = useRef<HTMLInputElement>(null);
 	const bookUpdateFormUploadImageRef = useRef<HTMLInputElement>(null);
@@ -333,7 +340,7 @@ const ManageBooksPage: React.FC<ManageBooksPageProps> = () => {
 
 				if (statusCode === 201) {
 					await fetchBooks(cPage);
-					// handleBooksModalOpen("");
+					handleBooksModalOpen("");
 				}
 
 				setSubmitting(false);
@@ -444,6 +451,43 @@ const ManageBooksPage: React.FC<ManageBooksPageProps> = () => {
 			}
 		} catch (error: any) {
 			console.error(`=>API: Fetch Authors Failed:\n${error}`);
+		}
+	};
+
+	const deleteBook = async (book: Book) => {
+		try {
+			if (!deleting) {
+				setDeleting(true);
+
+				// const formData: Pick<APIEndpointBookParameters, "apiKey" | "bookId"> = {
+				// 	apiKey: usersStateValue.currentUser?.auth?.keys[0].key || "",
+				// 	bookId: book.id,
+				// };
+
+				const { statusCode } = await axios
+					.delete(apiConfig.apiEndpoint + "/books/book", {
+						params: {
+							apiKey: usersStateValue.currentUser?.auth?.keys[0].key,
+							bookId: book.id,
+						} as APIEndpointBookParameters,
+					})
+					.then(async (response) => response.data)
+					.catch((error) => {
+						throw new Error(
+							`=>API: Delete Book Failed:\n${error?.response?.data?.error?.message}`
+						);
+					});
+
+				if (statusCode === 200) {
+					await fetchBooks(cPage);
+					handleBooksModalOpen("");
+				}
+
+				setDeleting(false);
+			}
+		} catch (error: any) {
+			console.error(`=>API: Delete Book Failed:\n${error}`);
+			setDeleting(false);
 		}
 	};
 
@@ -731,12 +775,8 @@ const ManageBooksPage: React.FC<ManageBooksPageProps> = () => {
 																			index + 1 + itemsPerPage * (cPage - 1)
 																		}
 																		bookInfo={item}
-																		onEdit={() =>
-																			!updating && handleEditBookModalOpen
-																		}
-																		onDelete={() =>
-																			!updating && handleDeleteBookModalOpen
-																		}
+																		onEdit={handleEditBookModalOpen}
+																		onDelete={handleDeleteBookModalOpen}
 																	/>
 																</React.Fragment>
 															</>
@@ -1029,6 +1069,62 @@ const ManageBooksPage: React.FC<ManageBooksPageProps> = () => {
 					<ModalFooter></ModalFooter>
 				</ModalContent>
 			</Modal>
+
+			{/**
+			 *
+			 * Delete Modal
+			 *
+			 */}
+			<AlertDialog
+				isOpen={booksModalOpen === "delete"}
+				leastDestructiveRef={deleteRef}
+				onClose={() => handleBooksModalOpen("")}
+				isCentered
+			>
+				<AlertDialogOverlay>
+					<AlertDialogContent>
+						<AlertDialogHeader
+							fontSize="lg"
+							fontWeight="bold"
+						>
+							Delete Book
+						</AlertDialogHeader>
+
+						<AlertDialogBody>
+							<Text>Are you sure you want to delete this book?</Text>
+						</AlertDialogBody>
+
+						<AlertDialogFooter className="flex flex-row gap-x-2">
+							<Button
+								disabled={deleting}
+								isDisabled={deleting}
+								_disabled={{
+									filter: "grayscale(100%)",
+								}}
+								ref={deleteRef}
+								onClick={() => handleBooksModalOpen("")}
+							>
+								Cancel
+							</Button>
+							<Button
+								colorScheme="red"
+								disabled={deleting}
+								isDisabled={deleting}
+								_disabled={{
+									filter: "grayscale(100%)",
+								}}
+								isLoading={deleting}
+								loadingText="Deleting"
+								onClick={() =>
+									deleteBookForm && !deleting && deleteBook(deleteBookForm)
+								}
+							>
+								Delete
+							</Button>
+						</AlertDialogFooter>
+					</AlertDialogContent>
+				</AlertDialogOverlay>
+			</AlertDialog>
 		</>
 	);
 };

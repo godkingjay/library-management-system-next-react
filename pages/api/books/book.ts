@@ -76,7 +76,9 @@ export default async function handler(
 			ISBN = "",
 			publicationDate: rawPublicationDate = undefined,
 			image: rawImage = undefined,
-		}: APIEndpointBookParameters = (fields as any) || req.body || req.query;
+		}: APIEndpointBookParameters = req.method === "POST"
+			? (fields as any)
+			: req.body || req.query;
 
 		const imageFile = (files["imageFile"] as FormidableFile) || undefined;
 
