@@ -107,7 +107,7 @@ const ManageBooksPage: React.FC<ManageBooksPageProps> = () => {
 	const [bookForm, setBookForm] = useState<
 		Pick<
 			Book,
-			| "authorId"
+			| "author"
 			| "title"
 			| "description"
 			| "ISBN"
@@ -121,7 +121,7 @@ const ManageBooksPage: React.FC<ManageBooksPageProps> = () => {
 			image: ImageOrVideoType | null;
 		}
 	>({
-		authorId: "",
+		author: "",
 		title: "",
 		description: "",
 		ISBN: "",
@@ -140,7 +140,7 @@ const ManageBooksPage: React.FC<ManageBooksPageProps> = () => {
 		Pick<
 			Book,
 			| "id"
-			| "authorId"
+			| "author"
 			| "title"
 			| "description"
 			| "ISBN"
@@ -154,7 +154,7 @@ const ManageBooksPage: React.FC<ManageBooksPageProps> = () => {
 		>
 	>({
 		id: "",
-		authorId: "",
+		author: "",
 		title: "",
 		description: "",
 		ISBN: "",
@@ -171,7 +171,7 @@ const ManageBooksPage: React.FC<ManageBooksPageProps> = () => {
 		Pick<
 			Book,
 			| "id"
-			| "authorId"
+			| "author"
 			| "title"
 			| "description"
 			| "ISBN"
@@ -185,7 +185,7 @@ const ManageBooksPage: React.FC<ManageBooksPageProps> = () => {
 		>
 	>({
 		id: "",
-		authorId: "",
+		author: "",
 		title: "",
 		description: "",
 		ISBN: "",
@@ -211,7 +211,7 @@ const ManageBooksPage: React.FC<ManageBooksPageProps> = () => {
 		handleBooksModalOpen("edit");
 		setEditBookForm({
 			id: bookInfo.book.id,
-			authorId: bookInfo.book.authorId,
+			author: bookInfo.author.name,
 			title: bookInfo.book.title,
 			description: bookInfo.book.description,
 			ISBN: bookInfo.book.ISBN,
@@ -225,7 +225,7 @@ const ManageBooksPage: React.FC<ManageBooksPageProps> = () => {
 		});
 		setEditUpdateBookForm({
 			id: bookInfo.book.id,
-			authorId: bookInfo.book.authorId,
+			author: bookInfo.author.name,
 			title: bookInfo.book.title,
 			description: bookInfo.book.description,
 			ISBN: bookInfo.book.ISBN,
@@ -245,6 +245,20 @@ const ManageBooksPage: React.FC<ManageBooksPageProps> = () => {
 		setDeleteBookForm(bookInfo.book);
 	};
 
+	// const createFormData = (data: APIEndpointBookParameters): FormData => {
+	// 	const formData = new FormData();
+
+	// 	Object.entries(data).forEach(([key, value]) => {
+	// 		if (value instanceof File) {
+	// 			formData.append(key, value);
+	// 		} else {
+	// 			formData.append(key, String(value));
+	// 		}
+	// 	});
+
+	// 	return formData;
+	// };
+
 	const handleCreateBook = async (event: React.FormEvent<HTMLFormElement>) => {
 		event.preventDefault();
 
@@ -252,31 +266,74 @@ const ManageBooksPage: React.FC<ManageBooksPageProps> = () => {
 			if (!submitting) {
 				setSubmitting(true);
 
+				const getImageFile = async () => {
+					if (bookForm.image) {
+						const response = await fetch(bookForm.image.url);
+						const blob = await response.blob();
+
+						return new File([blob], bookForm.image.name, {
+							type: bookForm.image.type,
+						});
+					} else {
+						return null;
+					}
+				};
+
+				const imageFile: File | null = await getImageFile();
+
+				const formData: APIEndpointBookParameters = {
+					apiKey: usersStateValue.currentUser?.auth?.keys[0].key || "",
+					author: bookForm.author,
+					title: bookForm.title,
+					description: bookForm.description,
+					ISBN: bookForm.ISBN,
+					amount: bookForm.amount,
+					available: bookForm.available,
+					borrows: bookForm.borrows,
+					borrowedTimes: bookForm.borrowedTimes,
+					publicationDate: bookForm.publicationDate,
+					categories: bookForm.categories,
+				};
+
+				if (imageFile && bookForm.image) {
+					formData.image = JSON.stringify(bookForm.image) as any;
+					formData.imageFile = imageFile;
+				}
+
 				const { statusCode } = await axios
-					.post(apiConfig.apiEndpoint + "/books/book", {
-						apiKey: usersStateValue.currentUser?.auth?.keys[0].key,
-						authorId: bookForm.authorId,
-						title: bookForm.title,
-						description: bookForm.description,
-						ISBN: bookForm.ISBN,
-						amount: bookForm.amount,
-						available: bookForm.available,
-						borrows: bookForm.borrows,
-						borrowedTimes: bookForm.borrowedTimes,
-						publicationDate: bookForm.publicationDate,
-						categories: bookForm.categories,
-						image: bookForm.image,
-					} as APIEndpointBookParameters)
-					.then((response) => response.data)
+					.post(
+						apiConfig.apiEndpoint + "/books/book",
+						// {
+						// 	apiKey: usersStateValue.currentUser?.auth?.keys[0].key || "",
+						// 	author: bookForm.author,
+						// 	title: bookForm.title,
+						// 	description: bookForm.description,
+						// 	ISBN: bookForm.ISBN,
+						// 	amount: bookForm.amount,
+						// 	available: bookForm.available,
+						// 	borrows: bookForm.borrows,
+						// 	borrowedTimes: bookForm.borrowedTimes,
+						// 	publicationDate: bookForm.publicationDate,
+						// 	categories: bookForm.categories,
+						// 	image: bookForm.image,
+						// } as APIEndpointBookParameters
+						formData,
+						{
+							headers: {
+								"Content-Type": "multipart/form-data",
+							},
+						}
+					)
+					.then(async (response) => response.data)
 					.catch((error) => {
 						throw new Error(
-							`=>API: Create Book Failed:\n${error.response.data.error.message}`
+							`=>API: Create Book Failed:\n${error?.response?.data?.error?.message}`
 						);
 					});
 
 				if (statusCode === 201) {
 					await fetchBooks(cPage);
-					handleBooksModalOpen("");
+					// handleBooksModalOpen("");
 				}
 
 				setSubmitting(false);
@@ -487,7 +544,7 @@ const ManageBooksPage: React.FC<ManageBooksPageProps> = () => {
 				case "add": {
 					setBookForm((prev) => ({
 						...prev,
-						authorId: author.id,
+						author: author.name,
 					}));
 
 					setBookFormSearchAuthor(author.name);
@@ -498,7 +555,7 @@ const ManageBooksPage: React.FC<ManageBooksPageProps> = () => {
 				case "edit": {
 					setEditUpdateBookForm((prev) => ({
 						...prev,
-						authorId: author.id,
+						author: author.name,
 					}));
 
 					setEditBookFormSearchAuthor(author.name);
@@ -947,7 +1004,7 @@ const ManageBooksPage: React.FC<ManageBooksPageProps> = () => {
 									disabled={
 										submitting ||
 										!bookForm.title ||
-										!bookForm.authorId ||
+										!bookForm.author ||
 										!bookForm.ISBN ||
 										!bookForm.publicationDate
 									}
@@ -956,7 +1013,7 @@ const ManageBooksPage: React.FC<ManageBooksPageProps> = () => {
 									isDisabled={
 										submitting ||
 										!bookForm.title ||
-										!bookForm.authorId ||
+										!bookForm.author ||
 										!bookForm.ISBN ||
 										!bookForm.publicationDate
 									}

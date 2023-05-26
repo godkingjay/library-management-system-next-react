@@ -1,5 +1,4 @@
-import { Author } from "@/utils/models/author";
-import { Book, BookInfo } from "@/utils/models/book";
+import { BookInfo } from "@/utils/models/book";
 import {
 	Tr,
 	Td,
