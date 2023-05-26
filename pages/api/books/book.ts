@@ -12,13 +12,26 @@ import { NextApiRequest, NextApiResponse } from "next";
 import fs from "fs";
 import path from "path";
 import { ImageOrVideoType } from "@/hooks/useInput";
-import { pipeline, Readable } from "stream";
+import { File as FormidableFile } from "formidable";
+import { parseFormAsync } from "@/middleware/formidableMiddleware";
 
-const uploadDir = path.join(process.cwd(), "assets", "images", "books");
+const uploadDir = path.join(
+	process.cwd(),
+	"public",
+	"assets",
+	"images",
+	"books"
+);
+
+export const config = {
+	api: {
+		bodyParser: false,
+	},
+};
 
 export interface APIEndpointBookParameters {
 	apiKey: string;
-	authorId?: string;
+	author?: string;
 	bookId?: string;
 	title?: string;
 	description?: string;
@@ -30,6 +43,7 @@ export interface APIEndpointBookParameters {
 	ISBN?: string;
 	publicationDate?: Date | string;
 	image?: ImageOrVideoType;
+	imageFile?: File | FormidableFile | null;
 }
 
 export default async function handler(
@@ -46,9 +60,11 @@ export default async function handler(
 		const { booksCollection, bookCategoriesCollection, bookLoansCollection } =
 			await bookDb();
 
+		const { fields, files } = await parseFormAsync(req);
+
 		const {
 			apiKey,
-			authorId = undefined,
+			author = undefined,
 			bookId = undefined,
 			title = undefined,
 			description = "",
@@ -59,8 +75,10 @@ export default async function handler(
 			borrowedTimes = 0,
 			ISBN = "",
 			publicationDate: rawPublicationDate = undefined,
-			image = undefined,
-		}: APIEndpointBookParameters = req.body || req.query;
+			image: rawImage = undefined,
+		}: APIEndpointBookParameters = (fields as any) || req.body || req.query;
+
+		const imageFile = (files["imageFile"] as FormidableFile) || undefined;
 
 		const categories: APIEndpointBookParameters["categories"] =
 			typeof rawCategories === "string"
@@ -71,6 +89,28 @@ export default async function handler(
 			typeof rawPublicationDate === "string"
 				? new Date(rawPublicationDate)
 				: rawPublicationDate;
+
+		const image: APIEndpointBookParameters["image"] =
+			typeof rawImage === "string" ? JSON.parse(rawImage) : rawImage;
+
+		// return res.status(400).json({
+		// 	data: {
+		// 		apiKey,
+		// 		author,
+		// 		bookId,
+		// 		title,
+		// 		description,
+		// 		categories,
+		// 		amount,
+		// 		available,
+		// 		borrows,
+		// 		borrowedTimes,
+		// 		ISBN,
+		// 		rawPublicationDate,
+		// 		image,
+		// 		imageFile,
+		// 	},
+		// });
 
 		if (!apiKey) {
 			return res.status(400).json({
@@ -156,8 +196,7 @@ export default async function handler(
 				}
 
 				const existingBook = (await booksCollection.findOne({
-					title,
-					authorId,
+					ISBN,
 				})) as unknown as Book;
 
 				if (existingBook) {
@@ -171,13 +210,13 @@ export default async function handler(
 				}
 
 				if (!categories?.length) {
-					return res.status(400).json({
-						statusCode: 400,
-						error: {
-							type: "Missing Book Categories",
-							message: "Please enter book categories",
-						},
-					});
+					// return res.status(400).json({
+					// 	statusCode: 400,
+					// 	error: {
+					// 		type: "Missing Book Categories",
+					// 		message: "Please enter book categories",
+					// 	},
+					// });
 				}
 
 				if (!ISBN) {
@@ -213,7 +252,7 @@ export default async function handler(
 				}
 
 				const authorData = (await authorsCollection.findOne({
-					id: authorId,
+					name: author,
 				})) as unknown as Author;
 
 				if (!authorData) {
@@ -233,8 +272,8 @@ export default async function handler(
 					id: bookId.toHexString(),
 					title,
 					description,
-					authorId: authorData.id,
-					categories,
+					author: authorData.name,
+					categories: categories || [],
 					amount,
 					available,
 					borrows,
@@ -245,47 +284,28 @@ export default async function handler(
 					createdAt: requestedAt,
 				};
 
-				if (image) {
-					const response = await fetch(image.url);
+				if (image && imageFile) {
+					const fileName = `${bookId.toHexString()}-${Date.now().toString()}-${
+						image.name
+					}`;
+					const filePath = path.join(uploadDir, fileName);
+					const fileUrl = `/assets/images/books/${fileName}`;
 
-					if (response.ok) {
-						const blob = await response.blob();
+					fs.mkdirSync(uploadDir, { recursive: true });
+					fs.renameSync(imageFile.filepath, filePath);
 
-						const fileName = `${newBook.id}-${image.name}`;
-
-						const filePath = path.join(uploadDir, fileName);
-
-						const writeStream = fs.createWriteStream(filePath);
-
-						await new Promise<void>((resolve, reject) => {
-							pipeline(
-								Readable.from(blob.stream() as unknown as NodeJS.ReadableStream),
-								writeStream,
-								(error: any | null) => {
-									if (error) {
-										reject(error);
-									} else {
-										resolve();
-									}
-								}
-							);
-						});
-
-						const fileUrl = `/assets/images/books/${fileName}`;
-
-						newBook.cover = {
-							bookId: newBook.id,
-							fileName,
-							filePath,
-							fileUrl,
-							height: image.height,
-							width: image.width,
-							fileType: image.type,
-							fileSize: image.size,
-							fileExtension: image.name.split(".").pop() || "",
-							createdAt: requestedAt.toISOString(),
-						};
-					}
+					newBook.cover = {
+						bookId: bookId.toHexString(),
+						fileName,
+						filePath,
+						fileUrl,
+						height: image.height,
+						width: image.width,
+						fileType: image.type,
+						fileSize: image.size,
+						fileExtension: image.name.split(".").pop() || "",
+						createdAt: new Date().toISOString(),
+					};
 				}
 
 				const bookData = await booksCollection.findOneAndUpdate(
@@ -336,8 +356,8 @@ export default async function handler(
 					);
 				});
 
-				return res.status(200).json({
-					statusCode: 200,
+				return res.status(201).json({
+					statusCode: 201,
 					book: bookData.value,
 				});
 
@@ -427,56 +447,60 @@ export default async function handler(
 					updatedBook.publicationDate = publicationDate;
 				}
 
-				if (image) {
-					const response = await fetch(image.url);
+				// if (image) {
+				// 	const response = await fetch(image.url);
 
-					if (response.ok) {
-						const blob = await response.blob();
+				// 	if (response.ok) {
+				// 		const blob = await response.blob();
 
-						const fileName = `${existingBook.id}-${image.name}`;
+				// 		const fileName = `${existingBook.id}-${Date.now()}-${image.name}`;
 
-						const filePath = path.join(uploadDir, fileName);
+				// 		const filePath = path.join(uploadDir, fileName);
 
-						const writeStream = fs.createWriteStream(filePath);
+				// 		const options: formidable.Options = {};
 
-						await new Promise<void>((resolve, reject) => {
-							pipeline(
-								Readable.from(blob.stream() as unknown as NodeJS.ReadableStream),
-								writeStream,
-								(error: any | null) => {
-									if (error) {
-										reject(error);
-									} else {
-										resolve();
-									}
-								}
-							);
-						});
+				// 		options.uploadDir = uploadDir;
+				// 		options.keepExtensions = true;
+				// 		options.filename = (name, ext, path, form) => {
+				// 			return fileName;
+				// 		};
 
-						const fileUrl = `/assets/images/books/${fileName}`;
+				// 		const form = formidable(options);
 
-						updatedBook.cover = {
-							bookId: existingBook.id,
-							fileName,
-							filePath,
-							fileUrl,
-							height: image.height,
-							width: image.width,
-							fileType: image.type,
-							fileSize: image.size,
-							fileExtension: image.name.split(".").pop() || "",
-							createdAt: requestedAt.toISOString(),
-						};
-					}
+				// 		await new Promise((resolve, reject) => {
+				// 			form.parse(req, (err, fields, files) => {
+				// 				if (err) {
+				// 					return reject(err);
+				// 				}
 
-					if (existingBook.cover) {
-						const existingCoverPath = existingBook.cover.filePath;
+				// 				resolve({ fields, files });
+				// 			});
+				// 		});
 
-						if (fs.existsSync(existingCoverPath)) {
-							fs.unlinkSync(existingCoverPath);
-						}
-					}
-				}
+				// 		const fileUrl = `/assets/images/books/${fileName}`;
+
+				// 		updatedBook.cover = {
+				// 			bookId: existingBook.id,
+				// 			fileName,
+				// 			filePath,
+				// 			fileUrl,
+				// 			height: image.height,
+				// 			width: image.width,
+				// 			fileType: image.type,
+				// 			fileSize: image.size,
+				// 			fileExtension: image.name.split(".").pop() || "",
+				// 			createdAt: requestedAt.toISOString(),
+				// 		};
+				// 	}
+
+				// 	if (existingBook.cover) {
+				// 		const existingCoverPath = existingBook.cover.filePath;
+
+				// 		if (fs.existsSync(existingCoverPath)) {
+				// 			fs.unlinkSync(existingCoverPath);
+				// 		}
+				// 	}
+				// }
 
 				if (categories?.length) {
 					updatedBook.categories = categories;

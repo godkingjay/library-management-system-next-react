@@ -157,7 +157,7 @@ export default async function handler(
 						const bookDoc = book as unknown as Book;
 
 						const authorData = (await authorsCollection.findOne({
-							id: bookDoc.authorId,
+							name: bookDoc.author,
 						})) as unknown as Author;
 
 						return {

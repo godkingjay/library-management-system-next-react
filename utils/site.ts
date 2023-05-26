@@ -1,3 +1,7 @@
+export const siteConfig = {
+	baseUrl: process.env.NEXT_PUBLIC_BASE_URL as string,
+};
+
 export const apiConfig = {
 	apiEndpoint: process.env.NEXT_PUBLIC_API_ENDPOINT as string,
 };
