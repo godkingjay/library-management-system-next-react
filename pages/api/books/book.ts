@@ -204,19 +204,19 @@ export default async function handler(
 						statusCode: 400,
 						error: {
 							type: "Book Already Exists",
-							message: "A book with the same title already exists",
+							message: "A book with the same ISBN already exists",
 						},
 					});
 				}
 
 				if (!categories?.length) {
-					// return res.status(400).json({
-					// 	statusCode: 400,
-					// 	error: {
-					// 		type: "Missing Book Categories",
-					// 		message: "Please enter book categories",
-					// 	},
-					// });
+					return res.status(400).json({
+						statusCode: 400,
+						error: {
+							type: "Missing Book Categories",
+							message: "Please enter book categories",
+						},
+					});
 				}
 
 				if (!ISBN) {
@@ -447,60 +447,37 @@ export default async function handler(
 					updatedBook.publicationDate = publicationDate;
 				}
 
-				// if (image) {
-				// 	const response = await fetch(image.url);
+				if (image) {
+					const fileName = `${existingBook.id}-${Date.now().toString()}-${
+						image.name
+					}`;
+					const filePath = path.join(uploadDir, fileName);
+					const fileUrl = `/assets/images/books/${fileName}`;
 
-				// 	if (response.ok) {
-				// 		const blob = await response.blob();
+					fs.mkdirSync(uploadDir, { recursive: true });
+					fs.renameSync(imageFile.filepath, filePath);
 
-				// 		const fileName = `${existingBook.id}-${Date.now()}-${image.name}`;
+					updatedBook.cover = {
+						bookId: existingBook.id,
+						fileName,
+						filePath,
+						fileUrl,
+						height: image.height,
+						width: image.width,
+						fileType: image.type,
+						fileSize: image.size,
+						fileExtension: image.name.split(".").pop() || "",
+						createdAt: new Date().toISOString(),
+					};
 
-				// 		const filePath = path.join(uploadDir, fileName);
+					if (existingBook.cover) {
+						const existingCoverPath = existingBook.cover.filePath;
 
-				// 		const options: formidable.Options = {};
-
-				// 		options.uploadDir = uploadDir;
-				// 		options.keepExtensions = true;
-				// 		options.filename = (name, ext, path, form) => {
-				// 			return fileName;
-				// 		};
-
-				// 		const form = formidable(options);
-
-				// 		await new Promise((resolve, reject) => {
-				// 			form.parse(req, (err, fields, files) => {
-				// 				if (err) {
-				// 					return reject(err);
-				// 				}
-
-				// 				resolve({ fields, files });
-				// 			});
-				// 		});
-
-				// 		const fileUrl = `/assets/images/books/${fileName}`;
-
-				// 		updatedBook.cover = {
-				// 			bookId: existingBook.id,
-				// 			fileName,
-				// 			filePath,
-				// 			fileUrl,
-				// 			height: image.height,
-				// 			width: image.width,
-				// 			fileType: image.type,
-				// 			fileSize: image.size,
-				// 			fileExtension: image.name.split(".").pop() || "",
-				// 			createdAt: requestedAt.toISOString(),
-				// 		};
-				// 	}
-
-				// 	if (existingBook.cover) {
-				// 		const existingCoverPath = existingBook.cover.filePath;
-
-				// 		if (fs.existsSync(existingCoverPath)) {
-				// 			fs.unlinkSync(existingCoverPath);
-				// 		}
-				// 	}
-				// }
+						if (fs.existsSync(existingCoverPath)) {
+							fs.unlinkSync(existingCoverPath);
+						}
+					}
+				}
 
 				if (categories?.length) {
 					updatedBook.categories = categories;
