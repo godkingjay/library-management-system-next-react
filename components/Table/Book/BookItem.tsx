@@ -100,16 +100,20 @@ const BookItem: React.FC<BookItemProps> = ({
 				<Td className="text-sm">
 					{bookInfo.book.cover ? (
 						<>
-							<Box className="flex flex-col aspect-[2/3] min-w-[64px] bg-gray-200 items justify-center relative rounded-lg overflow-hidden">
+							<a
+								href={bookInfo.book.cover.fileUrl}
+								target="_blank"
+								className="flex flex-col aspect-[2/3] min-w-[64px] bg-gray-200 items justify-center relative rounded-lg overflow-hidden shadow-md group"
+							>
 								<Image
 									src={bookInfo.book.cover.fileUrl}
 									alt={bookInfo.book.title}
 									sizes="256px"
 									fill
 									loading="lazy"
-									className="w-full bg-center object-cover"
+									className="w-full bg-center object-cover duration-200 cursor-pointer group-hover:scale-125"
 								/>
-							</Box>
+							</a>
 						</>
 					) : (
 						<>
