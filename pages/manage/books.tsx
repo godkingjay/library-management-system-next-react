@@ -1122,7 +1122,8 @@ const ManageBooksPage: React.FC<ManageBooksPageProps> = () => {
 										!bookForm.title ||
 										!bookForm.author ||
 										!bookForm.ISBN ||
-										!bookForm.publicationDate
+										!bookForm.publicationDate ||
+										!bookForm.categories.length
 									}
 									loadingText="Adding Book"
 									isLoading={submitting}
@@ -1131,7 +1132,8 @@ const ManageBooksPage: React.FC<ManageBooksPageProps> = () => {
 										!bookForm.title ||
 										!bookForm.author ||
 										!bookForm.ISBN ||
-										!bookForm.publicationDate
+										!bookForm.publicationDate ||
+										!bookForm.categories.length
 									}
 									_disabled={{
 										filter: "grayscale(100%)",
