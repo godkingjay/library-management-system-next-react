@@ -59,6 +59,7 @@ import { validImageTypes } from "@/utils/types/file";
 import { Author } from "@/utils/models/author";
 import { APIEndpointAuthorsParameters } from "../api/authors";
 import { BiSearch } from "react-icons/bi";
+import BookCategoryTags from "@/components/Book/BookCategoryTags";
 
 type ManageBooksPageProps = {};
 
@@ -110,6 +111,19 @@ const ManageBooksPage: React.FC<ManageBooksPageProps> = () => {
 
 	const [booksModalOpen, setBooksModalOpen] = useState<BooksModalTypes>("");
 
+	const defaultBookForm = {
+		author: "",
+		title: "",
+		description: "",
+		ISBN: "",
+		available: 0,
+		amount: 0,
+		borrows: 0,
+		borrowedTimes: 0,
+		publicationDate: "",
+		categories: [],
+		image: null,
+	};
 	const [bookForm, setBookForm] = useState<
 		Pick<
 			Book,
@@ -299,7 +313,7 @@ const ManageBooksPage: React.FC<ManageBooksPageProps> = () => {
 					borrows: bookForm.borrows,
 					borrowedTimes: bookForm.borrowedTimes,
 					publicationDate: bookForm.publicationDate,
-					categories: bookForm.categories,
+					categories: JSON.stringify(bookForm.categories) as any,
 				};
 
 				if (imageFile && bookForm.image) {
@@ -341,6 +355,7 @@ const ManageBooksPage: React.FC<ManageBooksPageProps> = () => {
 				if (statusCode === 201) {
 					await fetchBooks(cPage);
 					handleBooksModalOpen("");
+					setBookForm(defaultBookForm);
 				}
 
 				setSubmitting(false);
@@ -603,6 +618,62 @@ const ManageBooksPage: React.FC<ManageBooksPageProps> = () => {
 					}));
 
 					setEditBookFormSearchAuthor(author.name);
+
+					break;
+				}
+
+				default: {
+					break;
+				}
+			}
+		}
+	};
+
+	const handleAddBookFormCategories = (category: string) => {
+		if (!submitting && !fetchingData && !updating && !deleting) {
+			switch (booksModalOpen) {
+				case "add": {
+					setBookForm((prev) => ({
+						...prev,
+						categories: [...prev.categories, category],
+					}));
+
+					break;
+				}
+
+				case "edit": {
+					setEditUpdateBookForm((prev) => ({
+						...prev,
+						categories: [...prev.categories, category],
+					}));
+
+					break;
+				}
+
+				default: {
+					break;
+				}
+			}
+		}
+	};
+
+	const handleRemoveBookFormCategories = (category: string) => {
+		if (!submitting && !fetchingData && !updating && !deleting) {
+			switch (booksModalOpen) {
+				case "add": {
+					setBookForm((prev) => ({
+						...prev,
+						categories: prev.categories.filter((c) => c !== category),
+					}));
+
+					break;
+				}
+
+				case "edit": {
+					setEditUpdateBookForm((prev) => ({
+						...prev,
+						categories: prev.categories.filter((c) => c !== category),
+					}));
 
 					break;
 				}
@@ -1005,6 +1076,11 @@ const ManageBooksPage: React.FC<ManageBooksPageProps> = () => {
 										/>
 									</NumberInput>
 								</FormControl>
+								<BookCategoryTags
+									categories={bookForm.categories}
+									onAddCategory={handleAddBookFormCategories}
+									onRemoveCategory={handleRemoveBookFormCategories}
+								/>
 								<FormControl>
 									<FormLabel>Description</FormLabel>
 									<Textarea
