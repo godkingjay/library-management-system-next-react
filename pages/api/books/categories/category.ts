@@ -189,6 +189,93 @@ export default async function handler(
 				break;
 			}
 
+			case "PUT": {
+				if (!userData.roles.includes("admin")) {
+					return res.status(401).json({
+						statusCode: 401,
+						error: {
+							type: "Unauthorized",
+							message: "You are not authorized to update categories",
+						},
+					});
+				}
+
+				if (!categoryId) {
+					return res.status(400).json({
+						statusCode: 400,
+						error: {
+							type: "Missing Category ID",
+							message: "Please enter category ID",
+						},
+					});
+				}
+
+				const existingCategory = (await bookCategoriesCollection.findOne({
+					id: categoryId,
+				})) as unknown as BookCategory;
+
+				if (!existingCategory) {
+					return res.status(404).json({
+						statusCode: 404,
+						error: {
+							type: "Category Not Found",
+							message: "Category not found",
+						},
+					});
+				}
+
+				let updatedCategory: Partial<BookCategory> = {};
+
+				if (name) {
+					updatedCategory.name = name;
+				}
+
+				if (description) {
+					updatedCategory.description = description;
+				}
+
+				updatedCategory.updatedAt = requestedAt.toISOString();
+
+				const updatedCategoryData =
+					await bookCategoriesCollection.findOneAndUpdate(
+						{
+							id: categoryId,
+						},
+						{
+							$set: updatedCategory,
+						},
+						{
+							returnDocument: "after",
+						}
+					);
+
+				if (updatedCategoryData.ok && updatedCategory.name) {
+					await booksCollection.updateMany(
+						{
+							categories: {
+								$in: [existingCategory.name],
+							},
+						},
+						{
+							$set: {
+								"categories.$": updatedCategory.name,
+							},
+						}
+					);
+				}
+
+				return res.status(200).json({
+					statusCode: 200,
+					success: {
+						type: "Category Updated",
+						message: "Category updated successfully",
+					},
+					category: updatedCategoryData.value,
+				});
+
+				break;
+			}
+
 			case "DELETE": {
 				if (!userData.roles.includes("admin")) {
 					return res.status(401).json({
