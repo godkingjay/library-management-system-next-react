@@ -1,10 +1,14 @@
 import { BookInfo } from "@/utils/models/book";
-import { Box, Icon, Text } from "@chakra-ui/react";
+import { Box, Icon, Text, Tooltip } from "@chakra-ui/react";
 import moment from "moment";
 import Image from "next/image";
 import React from "react";
 import { MdBrokenImage } from "react-icons/md";
 import CategoryTagsList from "../Category/CategoryTagsList";
+import { IoBookSharp } from "react-icons/io5";
+import { FaHandHolding } from "react-icons/fa";
+import { ImBooks } from "react-icons/im";
+import { SiBookstack } from "react-icons/si";
 
 type BookCardProps = {
 	bookData: BookInfo;
@@ -16,34 +20,110 @@ const BookCard: React.FC<BookCardProps> = ({ bookData }) => {
 			<Box className="shadow-page-box-1 p-4 border border-transparent rounded-lg bg-white group relative cursor-pointer hover:border-blue-500">
 				<Box className="flex flex-row gap-x-4">
 					<>
-						<Box className="flex flex-col aspect-[2/3] min-w-[96px] max-w-[96px] bg-gray-200 items justify-center relative rounded-lg overflow-hidden shadow-md group/image">
-							{bookData.book.cover ? (
-								<>
-									<Image
-										src={bookData.book.cover.fileUrl}
-										alt={bookData.book.title}
-										sizes="256px"
-										fill
-										loading="lazy"
-										className="w-full bg-center object-cover duration-200 group-hover/image:scale-110"
-									/>
-								</>
-							) : (
-								<>
-									<Box className="flex flex-col h-full w-full p-4 bg-gradient-to-t from-slate-700 to-slate-600 items-center justify-center text-white">
-										<Box className="h-12 w-12">
-											<Icon
-												as={MdBrokenImage}
-												height={"full"}
-												width={"full"}
-											/>
+						<Box className="flex flex-col gap-y-2 max-w-[96px]">
+							<Box className="flex flex-col aspect-[2/3] min-w-[96px] max-w-[96px] bg-gray-200 items justify-center relative rounded-lg overflow-hidden shadow-md group/image">
+								{bookData.book.cover ? (
+									<>
+										<Image
+											src={bookData.book.cover.fileUrl}
+											alt={bookData.book.title}
+											sizes="256px"
+											fill
+											loading="lazy"
+											className="w-full bg-center object-cover duration-200 group-hover/image:scale-110"
+										/>
+									</>
+								) : (
+									<>
+										<Box className="flex flex-col h-full w-full p-4 bg-gradient-to-t from-slate-700 to-slate-600 items-center justify-center text-white">
+											<Box className="h-12 w-12">
+												<Icon
+													as={MdBrokenImage}
+													height={"full"}
+													width={"full"}
+												/>
+											</Box>
+											<Text className="text-center text-xs font-mono">
+												No cover image available
+											</Text>
 										</Box>
-										<Text className="text-center text-xs font-mono">
-											No cover image available
+									</>
+								)}
+							</Box>
+							<Box className="flex flex-row items-center justify-center gap-1 flex-wrap">
+								<Tooltip
+									placement="top"
+									label={`Total Amount: ${bookData.book.amount}`}
+									fontSize={"2xs"}
+									hasArrow
+								>
+									<Box className="flex-1 border border-gray-300 bg-gray-100 rounded-full px-1.5 py-0.5 flex flex-row items-center text-2xs gap-x-1">
+										<Icon
+											as={IoBookSharp}
+											height={3}
+											width={3}
+											className="!text-gray-500"
+										/>
+										<Text className="flex-1 text-gray-700">
+											{bookData.book.amount}
 										</Text>
 									</Box>
-								</>
-							)}
+								</Tooltip>
+								<Tooltip
+									placement="top"
+									label={`Available: ${bookData.book.available}`}
+									fontSize={"2xs"}
+									hasArrow
+								>
+									<Box className="flex-1 border border-purple-300 bg-purple-100 rounded-full px-1.5 py-0.5 flex flex-row items-center text-2xs gap-x-1">
+										<Icon
+											as={ImBooks}
+											height={3}
+											width={3}
+											className="!text-purple-500"
+										/>
+										<Text className="text-purple-700">
+											{bookData.book.available}
+										</Text>
+									</Box>
+								</Tooltip>
+								<Tooltip
+									placement="top"
+									label={`Borrowed: ${bookData.book.borrows}`}
+									fontSize={"2xs"}
+									hasArrow
+								>
+									<Box className="flex-1 border border-cyan-300 bg-cyan-100 rounded-full px-1.5 py-0.5 flex flex-row items-center text-2xs gap-x-1">
+										<Icon
+											as={FaHandHolding}
+											height={3}
+											width={3}
+											className="!text-cyan-500"
+										/>
+										<Text className="text-cyan-700">
+											{bookData.book.borrows}
+										</Text>
+									</Box>
+								</Tooltip>
+								<Tooltip
+									placement="top"
+									label={`Borrowed Times: ${bookData.book.borrowedTimes}`}
+									fontSize={"2xs"}
+									hasArrow
+								>
+									<Box className="flex-1 border border-green-300 bg-green-100 rounded-full px-1.5 py-0.5 flex flex-row items-center text-2xs gap-x-1">
+										<Icon
+											as={SiBookstack}
+											height={3}
+											width={3}
+											className="!text-green-500"
+										/>
+										<Text className="text-green-700">
+											{bookData.book.borrowedTimes}
+										</Text>
+									</Box>
+								</Tooltip>
+							</Box>
 						</Box>
 						<Box
 							className="flex-1 flex flex-col"
