@@ -8,6 +8,8 @@ import {
 	VStack,
 	FormLabel,
 	FormControl,
+	Flex,
+	Text,
 } from "@chakra-ui/react";
 
 interface BookCategoryTagsProps {
@@ -70,7 +72,11 @@ const BookCategoryTags: React.FC<BookCategoryTagsProps> = ({
 				</FormControl>
 				{categories.length > 0 && (
 					<>
-						<HStack spacing={2}>
+						<Flex
+							gap={2}
+							flexWrap={"wrap"}
+							width={"100%"}
+						>
 							{categories.map((category) => (
 								<Tag
 									key={category}
@@ -78,14 +84,24 @@ const BookCategoryTags: React.FC<BookCategoryTagsProps> = ({
 									variant="solid"
 									colorScheme="green"
 									size={"lg"}
+									isTruncated
+									display={"flex"}
+									gap={1}
+									title={category}
 								>
-									<TagLabel>{category}</TagLabel>
+									<TagLabel
+										display={"inline"}
+										flex={1}
+										isTruncated
+									>
+										{category}
+									</TagLabel>
 									<TagCloseButton
 										onClick={() => handleRemoveCategory(category)}
 									/>
 								</Tag>
 							))}
-						</HStack>
+						</Flex>
 					</>
 				)}
 			</VStack>
