@@ -76,7 +76,7 @@ export default async function handler(
 			ISBN = "",
 			publicationDate: rawPublicationDate = undefined,
 			image: rawImage = undefined,
-		}: APIEndpointBookParameters = req.method === "POST"
+		}: APIEndpointBookParameters = req.method === "POST" || req.method === "PUT"
 			? (fields as any)
 			: req.body || req.query;
 
@@ -376,6 +376,25 @@ export default async function handler(
 						},
 					});
 				}
+
+				// return res.status(400).json({
+				// 	data: {
+				// 		apiKey,
+				// 		author,
+				// 		bookId,
+				// 		title,
+				// 		description,
+				// 		categories,
+				// 		amount,
+				// 		available,
+				// 		borrows,
+				// 		borrowedTimes,
+				// 		ISBN,
+				// 		rawPublicationDate,
+				// 		image,
+				// 		imageFile,
+				// 	},
+				// });
 
 				const existingBook = (await booksCollection.findOne({
 					id: bookId,

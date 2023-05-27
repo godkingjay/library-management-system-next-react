@@ -156,6 +156,21 @@ const ManageBooksPage: React.FC<ManageBooksPageProps> = () => {
 
 	const [deleteBookForm, setDeleteBookForm] = useState<Book | null>(null);
 
+	const defaultEditBookForm = {
+		id: "",
+		author: "",
+		title: "",
+		description: "",
+		ISBN: "",
+		available: 0,
+		amount: 0,
+		borrows: 0,
+		borrowedTimes: 0,
+		publicationDate: "",
+		categories: [],
+		cover: undefined,
+		image: null,
+	};
 	const [editBookForm, setEditBookForm] = useState<
 		Pick<
 			Book,
@@ -171,21 +186,10 @@ const ManageBooksPage: React.FC<ManageBooksPageProps> = () => {
 			| "publicationDate"
 			| "categories"
 			| "cover"
-		>
-	>({
-		id: "",
-		author: "",
-		title: "",
-		description: "",
-		ISBN: "",
-		available: 0,
-		amount: 0,
-		borrows: 0,
-		borrowedTimes: 0,
-		publicationDate: "",
-		categories: [],
-		cover: undefined,
-	});
+		> & {
+			image: ImageOrVideoType | null;
+		}
+	>(defaultEditBookForm);
 
 	const [editUpdateBookForm, setEditUpdateBookForm] = useState<
 		Pick<
@@ -202,21 +206,10 @@ const ManageBooksPage: React.FC<ManageBooksPageProps> = () => {
 			| "publicationDate"
 			| "categories"
 			| "cover"
-		>
-	>({
-		id: "",
-		author: "",
-		title: "",
-		description: "",
-		ISBN: "",
-		available: 0,
-		amount: 0,
-		borrows: 0,
-		borrowedTimes: 0,
-		publicationDate: "",
-		categories: [],
-		cover: undefined,
-	});
+		> & {
+			image: ImageOrVideoType | null;
+		}
+	>(defaultEditBookForm);
 
 	const booksMounted = useRef(false);
 	const deleteRef = useRef(null);
@@ -243,6 +236,7 @@ const ManageBooksPage: React.FC<ManageBooksPageProps> = () => {
 			publicationDate: bookInfo.book.publicationDate,
 			categories: bookInfo.book.categories,
 			cover: bookInfo.book.cover,
+			image: null,
 		});
 		setEditUpdateBookForm({
 			id: bookInfo.book.id,
@@ -257,6 +251,7 @@ const ManageBooksPage: React.FC<ManageBooksPageProps> = () => {
 			publicationDate: bookInfo.book.publicationDate,
 			categories: bookInfo.book.categories,
 			cover: bookInfo.book.cover,
+			image: null,
 		});
 		setEditBookFormSearchAuthor(bookInfo.author.name);
 	};
@@ -280,25 +275,52 @@ const ManageBooksPage: React.FC<ManageBooksPageProps> = () => {
 	// 	return formData;
 	// };
 
+	const getImageFile = async () => {
+		switch (booksModalOpen) {
+			case "add": {
+				if (bookForm.image) {
+					const response = await fetch(bookForm.image.url);
+					const blob = await response.blob();
+
+					return new File([blob], bookForm.image.name, {
+						type: bookForm.image.type,
+					});
+				} else {
+					return null;
+				}
+
+				break;
+			}
+
+			case "edit": {
+				if (editUpdateBookForm.image) {
+					const response = await fetch(editUpdateBookForm.image.url);
+					const blob = await response.blob();
+
+					return new File([blob], editUpdateBookForm.image.name, {
+						type: editUpdateBookForm.image.type,
+					});
+				} else {
+					return null;
+				}
+
+				break;
+			}
+
+			default: {
+				return null;
+
+				break;
+			}
+		}
+	};
+
 	const handleCreateBook = async (event: React.FormEvent<HTMLFormElement>) => {
 		event.preventDefault();
 
 		try {
 			if (!submitting) {
 				setSubmitting(true);
-
-				const getImageFile = async () => {
-					if (bookForm.image) {
-						const response = await fetch(bookForm.image.url);
-						const blob = await response.blob();
-
-						return new File([blob], bookForm.image.name, {
-							type: bookForm.image.type,
-						});
-					} else {
-						return null;
-					}
-				};
 
 				const imageFile: File | null = await getImageFile();
 
@@ -363,6 +385,62 @@ const ManageBooksPage: React.FC<ManageBooksPageProps> = () => {
 		} catch (error: any) {
 			console.error(`=>API: Create Book Failed:\n${error}`);
 			setSubmitting(false);
+		}
+	};
+
+	const handleUpdateBook = async (event: React.FormEvent<HTMLFormElement>) => {
+		event.preventDefault();
+
+		try {
+			if (!updating) {
+				setUpdating(true);
+
+				const imageFile: File | null = await getImageFile();
+
+				const formData: APIEndpointBookParameters = {
+					bookId: editUpdateBookForm.id,
+					apiKey: usersStateValue.currentUser?.auth?.keys[0].key || "",
+					author: editUpdateBookForm.author,
+					title: editUpdateBookForm.title,
+					description: editUpdateBookForm.description,
+					ISBN: editUpdateBookForm.ISBN,
+					amount: editUpdateBookForm.amount,
+					available: editUpdateBookForm.available,
+					borrows: editUpdateBookForm.borrows,
+					borrowedTimes: editUpdateBookForm.borrowedTimes,
+					publicationDate: editUpdateBookForm.publicationDate,
+					categories: JSON.stringify(editUpdateBookForm.categories) as any,
+				};
+
+				if (imageFile && editUpdateBookForm.image) {
+					formData.image = JSON.stringify(editUpdateBookForm.image) as any;
+					formData.imageFile = imageFile;
+				}
+
+				const { statusCode } = await axios
+					.put(apiConfig.apiEndpoint + "/books/book", formData, {
+						headers: {
+							"Content-Type": "multipart/form-data",
+						},
+					})
+					.then(async (response) => response.data)
+					.catch((error) => {
+						throw new Error(
+							`=>API: Update Book Failed:\n${error?.response?.data?.error?.message}`
+						);
+					});
+
+				if (statusCode === 200) {
+					await fetchBooks(cPage);
+					handleBooksModalOpen("");
+					setEditUpdateBookForm(defaultEditBookForm);
+				}
+
+				setUpdating(false);
+			}
+		} catch (error: any) {
+			console.error(`=>API: Update Book Failed:\n${error}`);
+			setUpdating(false);
 		}
 	};
 
@@ -531,16 +609,40 @@ const ManageBooksPage: React.FC<ManageBooksPageProps> = () => {
 	) => {
 		const { name, value } = event.target;
 
-		if (name === "publicationDate") {
-			setBookForm((prev) => ({
-				...prev,
-				[name]: new Date(value).toISOString(),
-			}));
-		} else {
-			setBookForm((prev) => ({
-				...prev,
-				[name]: value,
-			}));
+		switch (booksModalOpen) {
+			case "add": {
+				if (name === "publicationDate") {
+					setBookForm((prev) => ({
+						...prev,
+						[name]: new Date(value).toISOString(),
+					}));
+				} else {
+					setBookForm((prev) => ({
+						...prev,
+						[name]: value,
+					}));
+				}
+			}
+
+			case "edit": {
+				if (name === "publicationDate") {
+					setEditUpdateBookForm((prev) => ({
+						...prev,
+						[name]: new Date(value).toISOString(),
+					}));
+				} else {
+					setEditUpdateBookForm((prev) => ({
+						...prev,
+						[name]: value,
+					}));
+				}
+
+				break;
+			}
+
+			default: {
+				break;
+			}
 		}
 	};
 
@@ -554,10 +656,29 @@ const ManageBooksPage: React.FC<ManageBooksPageProps> = () => {
 				const imageData = await uploadImageOrVideo(image);
 
 				if (imageData) {
-					setBookForm((prev) => ({
-						...prev,
-						image: imageData,
-					}));
+					switch (booksModalOpen) {
+						case "add": {
+							setBookForm((prev) => ({
+								...prev,
+								image: imageData,
+							}));
+
+							break;
+						}
+
+						case "edit": {
+							setEditUpdateBookForm((prev) => ({
+								...prev,
+								image: imageData,
+							}));
+
+							break;
+						}
+
+						default: {
+							break;
+						}
+					}
 				}
 			}
 
@@ -885,7 +1006,7 @@ const ManageBooksPage: React.FC<ManageBooksPageProps> = () => {
 
 			{/* 
 				
-				Add Author Modal
+				Add Book Modal
 
 			*/}
 			<Modal
@@ -1203,6 +1324,285 @@ const ManageBooksPage: React.FC<ManageBooksPageProps> = () => {
 					</AlertDialogContent>
 				</AlertDialogOverlay>
 			</AlertDialog>
+
+			{/* 
+				
+				Edit Book Modal
+
+			*/}
+			<Modal
+				isOpen={booksModalOpen === "edit"}
+				onClose={() => handleBooksModalOpen("")}
+			>
+				<ModalOverlay />
+				<ModalContent>
+					<ModalHeader>Edit Author</ModalHeader>
+					<ModalCloseButton />
+					<ModalBody>
+						<form onSubmit={(event) => !submitting && handleUpdateBook(event)}>
+							<Flex
+								direction={"column"}
+								gap={4}
+							>
+								<div className="flex p-4 border-2 border-gray-200 border-dashed rounded-lg items-center justify-center flex-col">
+									<div
+										className="
+											aspect-[3/4] max-2-[128px] border border-gray-200 p-4 flex flex-col items-center justify-center overflow-hidden rounded-xl relative
+											group
+											hover:border-blue-500
+											focus-within:border-blue-500
+										"
+									>
+										{(editUpdateBookForm.image || editUpdateBookForm.cover) && (
+											<>
+												<Image
+													src={
+														editUpdateBookForm.image
+															? editUpdateBookForm.image.url
+															: editUpdateBookForm.cover!.fileUrl
+													}
+													alt={
+														editUpdateBookForm.image
+															? editUpdateBookForm.image.name
+															: editUpdateBookForm.cover!.fileName
+													}
+													sizes="256px"
+													fill
+													loading="lazy"
+													className="
+														bg-center bg-cover object-cover rounded-md
+														duration-200
+														group-hover:brightness-50
+														group-focus-within:brightness-50
+														group-hover:scale-125
+														group-focus-within:scale-125
+													"
+												/>
+											</>
+										)}
+										<Button
+											size={"sm"}
+											onClick={() =>
+												!submitting &&
+												bookUpdateFormUploadImageRef.current!.click()
+											}
+											rounded={"full"}
+											colorScheme={"messenger"}
+											variant={
+												editUpdateBookForm.image || editUpdateBookForm.cover
+													? "solid"
+													: "outline"
+											}
+											opacity={
+												editUpdateBookForm.image || editUpdateBookForm.cover
+													? 0
+													: 1
+											}
+											borderStyle={"dashed"}
+											zIndex={10}
+											className="group-hover:opacity-100 group-focus-within:opacity-100"
+										>
+											Upload Cover
+										</Button>
+									</div>
+									<input
+										type="file"
+										name="cover"
+										id="cover"
+										accept={validImageTypes.ext.join(",")}
+										ref={bookUpdateFormUploadImageRef}
+										disabled={submitting}
+										title="Upload Book Cover"
+										onChange={(event) =>
+											!submitting && handleBookFormUploadImage(event)
+										}
+										hidden
+									/>
+								</div>
+								<FormControl isRequired>
+									<FormLabel>Title</FormLabel>
+									<Input
+										type="text"
+										name="title"
+										placeholder="Title"
+										maxLength={256}
+										disabled={submitting}
+										isDisabled={submitting}
+										_disabled={{
+											filter: "grayscale(100%)",
+										}}
+										value={editUpdateBookForm.title}
+										onChange={(event) =>
+											!submitting && handleBookFormChange(event)
+										}
+									/>
+								</FormControl>
+								<FormControl
+									className="group"
+									isRequired
+								>
+									<FormLabel>Author</FormLabel>
+									<Input
+										placeholder="Search..."
+										value={editBookFormSearchAuthor}
+										onChange={(event) =>
+											!submitting && handleSearchAuthorFormChange(event)
+										}
+										autoFocus
+									/>
+									<>
+										<List
+											maxH="200px"
+											overflowY="auto"
+											boxShadow="md"
+											rounded={"md"}
+										>
+											{editBookFormSearchAuthorResult.authors.length > 0 ? (
+												<>
+													{editBookFormSearchAuthorResult.authors.map(
+														(result) => (
+															<>
+																<ListItem
+																	key={result.id}
+																	display={"flex"}
+																	alignItems={"center"}
+																	title={result.name}
+																	px={4}
+																	py={2}
+																	cursor="pointer"
+																	className="hover:bg-blue-100 hover:text-blue-500"
+																	onClick={() =>
+																		handleSearchAuthorFormSelect(result)
+																	}
+																>
+																	<Text className="flex-1 truncate">
+																		{result.name}
+																	</Text>
+																	<ListIcon
+																		as={BiSearch}
+																		color="gray.500"
+																	/>
+																</ListItem>
+															</>
+														)
+													)}
+												</>
+											) : (
+												<>
+													<ListItem
+														display={"flex"}
+														alignItems={"center"}
+														title="No authors found"
+														px={4}
+														py={2}
+													>
+														<Text className="flex-1 text-center font-semibold text-gray-500 truncate">
+															No authors found
+														</Text>
+													</ListItem>
+												</>
+											)}
+										</List>
+									</>
+								</FormControl>
+								<FormControl isRequired>
+									<FormLabel>ISBN</FormLabel>
+									<NumberInput
+										isDisabled={submitting}
+										_disabled={{
+											filter: "grayscale(100%)",
+										}}
+										clampValueOnBlur={false}
+										value={editUpdateBookForm.ISBN}
+									>
+										<NumberInputField
+											name="ISBN"
+											placeholder="ISBN(10-13)"
+											minLength={10}
+											maxLength={13}
+											disabled={submitting}
+											_disabled={{
+												filter: "grayscale(100%)",
+											}}
+											value={editUpdateBookForm.ISBN}
+											onChange={(value) =>
+												!submitting && handleBookFormChange(value)
+											}
+											className="
+												data-[error=true]:text-red-500
+												data-[error=true]:border-red-500
+											"
+											data-error={
+												editUpdateBookForm.ISBN &&
+												!ISBNRegex.test(editUpdateBookForm.ISBN!)
+											}
+										/>
+									</NumberInput>
+								</FormControl>
+								<BookCategoryTags
+									categories={editUpdateBookForm.categories}
+									onAddCategory={handleAddBookFormCategories}
+									onRemoveCategory={handleRemoveBookFormCategories}
+								/>
+								<FormControl>
+									<FormLabel>Description</FormLabel>
+									<Textarea
+										name="description"
+										placeholder="Description[Optional]"
+										maxLength={4000}
+										disabled={submitting}
+										isDisabled={submitting}
+										_disabled={{
+											filter: "grayscale(100%)",
+										}}
+										value={editUpdateBookForm.description}
+										onChange={(event) =>
+											!submitting && handleBookFormChange(event)
+										}
+									/>
+								</FormControl>
+								<FormControl isRequired>
+									<FormLabel>Publication Date</FormLabel>
+									<Input
+										type="date"
+										name="publicationDate"
+										disabled={submitting}
+										isDisabled={submitting}
+										_disabled={{
+											filter: "grayscale(100%)",
+										}}
+										value={
+											editUpdateBookForm.publicationDate
+												? moment(editUpdateBookForm.publicationDate).format(
+														"YYYY-MM-DD"
+												  )
+												: ""
+										}
+										onChange={(event) =>
+											!submitting && handleBookFormChange(event)
+										}
+									/>
+								</FormControl>
+								<div className="h-[1px] bg-gray-200 my-1"></div>
+								<Button
+									type="submit"
+									colorScheme="whatsapp"
+									disabled={submitting || updating}
+									loadingText="Adding Book"
+									isLoading={submitting}
+									isDisabled={submitting || updating}
+									_disabled={{
+										filter: "grayscale(100%)",
+									}}
+								>
+									Update Book
+								</Button>
+							</Flex>
+						</form>
+					</ModalBody>
+					<ModalFooter></ModalFooter>
+				</ModalContent>
+			</Modal>
 		</>
 	);
 };
