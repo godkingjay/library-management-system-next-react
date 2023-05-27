@@ -11,6 +11,17 @@ import {
 	Text,
 	Icon,
 	useToast,
+	Modal,
+	ModalOverlay,
+	FormControl,
+	FormLabel,
+	Input,
+	ModalBody,
+	ModalCloseButton,
+	ModalContent,
+	ModalFooter,
+	ModalHeader,
+	Textarea,
 } from "@chakra-ui/react";
 import Head from "next/head";
 import ManageBreadcrumb from "@/components/Breadcrumb/ManageBreadcrumb";
@@ -58,6 +69,58 @@ const ManageCategoriesPage: React.FC<ManageCategoriesPageProps> = () => {
 		"All",
 		...Array.from({ length: 26 }, (_, i) => String.fromCharCode(65 + i)),
 	];
+
+	const defaultNewCategoryForm = {
+		name: "",
+		description: "",
+	};
+	const [newCategoryForm, setNewCategoryForm] = useState<
+		Pick<BookCategory, "name" | "description">
+	>(defaultNewCategoryForm);
+
+	const defaultEditCategoryForm = {
+		id: "",
+		userId: "",
+		bookId: "",
+		name: "",
+		description: "",
+		updatedAt: "",
+		createdAt: "",
+	};
+	const [editCategoryForm, setEditCategoryForm] = useState<
+		Partial<BookCategory>
+	>(defaultEditCategoryForm);
+	const [editUpdateCategoryForm, setEditUpdateCategoryForm] = useState<
+		Partial<BookCategory>
+	>(defaultEditCategoryForm);
+
+	const defaultDeleteCategoryForm = {
+		id: "",
+		userId: "",
+		bookId: "",
+		name: "",
+		description: "",
+		updatedAt: "",
+		createdAt: "",
+	};
+	const [deleteCategoryForm, setDeleteCategoryForm] = useState<
+		Partial<BookCategory>
+	>(defaultDeleteCategoryForm);
+
+	const handleCategoriesModalOpen = (type: CategoriesModalTypes) => {
+		setCategoriesModalOpen(type);
+	};
+
+	const handleDeleteCategoryModalOpen = (category: BookCategory) => {
+		handleCategoriesModalOpen("delete");
+		setDeleteCategoryForm(category);
+	};
+
+	const handleEditCategoryModalOpen = (category: BookCategory) => {
+		handleCategoriesModalOpen("edit");
+		setEditCategoryForm(category);
+		setDeleteCategoryForm(category);
+	};
 
 	const fetchCategories = async (alphabet: string) => {
 		try {
@@ -134,6 +197,36 @@ const ManageCategoriesPage: React.FC<ManageCategoriesPageProps> = () => {
 	const handlePageChange = async (page: number) => {
 		setCPage(page);
 		await fetchCategories(categoryAlphabet);
+	};
+
+	const handleCategoriesFormChange = (
+		event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+	) => {
+		const { name, value } = event.target;
+
+		switch (categoriesModalOpen) {
+			case "add": {
+				setNewCategoryForm((prevForm) => ({
+					...prevForm,
+					[name]: value,
+				}));
+
+				break;
+			}
+
+			case "edit": {
+				setEditUpdateCategoryForm((prevForm) => ({
+					...prevForm,
+					[name]: value,
+				}));
+
+				break;
+			}
+
+			default: {
+				break;
+			}
+		}
 	};
 
 	useEffect(() => {
@@ -243,7 +336,7 @@ const ManageCategoriesPage: React.FC<ManageCategoriesPageProps> = () => {
 								leftIcon={<AiOutlinePlus />}
 								colorScheme="whatsapp"
 								variant="solid"
-								// onClick={() => handleBooksModalOpen("add")}
+								onClick={() => handleCategoriesModalOpen("add")}
 							>
 								Add Book
 							</Button>
@@ -284,7 +377,9 @@ const ManageCategoriesPage: React.FC<ManageCategoriesPageProps> = () => {
 														variant="solid"
 														size={"sm"}
 														padding={1}
-														// onClick={() => onEdit && onEdit(bookInfo)}
+														onClick={() =>
+															!updating && handleEditCategoryModalOpen(category)
+														}
 													>
 														<Icon as={FiEdit} />
 													</Button>
@@ -297,7 +392,10 @@ const ManageCategoriesPage: React.FC<ManageCategoriesPageProps> = () => {
 														variant="solid"
 														size={"sm"}
 														padding={1}
-														// onClick={() => onDelete && onDelete(bookInfo)}
+														onClick={() =>
+															!deleting &&
+															handleDeleteCategoryModalOpen(category)
+														}
 													>
 														<Icon as={MdOutlineDeleteOutline} />
 													</Button>
@@ -330,6 +428,81 @@ const ManageCategoriesPage: React.FC<ManageCategoriesPageProps> = () => {
 					</Flex>
 				</Box>
 			</Box>
+
+			{/* 
+				
+				Add Category Modal
+
+			*/}
+			<Modal
+				isOpen={categoriesModalOpen === "add"}
+				onClose={() => handleCategoriesModalOpen("")}
+			>
+				<ModalOverlay />
+				<ModalContent>
+					<ModalHeader>Add Category</ModalHeader>
+					<ModalCloseButton />
+					<ModalBody>
+						<form
+						// onSubmit={(event) => !submitting && handleCreateAuthor(event)}
+						>
+							<Flex
+								direction={"column"}
+								gap={4}
+							>
+								<FormControl isRequired>
+									<FormLabel>Name</FormLabel>
+									<Input
+										type="text"
+										name="name"
+										placeholder="Name"
+										maxLength={256}
+										disabled={submitting}
+										isDisabled={submitting}
+										_disabled={{
+											filter: "grayscale(100%)",
+										}}
+										onChange={(event) =>
+											!submitting && handleCategoriesFormChange(event)
+										}
+									/>
+								</FormControl>
+								<FormControl>
+									<FormLabel>Description</FormLabel>
+									<Textarea
+										name="description"
+										placeholder="Description[Optional]"
+										maxLength={4000}
+										disabled={submitting}
+										isDisabled={submitting}
+										_disabled={{
+											filter: "grayscale(100%)",
+										}}
+										onChange={(event) =>
+											!submitting && handleCategoriesFormChange(event)
+										}
+									/>
+								</FormControl>
+								<div className="h-[1px] bg-gray-200 my-1"></div>
+								<Button
+									type="submit"
+									colorScheme="whatsapp"
+									disabled={submitting || !newCategoryForm.name}
+									loadingText="Adding Author"
+									isLoading={submitting}
+									isDisabled={submitting || !newCategoryForm.name}
+									_disabled={{
+										filter: "grayscale(100%)",
+									}}
+								>
+									Add Category
+								</Button>
+							</Flex>
+						</form>
+					</ModalBody>
+					<ModalFooter></ModalFooter>
+				</ModalContent>
+			</Modal>
 		</>
 	);
 };
