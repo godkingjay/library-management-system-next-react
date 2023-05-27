@@ -5,11 +5,11 @@ export default async function bookDb() {
 
 	const booksCollection = await libraryDb.collection("books");
 	const bookCategoriesCollection = await libraryDb.collection("book-categories");
-	const bookLoansCollection = await libraryDb.collection("book-loans");
+	const bookBorrowsCollection = await libraryDb.collection("book-borrows");
 
 	return {
 		booksCollection,
 		bookCategoriesCollection,
-		bookLoansCollection,
+		bookBorrowsCollection,
 	};
 }

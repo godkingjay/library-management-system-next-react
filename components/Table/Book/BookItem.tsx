@@ -100,16 +100,20 @@ const BookItem: React.FC<BookItemProps> = ({
 				<Td className="text-sm">
 					{bookInfo.book.cover ? (
 						<>
-							<Box className="flex flex-col aspect-[2/3] min-w-[64px] bg-gray-200 items justify-center relative rounded-lg overflow-hidden">
+							<a
+								href={bookInfo.book.cover.fileUrl}
+								target="_blank"
+								className="flex flex-col aspect-[2/3] min-w-[64px] bg-gray-200 items justify-center relative rounded-lg overflow-hidden shadow-md group"
+							>
 								<Image
 									src={bookInfo.book.cover.fileUrl}
 									alt={bookInfo.book.title}
 									sizes="256px"
 									fill
 									loading="lazy"
-									className="w-full bg-center object-cover"
+									className="w-full bg-center object-cover duration-200 cursor-pointer group-hover:scale-125"
 								/>
-							</Box>
+							</a>
 						</>
 					) : (
 						<>
@@ -133,17 +137,37 @@ const BookItem: React.FC<BookItemProps> = ({
 					{bookInfo.book.ISBN}
 				</Td>
 				<Td className="text-sm">
-					{bookInfo.book.categories.length > 0 ? (
-						bookInfo.book.categories.map((category) => (
+					<Flex
+						direction={"row"}
+						gap={2}
+						maxWidth={"sm"}
+						flexWrap={"wrap"}
+					>
+						{bookInfo.book.categories.length > 0 ? (
+							bookInfo.book.categories.map((category) => (
+								<>
+									<Badge
+										display={"inline"}
+										colorScheme="blue"
+										title={category}
+										isTruncated
+									>
+										{category}
+									</Badge>
+								</>
+							))
+						) : (
 							<>
-								<Badge colorScheme="blue">{category}</Badge>
+								<Badge
+									display={"inline"}
+									colorScheme="red"
+									isTruncated
+								>
+									None
+								</Badge>
 							</>
-						))
-					) : (
-						<>
-							<Badge colorScheme="red">None</Badge>
-						</>
-					)}
+						)}
+					</Flex>
 				</Td>
 				<Td
 					className="text-sm"

@@ -12,9 +12,9 @@ const NavigationBar: React.FC<NavigationBarProps> = () => {
 					<div className="mr-auto">
 						<Logo />
 					</div>
-					<div className="flex-1 flex flex-row h-full items-center limit-width">
+					{/* <div className="flex-1 flex flex-row h-full items-center limit-width">
 						navigation
-					</div>
+					</div> */}
 					<div className="ml-auto">
 						<UserMenu />
 					</div>

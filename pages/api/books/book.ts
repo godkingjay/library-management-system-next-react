@@ -57,7 +57,7 @@ export default async function handler(
 
 		const { authorsCollection } = await authorDb();
 
-		const { booksCollection, bookCategoriesCollection, bookLoansCollection } =
+		const { booksCollection, bookCategoriesCollection, bookBorrowsCollection } =
 			await bookDb();
 
 		const { fields, files } = await parseFormAsync(req);
@@ -76,7 +76,9 @@ export default async function handler(
 			ISBN = "",
 			publicationDate: rawPublicationDate = undefined,
 			image: rawImage = undefined,
-		}: APIEndpointBookParameters = (fields as any) || req.body || req.query;
+		}: APIEndpointBookParameters = req.method === "POST" || req.method === "PUT"
+			? (fields as any)
+			: req.body || req.query;
 
 		const imageFile = (files["imageFile"] as FormidableFile) || undefined;
 
@@ -142,7 +144,11 @@ export default async function handler(
 			});
 		}
 
-		if (!booksCollection || !bookCategoriesCollection || !bookLoansCollection) {
+		if (
+			!booksCollection ||
+			!bookCategoriesCollection ||
+			!bookBorrowsCollection
+		) {
 			return res.status(500).json({
 				statusCode: 500,
 				error: {
@@ -374,6 +380,25 @@ export default async function handler(
 						},
 					});
 				}
+
+				// return res.status(400).json({
+				// 	data: {
+				// 		apiKey,
+				// 		author,
+				// 		bookId,
+				// 		title,
+				// 		description,
+				// 		categories,
+				// 		amount,
+				// 		available,
+				// 		borrows,
+				// 		borrowedTimes,
+				// 		ISBN,
+				// 		rawPublicationDate,
+				// 		image,
+				// 		imageFile,
+				// 	},
+				// });
 
 				const existingBook = (await booksCollection.findOne({
 					id: bookId,

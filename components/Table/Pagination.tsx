@@ -1,5 +1,5 @@
 import React from "react";
-import { Box, Button, ButtonGroup } from "@chakra-ui/react";
+import { Box, Button, ButtonGroup, Text } from "@chakra-ui/react";
 
 interface PaginationProps {
 	currentPage: number;
@@ -18,19 +18,98 @@ const Pagination: React.FC<PaginationProps> = ({
 
 	const renderPages = () => {
 		const pages = [];
-		for (let i = 1; i <= totalPages; i++) {
-			pages.push(
+
+		pages.push(
+			<>
 				<Button
-					key={i}
 					size={"sm"}
-					variant={currentPage === i ? "solid" : "outline"}
-					colorScheme={currentPage === i ? "blue" : "gray"}
-					onClick={() => handlePageChange(i)}
+					variant={currentPage === 1 ? "solid" : "outline"}
+					colorScheme={currentPage === 1 ? "blue" : "gray"}
+					onClick={() => handlePageChange(1)}
 				>
-					{i}
+					{1}
 				</Button>
+			</>
+		);
+
+		if (currentPage > 1 || currentPage < totalPages) {
+			if (currentPage - 1 > 1) {
+				if (currentPage - 2 > 1) {
+					pages.push(
+						<>
+							<Text>...</Text>
+						</>
+					);
+				}
+
+				pages.push(
+					<>
+						<Button
+							size={"sm"}
+							variant={currentPage === currentPage - 1 ? "solid" : "outline"}
+							colorScheme={currentPage === currentPage - 1 ? "blue" : "gray"}
+							onClick={() => handlePageChange(currentPage - 1)}
+						>
+							{currentPage - 1}
+						</Button>
+					</>
+				);
+			}
+
+			if (currentPage > 1 && currentPage < totalPages) {
+				pages.push(
+					<>
+						<Button
+							size={"sm"}
+							variant={"solid"}
+							colorScheme={"blue"}
+							onClick={() => handlePageChange(currentPage)}
+						>
+							{currentPage}
+						</Button>
+					</>
+				);
+			}
+
+			if (currentPage + 1 < totalPages) {
+				pages.push(
+					<>
+						<Button
+							size={"sm"}
+							variant={currentPage === currentPage + 1 ? "solid" : "outline"}
+							colorScheme={currentPage === currentPage + 1 ? "blue" : "gray"}
+							onClick={() => handlePageChange(currentPage + 1)}
+						>
+							{currentPage + 1}
+						</Button>
+					</>
+				);
+
+				if (currentPage + 2 < totalPages) {
+					pages.push(
+						<>
+							<Text>...</Text>
+						</>
+					);
+				}
+			}
+		}
+
+		if (totalPages > 1) {
+			pages.push(
+				<>
+					<Button
+						size={"sm"}
+						variant={currentPage === totalPages ? "solid" : "outline"}
+						colorScheme={currentPage === totalPages ? "blue" : "gray"}
+						onClick={() => handlePageChange(totalPages)}
+					>
+						{totalPages}
+					</Button>
+				</>
 			);
 		}
+
 		return pages;
 	};
 

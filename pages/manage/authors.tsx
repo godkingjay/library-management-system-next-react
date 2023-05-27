@@ -33,6 +33,7 @@ import {
 	Text,
 	Icon,
 	Highlight,
+	useToast,
 } from "@chakra-ui/react";
 import axios from "axios";
 import moment from "moment";
@@ -47,6 +48,7 @@ import useAuth from "@/hooks/useAuth";
 import ManageBreadcrumb from "@/components/Breadcrumb/ManageBreadcrumb";
 import Head from "next/head";
 import SearchBar from "@/components/Input/SearchBar";
+import { HiOutlineRefresh } from "react-icons/hi";
 
 type ManageAuthorsPageProps = {};
 
@@ -55,6 +57,8 @@ export type AuthorsModalTypes = "" | "add" | "edit" | "delete";
 const ManageAuthorsPage: React.FC<ManageAuthorsPageProps> = () => {
 	const { loadingUser } = useAuth();
 	const { usersStateValue } = useUser();
+
+	const toast = useToast();
 
 	const [cPage, setCPage] = useState(1);
 	const [tPages, setTPages] = useState(1);
@@ -76,31 +80,30 @@ const ManageAuthorsPage: React.FC<ManageAuthorsPageProps> = () => {
 	const [authorsModalOpen, setAuthorsModalOpen] =
 		useState<AuthorsModalTypes>("");
 
-	const [authorForm, setAuthorForm] = useState<
-		Pick<Author, "name" | "biography" | "birthdate">
-	>({
+	const defaultAuthorForm = {
 		name: "",
 		biography: "",
 		birthdate: "",
-	});
+	};
+	const [authorForm, setAuthorForm] =
+		useState<Pick<Author, "name" | "biography" | "birthdate">>(
+			defaultAuthorForm
+		);
 
 	const [deleteForm, setDeleteForm] = useState<Author | null>(null);
+
+	const defaultEditAuthorForm = {
+		id: "",
+		name: "",
+		biography: "",
+		birthdate: "",
+	};
 	const [editForm, setEditForm] = useState<
 		Pick<Author, "id" | "name" | "biography" | "birthdate">
-	>({
-		id: "",
-		name: "",
-		biography: "",
-		birthdate: "",
-	});
+	>(defaultEditAuthorForm);
 	const [editUpdateForm, setEditUpdateForm] = useState<
 		Pick<Author, "id" | "name" | "biography" | "birthdate">
-	>({
-		id: "",
-		name: "",
-		biography: "",
-		birthdate: "",
-	});
+	>(defaultEditAuthorForm);
 
 	const authorsMounted = useRef(false);
 	const deleteRef = useRef(null);
@@ -146,13 +149,36 @@ const ManageAuthorsPage: React.FC<ManageAuthorsPageProps> = () => {
 					} as APIEndpointAuthorParameters)
 					.then((response) => response.data)
 					.catch((error) => {
+						const errorData = error.response.data;
+
+						if (errorData.error.message) {
+							toast({
+								title: "Create Author Failed",
+								description: errorData.error.message,
+								status: "error",
+								duration: 5000,
+								isClosable: true,
+								position: "top",
+							});
+						}
+
 						throw new Error(
 							`=>API: Create Author Failed:\n${error.response.data.error.message}`
 						);
 					});
 
 				if (statusCode === 201) {
+					toast({
+						title: "Author Created",
+						description: `Author ${authorForm.name} has been created.`,
+						status: "success",
+						duration: 5000,
+						isClosable: true,
+						position: "top",
+					});
+
 					await fetchAuthors(cPage);
+					setAuthorForm(defaultAuthorForm);
 					handleAuthorsModalOpen("");
 				}
 
@@ -181,13 +207,37 @@ const ManageAuthorsPage: React.FC<ManageAuthorsPageProps> = () => {
 					} as APIEndpointAuthorParameters)
 					.then((response) => response.data)
 					.catch((error) => {
+						const errorData = error.response.data;
+
+						if (errorData.error.message) {
+							toast({
+								title: "Update Author Failed",
+								description: errorData.error.message,
+								status: "error",
+								duration: 5000,
+								isClosable: true,
+								position: "top",
+							});
+						}
+
 						throw new Error(
 							`=>API: Update Author Failed:\n${error.response.data.error.message}`
 						);
 					});
 
 				if (statusCode === 200) {
+					toast({
+						title: "Author Updated",
+						description: `Author ${editUpdateForm.name} has been updated.`,
+						status: "success",
+						duration: 5000,
+						isClosable: true,
+						position: "top",
+					});
+
 					await fetchAuthors(cPage);
+					setEditForm(defaultEditAuthorForm);
+					setEditUpdateForm(defaultEditAuthorForm);
 					handleAuthorsModalOpen("");
 				}
 
@@ -258,13 +308,38 @@ const ManageAuthorsPage: React.FC<ManageAuthorsPageProps> = () => {
 					})
 					.then((response) => response.data)
 					.catch((error) => {
+						const errorData = error.response.data;
+
+						if (errorData.error.message) {
+							toast({
+								title: "Delete Author Failed",
+								description: errorData.error.message,
+								status: "error",
+								colorScheme: "red",
+								duration: 5000,
+								isClosable: true,
+								position: "top",
+							});
+						}
+
 						throw new Error(
 							`=>API: Delete Author Failed:\n${error.response.data.error.message}`
 						);
 					});
 
 				if (statusCode === 200) {
+					toast({
+						title: "Author Deleted",
+						description: `Author ${author.name} has been deleted.`,
+						status: "success",
+						colorScheme: "red",
+						duration: 5000,
+						isClosable: true,
+						position: "top",
+					});
+
 					await fetchAuthors(cPage);
+					setDeleteForm(null);
 					handleAuthorsModalOpen("");
 				}
 
@@ -273,6 +348,16 @@ const ManageAuthorsPage: React.FC<ManageAuthorsPageProps> = () => {
 		} catch (error: any) {
 			console.error(`=>API: Delete Author Failed:\n${error}`);
 			setDeleting(false);
+		}
+	};
+
+	const handleAuthorsRefresh = async () => {
+		try {
+			if (!fetchingData) {
+				await fetchAuthors(cPage);
+			}
+		} catch (error: any) {
+			console.error(`=>API: Search Authors fetchAuthors Failed:\n${error}`);
 		}
 	};
 
@@ -424,6 +509,15 @@ const ManageAuthorsPage: React.FC<ManageAuthorsPageProps> = () => {
 								<span>"{searchResultDetails.text}"</span>
 							</p>
 						</div>
+						<Button
+							leftIcon={<HiOutlineRefresh />}
+							colorScheme="messenger"
+							variant="outline"
+							onClick={() => !fetchingData && handleAuthorsRefresh()}
+							isLoading={fetchingData}
+						>
+							Refresh
+						</Button>
 						<Button
 							leftIcon={<AiOutlinePlus />}
 							colorScheme="whatsapp"
