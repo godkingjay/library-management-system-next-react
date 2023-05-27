@@ -387,6 +387,7 @@ const ManageBooksPage: React.FC<ManageBooksPageProps> = () => {
 						isClosable: true,
 						position: "top",
 					});
+					setBookFormSearchAuthor("");
 				}
 
 				setSubmitting(false);
@@ -451,6 +452,7 @@ const ManageBooksPage: React.FC<ManageBooksPageProps> = () => {
 						isClosable: true,
 						position: "top",
 					});
+					setEditBookFormSearchAuthor("");
 				}
 
 				setUpdating(false);
@@ -1260,6 +1262,8 @@ const ManageBooksPage: React.FC<ManageBooksPageProps> = () => {
 										}
 									/>
 								</FormControl>
+								<div className="h-[1px] bg-gray-200 my-1"></div>
+
 								<div className="h-[1px] bg-gray-200 my-1"></div>
 								<Button
 									type="submit"
