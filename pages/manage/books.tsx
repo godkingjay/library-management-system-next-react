@@ -381,7 +381,7 @@ const ManageBooksPage: React.FC<ManageBooksPageProps> = () => {
 					setBookForm(defaultBookForm);
 					toast({
 						title: "Book Added",
-						description: "Book is successfully added in the library.",
+						description: "Book is added successfully in the library.",
 						status: "success",
 						duration: 5000,
 						isClosable: true,
@@ -443,6 +443,14 @@ const ManageBooksPage: React.FC<ManageBooksPageProps> = () => {
 					await fetchBooks(cPage);
 					handleBooksModalOpen("");
 					setEditUpdateBookForm(defaultEditBookForm);
+					toast({
+						title: "Book Updated",
+						description: "Book is updated successfully in the library.",
+						status: "success",
+						duration: 5000,
+						isClosable: true,
+						position: "top",
+					});
 				}
 
 				setUpdating(false);
@@ -583,6 +591,15 @@ const ManageBooksPage: React.FC<ManageBooksPageProps> = () => {
 				if (statusCode === 200) {
 					await fetchBooks(cPage);
 					handleBooksModalOpen("");
+					toast({
+						title: "Book Deleted",
+						description: "Book is deleted successfully in the library.",
+						status: "warning",
+						duration: 5000,
+						colorScheme: "red",
+						isClosable: true,
+						position: "top",
+					});
 				}
 
 				setDeleting(false);
