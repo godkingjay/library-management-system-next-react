@@ -57,7 +57,7 @@ export default async function handler(
 
 		const { authorsCollection } = await authorDb();
 
-		const { booksCollection, bookCategoriesCollection, bookLoansCollection } =
+		const { booksCollection, bookCategoriesCollection, bookBorrowsCollection } =
 			await bookDb();
 
 		const { fields, files } = await parseFormAsync(req);
@@ -144,7 +144,11 @@ export default async function handler(
 			});
 		}
 
-		if (!booksCollection || !bookCategoriesCollection || !bookLoansCollection) {
+		if (
+			!booksCollection ||
+			!bookCategoriesCollection ||
+			!bookBorrowsCollection
+		) {
 			return res.status(500).json({
 				statusCode: 500,
 				error: {
