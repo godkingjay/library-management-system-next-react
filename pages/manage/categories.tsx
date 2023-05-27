@@ -35,6 +35,7 @@ import Pagination from "@/components/Table/Pagination";
 import { FiEdit } from "react-icons/fi";
 import { MdOutlineDeleteOutline } from "react-icons/md";
 import { AiOutlinePlus } from "react-icons/ai";
+import { HiOutlineRefresh } from "react-icons/hi";
 
 type ManageCategoriesPageProps = {};
 
@@ -161,6 +162,18 @@ const ManageCategoriesPage: React.FC<ManageCategoriesPageProps> = () => {
 				`=>API: Search Categories fetchCategories Failed:\n${error}`
 			);
 			setFetchingData(false);
+		}
+	};
+
+	const handleCategoriesRefresh = async () => {
+		try {
+			if (!fetchingData) {
+				await fetchCategories(categoryAlphabet);
+			}
+		} catch (error: any) {
+			console.error(
+				`=>API: Search Categories fetchCategories Failed:\n${error}`
+			);
 		}
 	};
 
@@ -333,6 +346,15 @@ const ManageCategoriesPage: React.FC<ManageCategoriesPageProps> = () => {
 								</p>
 							</div> */}
 							<Button
+								leftIcon={<HiOutlineRefresh />}
+								colorScheme="messenger"
+								variant="outline"
+								onClick={() => !fetchingData && handleCategoriesRefresh()}
+								isLoading={fetchingData}
+							>
+								Refresh
+							</Button>
+							<Button
 								leftIcon={<AiOutlinePlus />}
 								colorScheme="whatsapp"
 								variant="solid"
@@ -352,15 +374,25 @@ const ManageCategoriesPage: React.FC<ManageCategoriesPageProps> = () => {
 											title={category.name}
 											className="flex flex-col gap-y-4  p-4 shadow-page-box-1 rounded-lg bg-white border border-transparent group hover:border-blue-500 relative"
 										>
-											<Box className="flex flex-row gap-x-2">
+											<Box className="flex flex-col">
 												<Text className="group-hover:bg-blue-500 font-bold bg-slate-700 text-white px-2 py-1 absolute top-0 left-0 text-2xs -translate-x-1 -translate-y-2 rounded-full">
 													{index + 1 + itemsPerPage * (cPage - 1)}
 												</Text>
-												<Text className="flex-1 font-semibold text-xl leading-5 truncate">
+												<Text className="first-letter:font-serif first-letter:underline text-gray-700 font-semibold group-hover:text-blue-500 group-hover:underline flex-1 text-xl truncate">
+													{category.name
+														.split("-")
+														.map((word) => {
+															return (
+																word.charAt(0).toUpperCase() + word.slice(1)
+															);
+														})
+														.join(" ")}
+												</Text>
+												<Text className="text-xs text-gray-500">
 													{category.name}
 												</Text>
 											</Box>
-											<Box className="flex flex-col items-end">
+											<Box className="flex flex-col items-end mt-auto">
 												<Stack
 													display={"flex"}
 													direction="row"
