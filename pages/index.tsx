@@ -3,7 +3,21 @@ import MainSearchBar from "@/components/Input/MainSearchBar";
 import useUser from "@/hooks/useUser";
 import { BookInfo } from "@/utils/models/book";
 import { apiConfig } from "@/utils/site";
-import { Box, Button, Flex, Grid, Icon, Text } from "@chakra-ui/react";
+import {
+	Box,
+	Button,
+	Flex,
+	Grid,
+	Icon,
+	Modal,
+	ModalBody,
+	ModalCloseButton,
+	ModalContent,
+	ModalFooter,
+	ModalHeader,
+	ModalOverlay,
+	Text,
+} from "@chakra-ui/react";
 import axios from "axios";
 import Head from "next/head";
 import { useEffect, useRef, useState } from "react";
@@ -13,6 +27,8 @@ import useAuth from "@/hooks/useAuth";
 import Pagination from "@/components/Table/Pagination";
 import { FiLoader } from "react-icons/fi";
 import BookCard from "@/components/Book/BookCard";
+
+export type BookCardModalType = "" | "view";
 
 const IndexPage = () => {
 	const { loadingUser } = useAuth();
@@ -31,7 +47,20 @@ const IndexPage = () => {
 		total: 0,
 	});
 
+	const [viewBook, setViewBook] = useState<BookInfo | null>(null);
+
 	const booksMounted = useRef(false);
+	const [bookCardModalOpen, setBookCardModalOpen] =
+		useState<BookCardModalType>("");
+
+	const handleBookCardModalOpen = (type: BookCardModalType) => {
+		setBookCardModalOpen(type);
+	};
+
+	const handleViewBook = (bookData: BookInfo) => {
+		setBookCardModalOpen("view");
+		setViewBook(bookData);
+	};
 
 	const fetchBooks = async (page: number) => {
 		try {
@@ -180,7 +209,10 @@ const IndexPage = () => {
 												{booksData.map((bookData, index) => (
 													<>
 														<React.Fragment key={bookData.book.id}>
-															<BookCard bookData={bookData} />
+															<BookCard
+																bookData={bookData}
+																onViewBook={handleViewBook}
+															/>
 														</React.Fragment>
 													</>
 												))}
@@ -225,6 +257,25 @@ const IndexPage = () => {
 						</Box>
 					</Box>
 				</Box>
+
+				{/**
+				 *
+				 * Book View Modal
+				 *
+				 */}
+				<Modal
+					isOpen={bookCardModalOpen === "view"}
+					onClose={() => handleBookCardModalOpen("")}
+					size={"5xl"}
+				>
+					<ModalOverlay />
+					<ModalContent borderRadius={"2xl"}>
+						<ModalHeader>Book</ModalHeader>
+						<ModalCloseButton />
+						<ModalBody></ModalBody>
+						<ModalFooter></ModalFooter>
+					</ModalContent>
+				</Modal>
 			</>
 		</>
 	);
