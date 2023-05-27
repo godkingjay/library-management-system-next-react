@@ -47,6 +47,7 @@ import useAuth from "@/hooks/useAuth";
 import ManageBreadcrumb from "@/components/Breadcrumb/ManageBreadcrumb";
 import Head from "next/head";
 import SearchBar from "@/components/Input/SearchBar";
+import { HiOutlineRefresh } from "react-icons/hi";
 
 type ManageAuthorsPageProps = {};
 
@@ -276,6 +277,16 @@ const ManageAuthorsPage: React.FC<ManageAuthorsPageProps> = () => {
 		}
 	};
 
+	const handleAuthorsRefresh = async () => {
+		try {
+			if (!fetchingData) {
+				await fetchAuthors(cPage);
+			}
+		} catch (error: any) {
+			console.error(`=>API: Search Authors fetchAuthors Failed:\n${error}`);
+		}
+	};
+
 	const handleSearch = async (event: React.FormEvent<HTMLFormElement>) => {
 		event.preventDefault();
 
@@ -424,6 +435,15 @@ const ManageAuthorsPage: React.FC<ManageAuthorsPageProps> = () => {
 								<span>"{searchResultDetails.text}"</span>
 							</p>
 						</div>
+						<Button
+							leftIcon={<HiOutlineRefresh />}
+							colorScheme="messenger"
+							variant="outline"
+							onClick={() => !fetchingData && handleAuthorsRefresh()}
+							isLoading={fetchingData}
+						>
+							Refresh
+						</Button>
 						<Button
 							leftIcon={<AiOutlinePlus />}
 							colorScheme="whatsapp"
