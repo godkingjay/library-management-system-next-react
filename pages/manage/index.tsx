@@ -53,13 +53,13 @@ const ManagePage: React.FC<ManagePageProps> = () => {
 					<Grid
 						gap={6}
 						flex={1}
-						className="grid-cols-1 xs:grid-cols-2 md:grid-cols-3"
+						className="grid-cols-1 xs:grid-cols-2 md:grid-cols-6"
 					>
 						<Link
 							href="/manage/books"
 							className="
 								w-full bg-gradient-to-br from-[#f5af19] to-[#f12711] rounded-lg p-4 relative overflow-hidden shadow-page-box-1
-								duration-200
+								col-span-3 duration-200
 								hover:scale-105 focus:scale-105
 							"
 						>
@@ -92,7 +92,7 @@ const ManagePage: React.FC<ManagePageProps> = () => {
 							href="/manage/authors"
 							className="
 							 w-full bg-gradient-to-br from-[#60efff] to-[#0061ff] rounded-lg p-4 relative overflow-hidden shadow-page-box-1
-							 duration-200
+							 col-span-3 duration-200
 							 hover:scale-105 focus:scale-105
 							"
 						>
@@ -121,11 +121,11 @@ const ManagePage: React.FC<ManagePageProps> = () => {
 								</Flex>
 							</Flex>
 						</Link>
-						<Link
+						{/* <Link
 							href="/manage/categories"
 							className="
 								w-full bg-gradient-to-br from-[#f9ab8f] to-[#f40752] rounded-lg p-4 relative overflow-hidden shadow-page-box-1
-								duration-200
+								col-span-2 duration-200
 								hover:scale-105 focus:scale-105
 							"
 						>
@@ -153,7 +153,8 @@ const ManagePage: React.FC<ManagePageProps> = () => {
 									</Text>
 								</Flex>
 							</Flex>
-						</Link>
+						</Link> */}
+						<div className="h-[1px] w-full bg-gray-300 mb-2 col-span-full"></div>
 					</Grid>
 				</Box>
 			</Box>
