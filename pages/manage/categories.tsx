@@ -22,6 +22,12 @@ import {
 	ModalFooter,
 	ModalHeader,
 	Textarea,
+	AlertDialog,
+	AlertDialogBody,
+	AlertDialogContent,
+	AlertDialogFooter,
+	AlertDialogHeader,
+	AlertDialogOverlay,
 } from "@chakra-ui/react";
 import Head from "next/head";
 import ManageBreadcrumb from "@/components/Breadcrumb/ManageBreadcrumb";
@@ -32,11 +38,12 @@ import { APIEndpointBooksCategoriesParameters } from "../api/books/categories";
 import useAuth from "@/hooks/useAuth";
 import useUser from "@/hooks/useUser";
 import Pagination from "@/components/Table/Pagination";
-import { FiEdit } from "react-icons/fi";
+import { FiEdit, FiLoader } from "react-icons/fi";
 import { MdOutlineDeleteOutline } from "react-icons/md";
 import { AiOutlinePlus } from "react-icons/ai";
 import { HiOutlineRefresh } from "react-icons/hi";
 import { APIEndpointBooksCategoryParameters } from "../api/books/categories/category";
+import moment from "moment";
 
 type ManageCategoriesPageProps = {};
 
@@ -216,6 +223,60 @@ const ManageCategoriesPage: React.FC<ManageCategoriesPageProps> = () => {
 				`=>API: Search Categories fetchCategories Failed:\n${error}`
 			);
 			setFetchingData(false);
+		}
+	};
+
+	const deleteCategory = async (category: BookCategory) => {
+		try {
+			if (!deleting) {
+				setDeleting(true);
+
+				const { statusCode } = await axios
+					.delete(apiConfig.apiEndpoint + "/books/categories/category", {
+						params: {
+							apiKey: usersStateValue.currentUser?.auth?.keys[0].key,
+							categoryId: category.id,
+						} as APIEndpointBooksCategoryParameters,
+					})
+					.then((response) => response.data)
+					.catch((error) => {
+						const errorData = error.response.data;
+
+						if (errorData.error.message) {
+							toast({
+								title: "Category Deletion Failed.",
+								description: errorData.error.message,
+								status: "error",
+								duration: 5000,
+								isClosable: true,
+								position: "top",
+							});
+						}
+
+						throw new Error(`=>API: Deleting category Failed:\n${error}`);
+					});
+
+				if (statusCode === 200) {
+					await fetchCategories(categoryAlphabet, cPage);
+
+					toast({
+						title: "Category Deleted.",
+						description: "Category has been deleted successfully.",
+						status: "success",
+						colorScheme: "red",
+						duration: 5000,
+						isClosable: true,
+						position: "top",
+					});
+
+					handleCategoriesModalOpen("");
+				}
+
+				setDeleting(false);
+			}
+		} catch (error: any) {
+			console.error(`=>API: Deleting category Failed:\n${error}`);
+			setDeleting(false);
 		}
 	};
 
@@ -420,82 +481,105 @@ const ManageCategoriesPage: React.FC<ManageCategoriesPageProps> = () => {
 					</Flex>
 
 					<Grid className="grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-						{categoriesData.length > 0 ? (
+						{!fetchingData ||
+						categoriesMounted.current ||
+						!loadingUser ||
+						usersStateValue.currentUser?.auth ? (
 							<>
-								{categoriesData.map((category, index) => (
-									<React.Fragment key={category.id}>
-										<Box
-											title={category.name}
-											className="flex flex-col gap-y-4  p-4 shadow-page-box-1 rounded-lg bg-white border border-transparent group hover:border-blue-500 relative"
-										>
-											<Box className="flex flex-col">
-												<Text className="duration-200 group-hover:scale-125 group-hover:bg-blue-500 font-bold bg-slate-700 text-white px-2 py-1 absolute top-0 left-0 text-2xs -translate-x-1 -translate-y-2 rounded-full">
-													{index + 1 + itemsPerPage * (cPage - 1)}
-												</Text>
-												<Text className="first-letter:font-serif first-letter:underline text-gray-700 font-semibold group-hover:text-blue-500 group-hover:underline flex-1 text-xl truncate">
-													{category.name
-														.split("-")
-														.map((word) => {
-															return (
-																word.charAt(0).toUpperCase() + word.slice(1)
-															);
-														})
-														.join(" ")}
-												</Text>
-												<Text className="text-xs text-gray-500">
-													{category.name}
-												</Text>
-											</Box>
-											<Box className="flex flex-col items-end mt-auto">
-												<Stack
-													display={"flex"}
-													direction="row"
-													align="center"
-													alignItems={"center"}
-													justifyContent={"center"}
+								{categoriesData.length > 0 ? (
+									<>
+										{categoriesData.map((category, index) => (
+											<React.Fragment key={category.id}>
+												<Box
+													title={category.name}
+													className="flex flex-col gap-y-4  p-4 shadow-page-box-1 rounded-lg bg-white border border-transparent group hover:border-blue-500 relative"
 												>
-													<Button
-														display={"flex"}
-														flexDirection={"column"}
-														alignItems={"center"}
-														justifyContent={"center"}
-														colorScheme="blue"
-														variant="solid"
-														size={"sm"}
-														padding={1}
-														onClick={() =>
-															!updating && handleEditCategoryModalOpen(category)
-														}
-													>
-														<Icon as={FiEdit} />
-													</Button>
-													<Button
-														display={"flex"}
-														flexDirection={"column"}
-														alignItems={"center"}
-														justifyContent={"center"}
-														colorScheme="red"
-														variant="solid"
-														size={"sm"}
-														padding={1}
-														onClick={() =>
-															!deleting &&
-															handleDeleteCategoryModalOpen(category)
-														}
-													>
-														<Icon as={MdOutlineDeleteOutline} />
-													</Button>
-												</Stack>
-											</Box>
-										</Box>
-									</React.Fragment>
-								))}
+													<Box className="flex flex-col">
+														<Text className="duration-200 group-hover:scale-125 group-hover:bg-blue-500 font-bold bg-slate-700 text-white px-2 py-1 absolute top-0 left-0 text-2xs -translate-x-1 -translate-y-2 rounded-full">
+															{index + 1 + itemsPerPage * (cPage - 1)}
+														</Text>
+														<Text className="first-letter:font-serif first-letter:underline text-gray-700 font-semibold group-hover:text-blue-500 group-hover:underline flex-1 text-xl truncate">
+															{category.name
+																.split("-")
+																.map((word) => {
+																	return (
+																		word.charAt(0).toUpperCase() + word.slice(1)
+																	);
+																})
+																.join(" ")}
+														</Text>
+														<Text className="text-xs text-gray-500">
+															{category.name}
+														</Text>
+													</Box>
+													<Box className="flex flex-col items-end mt-auto">
+														<Stack
+															display={"flex"}
+															direction="row"
+															align="center"
+															alignItems={"center"}
+															justifyContent={"center"}
+														>
+															<Button
+																display={"flex"}
+																flexDirection={"column"}
+																alignItems={"center"}
+																justifyContent={"center"}
+																colorScheme="blue"
+																variant="solid"
+																size={"sm"}
+																padding={1}
+																onClick={() =>
+																	!updating &&
+																	handleEditCategoryModalOpen(category)
+																}
+															>
+																<Icon as={FiEdit} />
+															</Button>
+															<Button
+																display={"flex"}
+																flexDirection={"column"}
+																alignItems={"center"}
+																justifyContent={"center"}
+																colorScheme="red"
+																variant="solid"
+																size={"sm"}
+																padding={1}
+																onClick={() =>
+																	!deleting &&
+																	handleDeleteCategoryModalOpen(category)
+																}
+															>
+																<Icon as={MdOutlineDeleteOutline} />
+															</Button>
+														</Stack>
+													</Box>
+												</Box>
+											</React.Fragment>
+										))}
+									</>
+								) : (
+									<>
+										<Text className="p-2 text-xl font-semibold text-center text-gray-500 col-span-full">
+											No Categories Found
+										</Text>
+									</>
+								)}
 							</>
 						) : (
 							<>
-								<Text className="p-2 text-xl font-semibold text-center text-gray-500 col-span-full">
-									No Categories Found
-								</Text>
+								<Box
+									textAlign={"center"}
+									className="text-gray-500 font-bold col-span-full p-2"
+								>
+									<Flex className="justify-center flex flex-row items-center gap-x-4">
+										<Icon
+											as={FiLoader}
+											className="h-12 w-12 animate-spin"
+										/>
+										<Text>Loading Categories...</Text>
+									</Flex>
+								</Box>
 							</>
 						)}
 					</Grid>
@@ -587,6 +671,169 @@ const ManageCategoriesPage: React.FC<ManageCategoriesPageProps> = () => {
 					<ModalFooter></ModalFooter>
 				</ModalContent>
 			</Modal>
+
+			{/**
+			 *
+			 * Delete Category Modal
+			 *
+			 */}
+			<AlertDialog
+				isOpen={categoriesModalOpen === "delete"}
+				leastDestructiveRef={deleteRef}
+				onClose={() => handleCategoriesModalOpen("")}
+				isCentered
+			>
+				<AlertDialogOverlay>
+					<AlertDialogContent>
+						<AlertDialogHeader
+							fontSize="lg"
+							fontWeight="bold"
+						>
+							Delete Category
+						</AlertDialogHeader>
+
+						<AlertDialogBody>
+							<Text>Are you sure you want to delete this category?</Text>
+							<Flex
+								borderWidth={1}
+								marginTop={4}
+								borderColor={"red"}
+								rounded={"lg"}
+								padding={4}
+								display={"flex"}
+								flexDirection={"column"}
+								gap={4}
+							>
+								<Flex
+									direction={"column"}
+									fontSize={"xs"}
+									textColor={"red.500"}
+								>
+									<Text
+										textTransform={"uppercase"}
+										fontWeight={"bold"}
+									>
+										Name:
+									</Text>
+									<Text fontSize={"sm"}>{deleteCategoryForm?.name}</Text>
+								</Flex>
+								<Flex
+									direction={"column"}
+									fontSize={"xs"}
+									textColor={"red.500"}
+								>
+									<Text
+										textTransform={"uppercase"}
+										fontWeight={"bold"}
+									>
+										Description:
+									</Text>
+									<Text
+										fontSize={"sm"}
+										overflowWrap={"break-word"}
+										whiteSpace={"pre-wrap"}
+										isTruncated
+									>
+										{deleteCategoryForm?.description?.length &&
+										deleteCategoryForm
+											? deleteCategoryForm.description.length > 256
+												? deleteCategoryForm.description.slice(0, 256) + "..."
+												: deleteCategoryForm.description
+											: "---"}
+									</Text>
+								</Flex>
+								<Flex
+									direction={"column"}
+									fontSize={"xs"}
+									textColor={"red.500"}
+								>
+									<Text
+										textTransform={"uppercase"}
+										fontWeight={"bold"}
+									>
+										Updated At:
+									</Text>
+									<Text
+										fontSize={"sm"}
+										overflowWrap={"break-word"}
+										whiteSpace={"pre-wrap"}
+										isTruncated
+									>
+										{deleteCategoryForm?.updatedAt
+											? typeof deleteCategoryForm?.updatedAt === "string"
+												? moment(deleteCategoryForm?.updatedAt).format(
+														"DD/MM/YYYY"
+												  )
+												: moment(
+														new Date(deleteCategoryForm?.updatedAt).toISOString()
+												  ).format("DD/MM/YYYY")
+											: "---"}
+									</Text>
+								</Flex>
+								<Flex
+									direction={"column"}
+									fontSize={"xs"}
+									textColor={"red.500"}
+								>
+									<Text
+										textTransform={"uppercase"}
+										fontWeight={"bold"}
+									>
+										Created At:
+									</Text>
+									<Text
+										fontSize={"sm"}
+										overflowWrap={"break-word"}
+										whiteSpace={"pre-wrap"}
+										isTruncated
+									>
+										{deleteCategoryForm?.createdAt
+											? typeof deleteCategoryForm?.createdAt === "string"
+												? moment(deleteCategoryForm?.createdAt).format(
+														"DD/MM/YYYY"
+												  )
+												: moment(
+														new Date(deleteCategoryForm?.createdAt).toISOString()
+												  ).format("DD/MM/YYYY")
+											: "---"}
+									</Text>
+								</Flex>
+							</Flex>
+						</AlertDialogBody>
+
+						<AlertDialogFooter className="flex flex-row gap-x-2">
+							<Button
+								disabled={deleting}
+								isDisabled={deleting}
+								_disabled={{
+									filter: "grayscale(100%)",
+								}}
+								ref={deleteRef}
+								onClick={() => handleCategoriesModalOpen("")}
+							>
+								Cancel
+							</Button>
+							<Button
+								colorScheme="red"
+								disabled={deleting}
+								isDisabled={deleting}
+								_disabled={{
+									filter: "grayscale(100%)",
+								}}
+								isLoading={deleting}
+								loadingText="Deleting"
+								onClick={() =>
+									deleteCategoryForm &&
+									!deleting &&
+									deleteCategory(deleteCategoryForm)
+								}
+							>
+								Delete
+							</Button>
+						</AlertDialogFooter>
+					</AlertDialogContent>
+				</AlertDialogOverlay>
+			</AlertDialog>
 		</>
 	);
 };
