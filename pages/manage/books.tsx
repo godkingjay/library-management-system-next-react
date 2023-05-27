@@ -64,6 +64,7 @@ import { Author } from "@/utils/models/author";
 import { APIEndpointAuthorsParameters } from "../api/authors";
 import { BiSearch } from "react-icons/bi";
 import BookCategoryTags from "@/components/Book/BookCategoryTags";
+import { HiOutlineRefresh } from "react-icons/hi";
 
 type ManageBooksPageProps = {};
 
@@ -605,6 +606,16 @@ const ManageBooksPage: React.FC<ManageBooksPageProps> = () => {
 		}
 	};
 
+	const handleBooksRefresh = async () => {
+		try {
+			if (!fetchingData) {
+				await fetchBooks(cPage);
+			}
+		} catch (error: any) {
+			console.error(`=>API: Search Books fetchBooks Failed:\n${error}`);
+		}
+	};
+
 	const handleSearch = async (event: React.FormEvent<HTMLFormElement>) => {
 		event.preventDefault();
 
@@ -913,6 +924,15 @@ const ManageBooksPage: React.FC<ManageBooksPageProps> = () => {
 									<span>"{searchResultDetails.text}"</span>
 								</p>
 							</div>
+							<Button
+								leftIcon={<HiOutlineRefresh />}
+								colorScheme="messenger"
+								variant="outline"
+								onClick={() => !fetchingData && handleBooksRefresh()}
+								isLoading={fetchingData}
+							>
+								Refresh
+							</Button>
 							<Button
 								leftIcon={<AiOutlinePlus />}
 								colorScheme="whatsapp"
