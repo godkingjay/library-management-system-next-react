@@ -16,6 +16,9 @@ import { BiCategory } from "react-icons/bi";
 import Link from "next/link";
 import ManageBreadcrumb from "@/components/Breadcrumb/ManageBreadcrumb";
 import Head from "next/head";
+import { MdPendingActions } from "react-icons/md";
+import { FaHandHolding } from "react-icons/fa";
+import { RiContactsBookUploadLine } from "react-icons/ri";
 
 type ManagePageProps = {};
 
@@ -47,19 +50,19 @@ const ManagePage: React.FC<ManagePageProps> = () => {
 						>
 							Dashboard
 						</Text>
-						<div className="h-[1px] w-full bg-gray-300 mb-2	"></div>
+						<div className="h-[1px] w-full bg-gray-300 mb-2"></div>
 						<ManageBreadcrumb />
 					</Flex>
 					<Grid
 						gap={6}
 						flex={1}
-						className="grid-cols-1 xs:grid-cols-2 md:grid-cols-6"
+						className="grid-cols-1 xs:grid-cols-2 md:grid-cols-3"
 					>
 						<Link
 							href="/manage/books"
 							className="
 								w-full bg-gradient-to-br from-[#f5af19] to-[#f12711] rounded-lg p-4 relative overflow-hidden shadow-page-box-1
-								col-span-3 duration-200
+								duration-200
 								hover:scale-105 focus:scale-105
 							"
 						>
@@ -92,7 +95,7 @@ const ManagePage: React.FC<ManagePageProps> = () => {
 							href="/manage/authors"
 							className="
 							 w-full bg-gradient-to-br from-[#60efff] to-[#0061ff] rounded-lg p-4 relative overflow-hidden shadow-page-box-1
-							 col-span-3 duration-200
+							 duration-200
 							 hover:scale-105 focus:scale-105
 							"
 						>
@@ -121,11 +124,11 @@ const ManagePage: React.FC<ManagePageProps> = () => {
 								</Flex>
 							</Flex>
 						</Link>
-						{/* <Link
+						<Link
 							href="/manage/categories"
 							className="
 								w-full bg-gradient-to-br from-[#f9ab8f] to-[#f40752] rounded-lg p-4 relative overflow-hidden shadow-page-box-1
-								col-span-2 duration-200
+								duration-200
 								hover:scale-105 focus:scale-105
 							"
 						>
@@ -153,8 +156,107 @@ const ManagePage: React.FC<ManagePageProps> = () => {
 									</Text>
 								</Flex>
 							</Flex>
+						</Link>
+						<div className="h-[1px] w-full bg-gray-300 col-span-full"></div>
+						<Link
+							href="/manage/borrows"
+							className="
+								w-full bg-gradient-to-br from-[#6ff7e8] to-[#1f7ea1] rounded-lg p-4 py-2 relative overflow-hidden shadow-page-box-1
+								duration-200
+								hover:scale-105 focus:scale-105
+							"
+						>
+							<Flex
+								direction={"row"}
+								gap={2}
+								className="items-center"
+							>
+								<Box className="h-14 w-14 rounded-xl p-3 m-2 bg-white text-[#6ff7e8] shadow-lg">
+									<Icon
+										as={FaHandHolding}
+										width={"full"}
+										height={"full"}
+									/>
+								</Box>
+								<Flex
+									direction={"column"}
+									height={"full"}
+								>
+									<Text className="leading-none text-white font-bold text-3xl">
+										0
+									</Text>
+									<Text className="leading-none text-white text-opacity-75">
+										Borrows
+									</Text>
+								</Flex>
+							</Flex>
+						</Link>
+						{/* <Link
+							href="/manage/authors"
+							className="
+							 w-full bg-gradient-to-br from-[#fcb0f3] to-[#3d05dd] rounded-lg p-4 py-2 relative overflow-hidden shadow-page-box-1
+							 duration-200
+							 hover:scale-105 focus:scale-105
+							"
+						>
+							<Flex
+								direction={"row"}
+								gap={2}
+								className="items-center"
+							>
+								<Box className="h-14 w-14 rounded-xl p-3 m-2 bg-white text-[#fcb0f3] shadow-lg">
+									<Icon
+										as={MdPendingActions}
+										width={"full"}
+										height={"full"}
+									/>
+								</Box>
+								<Flex
+									direction={"column"}
+									height={"full"}
+								>
+									<Text className="leading-none text-white font-bold text-3xl">
+										0
+									</Text>
+									<Text className="leading-none text-white text-opacity-75">
+										Pending
+									</Text>
+								</Flex>
+							</Flex>
 						</Link> */}
-						<div className="h-[1px] w-full bg-gray-300 mb-2 col-span-full"></div>
+						<Link
+							href="/manage/returned"
+							className="
+								w-full bg-gradient-to-br from-[#6eee87] to-[#5fc52e] rounded-lg p-4 py-2 relative overflow-hidden shadow-page-box-1
+								duration-200
+								hover:scale-105 focus:scale-105
+							"
+						>
+							<Flex
+								direction={"row"}
+								gap={2}
+								className="items-center"
+							>
+								<Box className="h-14 w-14 rounded-xl p-3 m-2 bg-white text-[#6eee87] shadow-lg">
+									<Icon
+										as={RiContactsBookUploadLine}
+										width={"full"}
+										height={"full"}
+									/>
+								</Box>
+								<Flex
+									direction={"column"}
+									height={"full"}
+								>
+									<Text className="leading-none text-white font-bold text-3xl">
+										0
+									</Text>
+									<Text className="leading-none text-white text-opacity-75">
+										Returned
+									</Text>
+								</Flex>
+							</Flex>
+						</Link>
 					</Grid>
 				</Box>
 			</Box>
