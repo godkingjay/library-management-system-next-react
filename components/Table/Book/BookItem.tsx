@@ -137,17 +137,37 @@ const BookItem: React.FC<BookItemProps> = ({
 					{bookInfo.book.ISBN}
 				</Td>
 				<Td className="text-sm">
-					{bookInfo.book.categories.length > 0 ? (
-						bookInfo.book.categories.map((category) => (
+					<Flex
+						direction={"row"}
+						gap={2}
+						maxWidth={"sm"}
+						flexWrap={"wrap"}
+					>
+						{bookInfo.book.categories.length > 0 ? (
+							bookInfo.book.categories.map((category) => (
+								<>
+									<Badge
+										display={"inline"}
+										colorScheme="blue"
+										title={category}
+										isTruncated
+									>
+										{category}
+									</Badge>
+								</>
+							))
+						) : (
 							<>
-								<Badge colorScheme="blue">{category}</Badge>
+								<Badge
+									display={"inline"}
+									colorScheme="red"
+									isTruncated
+								>
+									None
+								</Badge>
 							</>
-						))
-					) : (
-						<>
-							<Badge colorScheme="red">None</Badge>
-						</>
-					)}
+						)}
+					</Flex>
 				</Td>
 				<Td
 					className="text-sm"
