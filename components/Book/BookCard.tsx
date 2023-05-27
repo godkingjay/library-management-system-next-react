@@ -1,5 +1,5 @@
 import { BookInfo } from "@/utils/models/book";
-import { Box, Icon, Text, Tooltip } from "@chakra-ui/react";
+import { Box, Button, Icon, Text, Tooltip } from "@chakra-ui/react";
 import moment from "moment";
 import Image from "next/image";
 import React from "react";
@@ -9,15 +9,20 @@ import { IoBookSharp } from "react-icons/io5";
 import { FaHandHolding } from "react-icons/fa";
 import { ImBooks } from "react-icons/im";
 import { SiBookstack } from "react-icons/si";
+import { AiOutlineEye } from "react-icons/ai";
 
 type BookCardProps = {
 	bookData: BookInfo;
+	onViewBook: (bookData: BookInfo) => void;
 };
 
-const BookCard: React.FC<BookCardProps> = ({ bookData }) => {
+const BookCard: React.FC<BookCardProps> = ({ bookData, onViewBook }) => {
 	return (
 		<>
-			<Box className="shadow-page-box-1 p-4 border border-transparent rounded-lg bg-white group relative cursor-pointer hover:border-blue-500">
+			<Box
+				className="shadow-page-box-1 p-4 border border-transparent rounded-lg bg-white group relative cursor-pointer hover:border-blue-500"
+				onClick={() => onViewBook(bookData)}
+			>
 				<Box className="flex flex-row gap-x-4">
 					<>
 						<Box className="flex flex-col gap-y-2 max-w-[96px]">
@@ -151,6 +156,28 @@ const BookCard: React.FC<BookCardProps> = ({ bookData }) => {
 								items={bookData.book.categories}
 								maxItems={3}
 							/>
+							<Box className="mt-auto w-full flex flex-row items-center justify-end gap-x-2 flex-wrap">
+								<Button
+									colorScheme="messenger"
+									size={"sm"}
+									display={"flex"}
+									flexDirection={"row"}
+									alignItems={"center"}
+									justifyContent={"center"}
+									width={"full"}
+									borderRadius={"full"}
+									leftIcon={
+										<Icon
+											as={AiOutlineEye}
+											height={5}
+											width={5}
+										/>
+									}
+									onClick={() => onViewBook(bookData)}
+								>
+									<Text>View Book</Text>
+								</Button>
+							</Box>
 						</Box>
 					</>
 				</Box>
