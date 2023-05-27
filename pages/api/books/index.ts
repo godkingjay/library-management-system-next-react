@@ -96,18 +96,68 @@ export default async function handler(
 				let countQuery: any = {};
 
 				if (title) {
-					countQuery.title = {
-						$regex: new RegExp(title, "i"),
+					countQuery = {
+						$or: [
+							{
+								title: {
+									$regex: new RegExp(title, "i"),
+								},
+							},
+							{
+								author: {
+									$regex: new RegExp(title, "i"),
+								},
+							},
+							{
+								categories: {
+									$in: [title],
+								},
+							},
+						],
 					};
-					query.title = {
-						$regex: new RegExp(title, "i"),
+					query = {
+						$or: [
+							{
+								title: {
+									$regex: new RegExp(title, "i"),
+								},
+							},
+							{
+								author: {
+									$regex: new RegExp(title, "i"),
+								},
+							},
+							{
+								categories: {
+									$in: [title],
+								},
+							},
+						],
 					};
 				}
 
 				if (fromTitle) {
-					query.title = {
-						...query.title,
-						$lt: fromTitle,
+					query = {
+						...query,
+						$or: [
+							{
+								title: {
+									...query.$or[0].title,
+									$lt: fromTitle,
+								},
+							},
+							{
+								author: {
+									...query.$or[1].author,
+									$lt: fromTitle,
+								},
+							},
+							{
+								categories: {
+									...query.$or[2].categories,
+								},
+							},
+						],
 					};
 				}
 
