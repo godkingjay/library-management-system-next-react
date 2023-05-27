@@ -36,6 +36,7 @@ import { FiEdit } from "react-icons/fi";
 import { MdOutlineDeleteOutline } from "react-icons/md";
 import { AiOutlinePlus } from "react-icons/ai";
 import { HiOutlineRefresh } from "react-icons/hi";
+import { APIEndpointBooksCategoryParameters } from "../api/books/categories/category";
 
 type ManageCategoriesPageProps = {};
 
@@ -123,7 +124,60 @@ const ManageCategoriesPage: React.FC<ManageCategoriesPageProps> = () => {
 		setDeleteCategoryForm(category);
 	};
 
-	const fetchCategories = async (alphabet: string) => {
+	const createCategory = async (event: React.FormEvent<HTMLFormElement>) => {
+		try {
+			event.preventDefault();
+
+			if (!submitting) {
+				setSubmitting(true);
+
+				const { statusCode } = await axios
+					.post(apiConfig.apiEndpoint + "/books/categories/category", {
+						apiKey: usersStateValue.currentUser?.auth?.keys[0].key,
+						name: newCategoryForm.name,
+						description: newCategoryForm.description,
+					} as APIEndpointBooksCategoryParameters)
+					.then((response) => response.data)
+					.catch((error) => {
+						const errorData = error.response.data;
+
+						if (errorData.error.message) {
+							toast({
+								title: "Category Creation Failed.",
+								description: errorData.error.message,
+								status: "error",
+								duration: 5000,
+								isClosable: true,
+								position: "top",
+							});
+						}
+
+						throw new Error(`=>API: Creating category Failed:\n${error}`);
+					});
+
+				if (statusCode === 201) {
+					toast({
+						title: "Category Created.",
+						description: "Category has been created successfully.",
+						status: "success",
+						duration: 5000,
+						isClosable: true,
+						position: "top",
+					});
+					setCategoriesModalOpen("");
+					setNewCategoryForm(defaultNewCategoryForm);
+					await fetchCategories(categoryAlphabet, cPage);
+				}
+
+				setSubmitting(false);
+			}
+		} catch (error: any) {
+			console.error(`=>API: Creating category Failed:\n${error}`);
+			setSubmitting(false);
+		}
+	};
+
+	const fetchCategories = async (alphabet: string, page: number) => {
 		try {
 			if (!fetchingData) {
 				setFetchingData(true);
@@ -141,7 +195,7 @@ const ManageCategoriesPage: React.FC<ManageCategoriesPageProps> = () => {
 						params: {
 							apiKey: usersStateValue.currentUser?.auth?.keys[0].key,
 							alphabet: alphabet === "All" ? "" : alphabet,
-							page: cPage,
+							page: page || cPage,
 							limit: itemsPerPage,
 						} as APIEndpointBooksCategoriesParameters,
 					})
@@ -168,7 +222,7 @@ const ManageCategoriesPage: React.FC<ManageCategoriesPageProps> = () => {
 	const handleCategoriesRefresh = async () => {
 		try {
 			if (!fetchingData) {
-				await fetchCategories(categoryAlphabet);
+				await fetchCategories(categoryAlphabet, cPage);
 			}
 		} catch (error: any) {
 			console.error(
@@ -203,13 +257,13 @@ const ManageCategoriesPage: React.FC<ManageCategoriesPageProps> = () => {
 		if (!fetchingData) {
 			setCategoryAlphabet(event.target.value);
 
-			await fetchCategories(event.target.value);
+			await fetchCategories(event.target.value, cPage);
 		}
 	};
 
 	const handlePageChange = async (page: number) => {
 		setCPage(page);
-		await fetchCategories(categoryAlphabet);
+		await fetchCategories(categoryAlphabet, page);
 	};
 
 	const handleCategoriesFormChange = (
@@ -250,7 +304,7 @@ const ManageCategoriesPage: React.FC<ManageCategoriesPageProps> = () => {
 			!loadingUser
 		) {
 			categoriesMounted.current = true;
-			fetchCategories("All");
+			fetchCategories(categoryAlphabet, cPage);
 		}
 	}, [loadingUser, categoriesMounted.current]);
 
@@ -375,7 +429,7 @@ const ManageCategoriesPage: React.FC<ManageCategoriesPageProps> = () => {
 											className="flex flex-col gap-y-4  p-4 shadow-page-box-1 rounded-lg bg-white border border-transparent group hover:border-blue-500 relative"
 										>
 											<Box className="flex flex-col">
-												<Text className="group-hover:bg-blue-500 font-bold bg-slate-700 text-white px-2 py-1 absolute top-0 left-0 text-2xs -translate-x-1 -translate-y-2 rounded-full">
+												<Text className="duration-200 group-hover:scale-125 group-hover:bg-blue-500 font-bold bg-slate-700 text-white px-2 py-1 absolute top-0 left-0 text-2xs -translate-x-1 -translate-y-2 rounded-full">
 													{index + 1 + itemsPerPage * (cPage - 1)}
 												</Text>
 												<Text className="first-letter:font-serif first-letter:underline text-gray-700 font-semibold group-hover:text-blue-500 group-hover:underline flex-1 text-xl truncate">
@@ -475,9 +529,7 @@ const ManageCategoriesPage: React.FC<ManageCategoriesPageProps> = () => {
 					<ModalHeader>Add Category</ModalHeader>
 					<ModalCloseButton />
 					<ModalBody>
-						<form
-						// onSubmit={(event) => !submitting && handleCreateAuthor(event)}
-						>
+						<form onSubmit={(event) => !submitting && createCategory(event)}>
 							<Flex
 								direction={"column"}
 								gap={4}
