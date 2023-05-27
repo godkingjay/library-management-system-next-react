@@ -1,12 +1,22 @@
-import React, { useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import SearchBar from "@/components/Input/SearchBar";
 import { Box, Button, Flex, Select, Text } from "@chakra-ui/react";
 import Head from "next/head";
 import ManageBreadcrumb from "@/components/Breadcrumb/ManageBreadcrumb";
+import { BookCategory } from "@/utils/models/book";
+import axios from "axios";
+import { apiConfig } from "@/utils/site";
+import { APIEndpointBooksCategoriesParameters } from "../api/books/categories";
+import useAuth from "@/hooks/useAuth";
+import useUser from "@/hooks/useUser";
 
 type ManageCategoriesPageProps = {};
 
 const ManageCategoriesPage: React.FC<ManageCategoriesPageProps> = () => {
+	const { loadingUser } = useAuth();
+	const { usersStateValue } = useUser();
+
+	const [categoriesData, setCategoriesData] = useState<BookCategory[]>([]);
 	const [cPage, setCPage] = useState(1);
 	const [tPages, setTPages] = useState(1);
 	const [itemsPerPage, setItemsPerPage] = useState(10);
@@ -15,10 +25,54 @@ const ManageCategoriesPage: React.FC<ManageCategoriesPageProps> = () => {
 	const [searchText, setSearchText] = useState("");
 	const [categoryAlphabet, setCategoryAlphabet] = useState("All");
 
+	const categoriesMounted = useRef(false);
+
 	const alphabet = [
 		"All",
 		...Array.from({ length: 26 }, (_, i) => String.fromCharCode(65 + i)),
 	];
+
+	const fetchCategories = async (alphabet: string) => {
+		try {
+			if (!fetchingData) {
+				setFetchingData(true);
+
+				const {
+					categories,
+					totalPages,
+					totalCount,
+				}: {
+					categories: BookCategory[];
+					totalPages: number;
+					totalCount: number;
+				} = await axios
+					.get(apiConfig.apiEndpoint + "/books/categories/", {
+						params: {
+							apiKey: usersStateValue.currentUser?.auth?.keys[0].key,
+							alphabet: alphabet === "All" ? "" : alphabet,
+							page: cPage,
+							limit: itemsPerPage,
+						} as APIEndpointBooksCategoriesParameters,
+					})
+					.then((response) => response.data)
+					.catch((error) => {
+						throw new Error(
+							`=>API: Search Categories fetchCategories Failed:\n${error}`
+						);
+					});
+
+				setCategoriesData(categories);
+				setTPages(totalPages > 0 ? totalPages : 1);
+
+				setFetchingData(false);
+			}
+		} catch (error: any) {
+			console.error(
+				`=>API: Search Categories fetchCategories Failed:\n${error}`
+			);
+			setFetchingData(false);
+		}
+	};
 
 	// const handleSearch = async (event: React.FormEvent<HTMLFormElement>) => {
 	// 	event.preventDefault();
@@ -40,11 +94,27 @@ const ManageCategoriesPage: React.FC<ManageCategoriesPageProps> = () => {
 	// 	}
 	// };
 
-	const handleSelectChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
+	const handleSelectChange = async (
+		event: React.ChangeEvent<HTMLSelectElement>
+	) => {
 		if (!fetchingData) {
 			setCategoryAlphabet(event.target.value);
+
+			await fetchCategories(event.target.value);
 		}
 	};
+
+	useEffect(() => {
+		if (
+			!categoriesMounted.current &&
+			usersStateValue.currentUser?.auth &&
+			!fetchingData &&
+			!loadingUser
+		) {
+			categoriesMounted.current = true;
+			fetchCategories("All");
+		}
+	}, [loadingUser, categoriesMounted.current]);
 
 	return (
 		<>
