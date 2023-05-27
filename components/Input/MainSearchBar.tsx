@@ -2,11 +2,13 @@ import { Box, Input, Icon, FormControl } from "@chakra-ui/react";
 import { BiSearchAlt } from "react-icons/bi";
 
 interface MainSearchBarProps {
+	value?: string;
 	placeholder?: string;
 	onSearch: (query: string) => void;
 }
 
 const MainSearchBar: React.FC<MainSearchBarProps> = ({
+	value,
 	placeholder = "Search...",
 	onSearch,
 }) => {
@@ -29,6 +31,7 @@ const MainSearchBar: React.FC<MainSearchBarProps> = ({
 				onChange={handleSearch}
 				variant={"unstyled"}
 				className="text-gray-700"
+				value={value}
 			/>
 		</FormControl>
 	);
