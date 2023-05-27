@@ -25,7 +25,9 @@ const BookCategoryTags: React.FC<BookCategoryTagsProps> = ({
 }) => {
 	const [newCategory, setNewCategory] = useState("");
 
-	const handleAddCategory = () => {
+	const handleAddCategory = (event: React.KeyboardEvent<HTMLInputElement>) => {
+		event.preventDefault();
+
 		if (newCategory.trim() === "") return;
 
 		const formattedInput = newCategory
@@ -67,7 +69,9 @@ const BookCategoryTags: React.FC<BookCategoryTagsProps> = ({
 						placeholder="Add a category"
 						value={newCategory}
 						onChange={(event) => setNewCategory(event.target.value)}
-						onKeyDown={(event) => event.key === "Enter" && handleAddCategory()}
+						onKeyDown={(event) =>
+							event.key === "Enter" && handleAddCategory(event)
+						}
 					/>
 				</FormControl>
 				{categories.length > 0 && (
