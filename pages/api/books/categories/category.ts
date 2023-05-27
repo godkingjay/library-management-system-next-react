@@ -9,6 +9,7 @@ import { NextApiRequest, NextApiResponse } from "next";
 
 export interface APIEndpointBooksCategoryParameters {
 	apiKey: string;
+	categoryId?: string;
 	name?: string;
 	description?: string;
 }
@@ -22,10 +23,11 @@ export default async function handler(
 
 		const { usersCollection } = await userDb();
 
-		const { bookCategoriesCollection } = await bookDb();
+		const { booksCollection, bookCategoriesCollection } = await bookDb();
 
 		const {
 			apiKey,
+			categoryId = undefined,
 			name: rawName = undefined,
 			description: rawDescription = undefined,
 		}: APIEndpointBooksCategoryParameters = req.body || req.query;
@@ -74,7 +76,7 @@ export default async function handler(
 			});
 		}
 
-		if (!bookCategoriesCollection) {
+		if (!booksCollection || !bookCategoriesCollection) {
 			return res.status(500).json({
 				statusCode: 500,
 				error: {
@@ -117,6 +119,16 @@ export default async function handler(
 
 		switch (req.method) {
 			case "POST": {
+				if (!userData.roles.includes("admin")) {
+					return res.status(401).json({
+						statusCode: 401,
+						error: {
+							type: "Unauthorized",
+							message: "You are not authorized to create a book category",
+						},
+					});
+				}
+
 				if (!name) {
 					return res.status(400).json({
 						statusCode: 400,
@@ -172,6 +184,72 @@ export default async function handler(
 						message: "Category created successfully",
 					},
 					category: newCategoryData.value,
+				});
+
+				break;
+			}
+
+			case "DELETE": {
+				if (!userData.roles.includes("admin")) {
+					return res.status(401).json({
+						statusCode: 401,
+						error: {
+							type: "Unauthorized",
+							message: "You are not authorized to delete categories",
+						},
+					});
+				}
+
+				if (!categoryId) {
+					return res.status(400).json({
+						statusCode: 400,
+						error: {
+							type: "Missing Category ID",
+							message: "Please enter category ID",
+						},
+					});
+				}
+
+				const existingCategory = (await bookCategoriesCollection.findOne({
+					id: categoryId,
+				})) as unknown as BookCategory;
+
+				if (!existingCategory) {
+					return res.status(404).json({
+						statusCode: 404,
+						error: {
+							type: "Category Not Found",
+							message: "Category not found",
+						},
+					});
+				}
+
+				const deletedCategory = await bookCategoriesCollection.deleteOne({
+					id: categoryId,
+				});
+
+				if (deletedCategory.acknowledged) {
+					await booksCollection.updateMany(
+						{
+							categories: {
+								$in: [existingCategory.name],
+							},
+						},
+						{
+							$pull: {
+								categories: existingCategory.name,
+							} as any,
+						}
+					);
+				}
+
+				return res.status(200).json({
+					statusCode: 200,
+					success: {
+						type: "Category Deleted",
+						message: "Category deleted successfully",
+					},
+					isDeleted: deletedCategory.acknowledged,
 				});
 
 				break;
