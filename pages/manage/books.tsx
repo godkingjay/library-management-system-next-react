@@ -17,6 +17,8 @@ import {
 	Flex,
 	FormControl,
 	FormLabel,
+	Grid,
+	GridItem,
 	Icon,
 	Input,
 	List,
@@ -29,8 +31,11 @@ import {
 	ModalFooter,
 	ModalHeader,
 	ModalOverlay,
+	NumberDecrementStepper,
+	NumberIncrementStepper,
 	NumberInput,
 	NumberInputField,
+	NumberInputStepper,
 	Table,
 	TableContainer,
 	Tbody,
@@ -117,8 +122,8 @@ const ManageBooksPage: React.FC<ManageBooksPageProps> = () => {
 		title: "",
 		description: "",
 		ISBN: "",
-		available: 0,
-		amount: 0,
+		amount: 1,
+		available: 1,
 		borrows: 0,
 		borrowedTimes: 0,
 		publicationDate: "",
@@ -141,19 +146,7 @@ const ManageBooksPage: React.FC<ManageBooksPageProps> = () => {
 		> & {
 			image: ImageOrVideoType | null;
 		}
-	>({
-		author: "",
-		title: "",
-		description: "",
-		ISBN: "",
-		available: 0,
-		amount: 0,
-		borrows: 0,
-		borrowedTimes: 0,
-		publicationDate: "",
-		categories: [],
-		image: null,
-	});
+	>(defaultBookForm);
 
 	const [deleteBookForm, setDeleteBookForm] = useState<Book | null>(null);
 
@@ -331,10 +324,10 @@ const ManageBooksPage: React.FC<ManageBooksPageProps> = () => {
 					title: bookForm.title,
 					description: bookForm.description,
 					ISBN: bookForm.ISBN,
-					amount: bookForm.amount,
-					available: bookForm.available,
-					borrows: bookForm.borrows,
-					borrowedTimes: bookForm.borrowedTimes,
+					amount: bookForm.amount || 0,
+					available: bookForm.available || 0,
+					borrows: bookForm.borrows || 0,
+					borrowedTimes: bookForm.borrowedTimes || 0,
 					publicationDate: bookForm.publicationDate,
 					categories: JSON.stringify(bookForm.categories) as any,
 				};
@@ -414,10 +407,10 @@ const ManageBooksPage: React.FC<ManageBooksPageProps> = () => {
 					title: editUpdateBookForm.title,
 					description: editUpdateBookForm.description,
 					ISBN: editUpdateBookForm.ISBN,
-					amount: editUpdateBookForm.amount,
-					available: editUpdateBookForm.available,
-					borrows: editUpdateBookForm.borrows,
-					borrowedTimes: editUpdateBookForm.borrowedTimes,
+					amount: editUpdateBookForm.amount || 0,
+					available: editUpdateBookForm.available || 0,
+					borrows: editUpdateBookForm.borrows || 0,
+					borrowedTimes: editUpdateBookForm.borrowedTimes || 0,
 					publicationDate: editUpdateBookForm.publicationDate,
 					categories: JSON.stringify(editUpdateBookForm.categories) as any,
 				};
@@ -1263,7 +1256,111 @@ const ManageBooksPage: React.FC<ManageBooksPageProps> = () => {
 									/>
 								</FormControl>
 								<div className="h-[1px] bg-gray-200 my-1"></div>
-
+								<Grid className="grid-cols-2 xs:grid-cols-3 gap-y-2 gap-x-4">
+									<GridItem className="col-span-full">
+										<FormControl isRequired>
+											<FormLabel>Amount</FormLabel>
+											<NumberInput
+												isDisabled={submitting}
+												_disabled={{
+													filter: "grayscale(100%)",
+												}}
+												value={bookForm.amount}
+											>
+												<NumberInputField
+													name="amount"
+													placeholder="Amount"
+													disabled={submitting}
+													_disabled={{
+														filter: "grayscale(100%)",
+													}}
+													value={bookForm.amount}
+													onChange={(event) =>
+														!submitting && handleBookFormChange(event)
+													}
+												/>
+											</NumberInput>
+										</FormControl>
+									</GridItem>
+									<GridItem>
+										<FormControl isRequired>
+											<FormLabel fontSize={"sm"}>Available</FormLabel>
+											<NumberInput
+												isDisabled={submitting}
+												_disabled={{
+													filter: "grayscale(100%)",
+												}}
+												value={bookForm.available}
+												size={"sm"}
+											>
+												<NumberInputField
+													name="available"
+													placeholder="Available"
+													disabled={submitting}
+													_disabled={{
+														filter: "grayscale(100%)",
+													}}
+													value={bookForm.available}
+													onChange={(value) =>
+														!submitting && handleBookFormChange(value)
+													}
+												/>
+											</NumberInput>
+										</FormControl>
+									</GridItem>
+									<GridItem>
+										<FormControl isRequired>
+											<FormLabel fontSize={"sm"}>Borrows</FormLabel>
+											<NumberInput
+												isDisabled={submitting}
+												_disabled={{
+													filter: "grayscale(100%)",
+												}}
+												value={bookForm.borrows}
+												size={"sm"}
+											>
+												<NumberInputField
+													name="borrows"
+													placeholder="Borrows"
+													disabled={submitting}
+													_disabled={{
+														filter: "grayscale(100%)",
+													}}
+													value={bookForm.borrows}
+													onChange={(value) =>
+														!submitting && handleBookFormChange(value)
+													}
+												/>
+											</NumberInput>
+										</FormControl>
+									</GridItem>
+									<GridItem>
+										<FormControl isRequired>
+											<FormLabel fontSize={"sm"}>Total Borrows</FormLabel>
+											<NumberInput
+												isDisabled={submitting}
+												_disabled={{
+													filter: "grayscale(100%)",
+												}}
+												value={bookForm.borrowedTimes}
+												size={"sm"}
+											>
+												<NumberInputField
+													name="borrowedTimes"
+													placeholder="Total Borrows"
+													disabled={submitting}
+													_disabled={{
+														filter: "grayscale(100%)",
+													}}
+													value={bookForm.borrowedTimes}
+													onChange={(value) =>
+														!submitting && handleBookFormChange(value)
+													}
+												/>
+											</NumberInput>
+										</FormControl>
+									</GridItem>
+								</Grid>
 								<div className="h-[1px] bg-gray-200 my-1"></div>
 								<Button
 									type="submit"
@@ -1369,7 +1466,7 @@ const ManageBooksPage: React.FC<ManageBooksPageProps> = () => {
 					<ModalHeader>Edit Author</ModalHeader>
 					<ModalCloseButton />
 					<ModalBody>
-						<form onSubmit={(event) => !submitting && handleUpdateBook(event)}>
+						<form onSubmit={(event) => !updating && handleUpdateBook(event)}>
 							<Flex
 								direction={"column"}
 								gap={4}
@@ -1413,7 +1510,7 @@ const ManageBooksPage: React.FC<ManageBooksPageProps> = () => {
 										<Button
 											size={"sm"}
 											onClick={() =>
-												!submitting &&
+												!updating &&
 												bookUpdateFormUploadImageRef.current!.click()
 											}
 											rounded={"full"}
@@ -1441,10 +1538,10 @@ const ManageBooksPage: React.FC<ManageBooksPageProps> = () => {
 										id="cover"
 										accept={validImageTypes.ext.join(",")}
 										ref={bookUpdateFormUploadImageRef}
-										disabled={submitting}
+										disabled={updating}
 										title="Upload Book Cover"
 										onChange={(event) =>
-											!submitting && handleBookFormUploadImage(event)
+											!updating && handleBookFormUploadImage(event)
 										}
 										hidden
 									/>
@@ -1456,14 +1553,14 @@ const ManageBooksPage: React.FC<ManageBooksPageProps> = () => {
 										name="title"
 										placeholder="Title"
 										maxLength={256}
-										disabled={submitting}
-										isDisabled={submitting}
+										disabled={updating}
+										isDisabled={updating}
 										_disabled={{
 											filter: "grayscale(100%)",
 										}}
 										value={editUpdateBookForm.title}
 										onChange={(event) =>
-											!submitting && handleBookFormChange(event)
+											!updating && handleBookFormChange(event)
 										}
 									/>
 								</FormControl>
@@ -1476,7 +1573,7 @@ const ManageBooksPage: React.FC<ManageBooksPageProps> = () => {
 										placeholder="Search..."
 										value={editBookFormSearchAuthor}
 										onChange={(event) =>
-											!submitting && handleSearchAuthorFormChange(event)
+											!updating && handleSearchAuthorFormChange(event)
 										}
 										autoFocus
 									/>
@@ -1538,7 +1635,7 @@ const ManageBooksPage: React.FC<ManageBooksPageProps> = () => {
 								<FormControl isRequired>
 									<FormLabel>ISBN</FormLabel>
 									<NumberInput
-										isDisabled={submitting}
+										isDisabled={updating}
 										_disabled={{
 											filter: "grayscale(100%)",
 										}}
@@ -1550,13 +1647,13 @@ const ManageBooksPage: React.FC<ManageBooksPageProps> = () => {
 											placeholder="ISBN(10-13)"
 											minLength={10}
 											maxLength={13}
-											disabled={submitting}
+											disabled={updating}
 											_disabled={{
 												filter: "grayscale(100%)",
 											}}
 											value={editUpdateBookForm.ISBN}
 											onChange={(value) =>
-												!submitting && handleBookFormChange(value)
+												!updating && handleBookFormChange(value)
 											}
 											className="
 												data-[error=true]:text-red-500
@@ -1580,14 +1677,14 @@ const ManageBooksPage: React.FC<ManageBooksPageProps> = () => {
 										name="description"
 										placeholder="Description[Optional]"
 										maxLength={4000}
-										disabled={submitting}
-										isDisabled={submitting}
+										disabled={updating}
+										isDisabled={updating}
 										_disabled={{
 											filter: "grayscale(100%)",
 										}}
 										value={editUpdateBookForm.description}
 										onChange={(event) =>
-											!submitting && handleBookFormChange(event)
+											!updating && handleBookFormChange(event)
 										}
 									/>
 								</FormControl>
@@ -1596,8 +1693,8 @@ const ManageBooksPage: React.FC<ManageBooksPageProps> = () => {
 									<Input
 										type="date"
 										name="publicationDate"
-										disabled={submitting}
-										isDisabled={submitting}
+										disabled={updating}
+										isDisabled={updating}
 										_disabled={{
 											filter: "grayscale(100%)",
 										}}
@@ -1609,17 +1706,123 @@ const ManageBooksPage: React.FC<ManageBooksPageProps> = () => {
 												: ""
 										}
 										onChange={(event) =>
-											!submitting && handleBookFormChange(event)
+											!updating && handleBookFormChange(event)
 										}
 									/>
 								</FormControl>
 								<div className="h-[1px] bg-gray-200 my-1"></div>
+								<Grid className="grid-cols-2 xs:grid-cols-3 gap-y-2 gap-x-4">
+									<GridItem className="col-span-full">
+										<FormControl isRequired>
+											<FormLabel>Amount</FormLabel>
+											<NumberInput
+												isDisabled={updating}
+												_disabled={{
+													filter: "grayscale(100%)",
+												}}
+												value={editUpdateBookForm.amount}
+											>
+												<NumberInputField
+													name="amount"
+													placeholder="Amount"
+													disabled={updating}
+													_disabled={{
+														filter: "grayscale(100%)",
+													}}
+													value={editUpdateBookForm.amount}
+													onChange={(event) =>
+														!updating && handleBookFormChange(event)
+													}
+												/>
+											</NumberInput>
+										</FormControl>
+									</GridItem>
+									<GridItem>
+										<FormControl isRequired>
+											<FormLabel fontSize={"sm"}>Available</FormLabel>
+											<NumberInput
+												isDisabled={updating}
+												_disabled={{
+													filter: "grayscale(100%)",
+												}}
+												value={editUpdateBookForm.available}
+												size={"sm"}
+											>
+												<NumberInputField
+													name="available"
+													placeholder="Available"
+													disabled={updating}
+													_disabled={{
+														filter: "grayscale(100%)",
+													}}
+													value={editUpdateBookForm.available}
+													onChange={(value) =>
+														!updating && handleBookFormChange(value)
+													}
+												/>
+											</NumberInput>
+										</FormControl>
+									</GridItem>
+									<GridItem>
+										<FormControl isRequired>
+											<FormLabel fontSize={"sm"}>Borrows</FormLabel>
+											<NumberInput
+												isDisabled={updating}
+												_disabled={{
+													filter: "grayscale(100%)",
+												}}
+												value={editUpdateBookForm.borrows}
+												size={"sm"}
+											>
+												<NumberInputField
+													name="borrows"
+													placeholder="Borrows"
+													disabled={updating}
+													_disabled={{
+														filter: "grayscale(100%)",
+													}}
+													value={editUpdateBookForm.borrows}
+													onChange={(value) =>
+														!updating && handleBookFormChange(value)
+													}
+												/>
+											</NumberInput>
+										</FormControl>
+									</GridItem>
+									<GridItem>
+										<FormControl isRequired>
+											<FormLabel fontSize={"sm"}>Total Borrows</FormLabel>
+											<NumberInput
+												isDisabled={updating}
+												_disabled={{
+													filter: "grayscale(100%)",
+												}}
+												value={editUpdateBookForm.borrowedTimes}
+												size={"sm"}
+											>
+												<NumberInputField
+													name="borrowedTimes"
+													placeholder="Total Borrows"
+													disabled={updating}
+													_disabled={{
+														filter: "grayscale(100%)",
+													}}
+													value={editUpdateBookForm.borrowedTimes}
+													onChange={(value) =>
+														!updating && handleBookFormChange(value)
+													}
+												/>
+											</NumberInput>
+										</FormControl>
+									</GridItem>
+								</Grid>
+								<div className="h-[1px] bg-gray-200 my-1"></div>
 								<Button
 									type="submit"
 									colorScheme="whatsapp"
-									disabled={submitting || updating}
+									disabled={updating || updating}
 									loadingText="Adding Book"
-									isLoading={submitting}
+									isLoading={updating}
 									isDisabled={submitting || updating}
 									_disabled={{
 										filter: "grayscale(100%)",
