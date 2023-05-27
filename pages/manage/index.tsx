@@ -9,7 +9,7 @@ import {
 	Icon,
 	Text,
 } from "@chakra-ui/react";
-import React from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { IoBookSharp, IoLibraryOutline } from "react-icons/io5";
 import { BsChevronRight, BsVectorPen } from "react-icons/bs";
 import { BiCategory } from "react-icons/bi";
@@ -19,10 +19,61 @@ import Head from "next/head";
 import { MdPendingActions } from "react-icons/md";
 import { FaHandHolding } from "react-icons/fa";
 import { RiContactsBookUploadLine } from "react-icons/ri";
+import axios from "axios";
+import { apiConfig } from "@/utils/site";
+import { APIEndpointCountParams } from "../api/count";
+import useUser from "@/hooks/useUser";
 
 type ManagePageProps = {};
 
 const ManagePage: React.FC<ManagePageProps> = () => {
+	const { usersStateValue } = useUser();
+	const dashboardRef = useRef(false);
+
+	const [dashboardData, setDashboardData] = useState({
+		books: 0,
+		authors: 0,
+		categories: 0,
+		borrows: {
+			borrowed: 0,
+			pending: 0,
+			returned: 0,
+		},
+	});
+
+	const fetchDatabaseDataCount = async () => {
+		try {
+			const { statusCode, count } = await axios
+				.get(apiConfig.apiEndpoint + "/count/", {
+					params: {
+						apiKey: usersStateValue.currentUser?.auth?.keys[0].key,
+					} as APIEndpointCountParams,
+				})
+				.then((response) => response.data)
+				.catch((error) => {
+					throw new Error(
+						`=>API: Fetching database data count failed with error:\n${error.message}`
+					);
+				});
+
+			if (statusCode === 200) {
+				setDashboardData(count);
+			}
+		} catch (error: any) {
+			console.log(
+				`=>API: Fetching database data count failed with error:\n${error.message}`
+			);
+		}
+	};
+
+	useEffect(() => {
+		if (!dashboardRef.current) {
+			dashboardRef.current = true;
+
+			fetchDatabaseDataCount();
+		}
+	}, [dashboardRef]);
+
 	return (
 		<>
 			<Head>
@@ -83,7 +134,7 @@ const ManagePage: React.FC<ManagePageProps> = () => {
 									height={"full"}
 								>
 									<Text className="leading-none text-white font-bold text-4xl">
-										0
+										{dashboardData.books}
 									</Text>
 									<Text className="leading-none text-white text-opacity-75">
 										Books
@@ -116,7 +167,7 @@ const ManagePage: React.FC<ManagePageProps> = () => {
 									height={"full"}
 								>
 									<Text className="leading-none text-white font-bold text-4xl">
-										0
+										{dashboardData.authors}
 									</Text>
 									<Text className="leading-none text-white text-opacity-75">
 										Authors
@@ -149,7 +200,7 @@ const ManagePage: React.FC<ManagePageProps> = () => {
 									height={"full"}
 								>
 									<Text className="leading-none text-white font-bold text-4xl">
-										0
+										{dashboardData.categories}
 									</Text>
 									<Text className="leading-none text-white text-opacity-75">
 										Categories
@@ -183,7 +234,7 @@ const ManagePage: React.FC<ManagePageProps> = () => {
 									height={"full"}
 								>
 									<Text className="leading-none text-white font-bold text-3xl">
-										0
+										{dashboardData.borrows.borrowed}
 									</Text>
 									<Text className="leading-none text-white text-opacity-75">
 										Borrows
@@ -216,7 +267,7 @@ const ManagePage: React.FC<ManagePageProps> = () => {
 									height={"full"}
 								>
 									<Text className="leading-none text-white font-bold text-3xl">
-										0
+										{dashboardData.borrows.pending}
 									</Text>
 									<Text className="leading-none text-white text-opacity-75">
 										Pending
@@ -249,7 +300,7 @@ const ManagePage: React.FC<ManagePageProps> = () => {
 									height={"full"}
 								>
 									<Text className="leading-none text-white font-bold text-3xl">
-										0
+										{dashboardData.borrows.returned}
 									</Text>
 									<Text className="leading-none text-white text-opacity-75">
 										Returned
