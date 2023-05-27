@@ -127,8 +127,9 @@ const ManageCategoriesPage: React.FC<ManageCategoriesPageProps> = () => {
 
 	const handleEditCategoryModalOpen = (category: BookCategory) => {
 		handleCategoriesModalOpen("edit");
+
 		setEditCategoryForm(category);
-		setDeleteCategoryForm(category);
+		setEditUpdateCategoryForm(category);
 	};
 
 	const createCategory = async (event: React.FormEvent<HTMLFormElement>) => {
@@ -181,6 +182,48 @@ const ManageCategoriesPage: React.FC<ManageCategoriesPageProps> = () => {
 		} catch (error: any) {
 			console.error(`=>API: Creating category Failed:\n${error}`);
 			setSubmitting(false);
+		}
+	};
+
+	const updateCategory = async (event: React.FormEvent<HTMLFormElement>) => {
+		event.preventDefault();
+
+		try {
+			if (!updating) {
+				setUpdating(true);
+
+				const { statusCode } = await axios
+					.put(apiConfig.apiEndpoint + "/books/categories/category", {
+						apiKey: usersStateValue.currentUser?.auth?.keys[0].key,
+						categoryId: editUpdateCategoryForm.id,
+						name: editUpdateCategoryForm.name,
+						description: editUpdateCategoryForm.description,
+					} as APIEndpointBooksCategoryParameters)
+					.then((response) => response.data)
+					.catch((error) => {
+						throw new Error(`=>API: Updating category Failed:\n${error}`);
+					});
+
+				if (statusCode === 200) {
+					toast({
+						title: "Category Updated.",
+						description: "Category has been updated successfully.",
+						status: "success",
+						duration: 5000,
+						isClosable: true,
+						position: "top",
+					});
+					setCategoriesModalOpen("");
+					setEditCategoryForm(defaultEditCategoryForm);
+					setEditUpdateCategoryForm(defaultEditCategoryForm);
+					await fetchCategories(categoryAlphabet, cPage);
+				}
+
+				setUpdating(false);
+			}
+		} catch (error: any) {
+			console.error(`=>API: Updating category Failed:\n${error}`);
+			setUpdating(false);
 		}
 	};
 
@@ -672,6 +715,81 @@ const ManageCategoriesPage: React.FC<ManageCategoriesPageProps> = () => {
 				</ModalContent>
 			</Modal>
 
+			{/* 
+				
+				Edit Category Modal
+
+			*/}
+			<Modal
+				isOpen={categoriesModalOpen === "edit"}
+				onClose={() => handleCategoriesModalOpen("")}
+			>
+				<ModalOverlay />
+				<ModalContent>
+					<ModalHeader>Edit Category</ModalHeader>
+					<ModalCloseButton />
+					<ModalBody>
+						<form onSubmit={(event) => !updating && updateCategory(event)}>
+							<Flex
+								direction={"column"}
+								gap={4}
+							>
+								<FormControl isRequired>
+									<FormLabel>Name</FormLabel>
+									<Input
+										type="text"
+										name="name"
+										placeholder="Name"
+										maxLength={256}
+										disabled={updating}
+										isDisabled={updating}
+										_disabled={{
+											filter: "grayscale(100%)",
+										}}
+										value={editUpdateCategoryForm.name}
+										onChange={(event) =>
+											!updating && handleCategoriesFormChange(event)
+										}
+									/>
+								</FormControl>
+								<FormControl>
+									<FormLabel>Description</FormLabel>
+									<Textarea
+										name="description"
+										placeholder="Description[Optional]"
+										maxLength={4000}
+										disabled={updating}
+										isDisabled={updating}
+										_disabled={{
+											filter: "grayscale(100%)",
+										}}
+										value={editUpdateCategoryForm.description}
+										onChange={(event) =>
+											!updating && handleCategoriesFormChange(event)
+										}
+									/>
+								</FormControl>
+								<div className="h-[1px] bg-gray-200 my-1"></div>
+								<Button
+									type="submit"
+									colorScheme="whatsapp"
+									disabled={updating || !editUpdateCategoryForm?.name}
+									loadingText="Adding Author"
+									isLoading={updating}
+									isDisabled={updating || !editUpdateCategoryForm?.name}
+									_disabled={{
+										filter: "grayscale(100%)",
+									}}
+								>
+									Update Category
+								</Button>
+							</Flex>
+						</form>
+					</ModalBody>
+					<ModalFooter></ModalFooter>
+				</ModalContent>
+			</Modal>
+
 			{/**
 			 *
 			 * Delete Category Modal
@@ -825,7 +943,7 @@ const ManageCategoriesPage: React.FC<ManageCategoriesPageProps> = () => {
 								onClick={() =>
 									deleteCategoryForm &&
 									!deleting &&
-									deleteCategory(deleteCategoryForm)
+									deleteCategory(deleteCategoryForm as BookCategory)
 								}
 							>
 								Delete
