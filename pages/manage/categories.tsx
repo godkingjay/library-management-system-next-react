@@ -1,6 +1,17 @@
 import React, { useEffect, useRef, useState } from "react";
 import SearchBar from "@/components/Input/SearchBar";
-import { Box, Button, Flex, Select, Text } from "@chakra-ui/react";
+import {
+	Box,
+	Button,
+	Collapse,
+	Flex,
+	Grid,
+	Select,
+	Stack,
+	Text,
+	Icon,
+	useToast,
+} from "@chakra-ui/react";
 import Head from "next/head";
 import ManageBreadcrumb from "@/components/Breadcrumb/ManageBreadcrumb";
 import { BookCategory } from "@/utils/models/book";
@@ -9,23 +20,39 @@ import { apiConfig } from "@/utils/site";
 import { APIEndpointBooksCategoriesParameters } from "../api/books/categories";
 import useAuth from "@/hooks/useAuth";
 import useUser from "@/hooks/useUser";
+import Pagination from "@/components/Table/Pagination";
+import { FiEdit } from "react-icons/fi";
+import { MdOutlineDeleteOutline } from "react-icons/md";
+import { AiOutlinePlus } from "react-icons/ai";
 
 type ManageCategoriesPageProps = {};
+
+export type CategoriesModalTypes = "" | "add" | "edit" | "delete";
 
 const ManageCategoriesPage: React.FC<ManageCategoriesPageProps> = () => {
 	const { loadingUser } = useAuth();
 	const { usersStateValue } = useUser();
 
-	const [categoriesData, setCategoriesData] = useState<BookCategory[]>([]);
+	const toast = useToast();
+
 	const [cPage, setCPage] = useState(1);
 	const [tPages, setTPages] = useState(1);
 	const [itemsPerPage, setItemsPerPage] = useState(10);
-	const [fetchingData, setFetchingData] = useState(false);
+	const [categoriesData, setCategoriesData] = useState<BookCategory[]>([]);
 
-	const [searchText, setSearchText] = useState("");
+	const [fetchingData, setFetchingData] = useState(false);
+	const [submitting, setSubmitting] = useState(false);
+	const [updating, setUpdating] = useState(false);
+	const [deleting, setDeleting] = useState(false);
+
+	// const [searchText, setSearchText] = useState("");
 	const [categoryAlphabet, setCategoryAlphabet] = useState("All");
 
 	const categoriesMounted = useRef(false);
+	const deleteRef = useRef(null);
+
+	const [categoriesModalOpen, setCategoriesModalOpen] =
+		useState<CategoriesModalTypes>("");
 
 	const alphabet = [
 		"All",
@@ -104,6 +131,11 @@ const ManageCategoriesPage: React.FC<ManageCategoriesPageProps> = () => {
 		}
 	};
 
+	const handlePageChange = async (page: number) => {
+		setCPage(page);
+		await fetchCategories(categoryAlphabet);
+	};
+
 	useEffect(() => {
 		if (
 			!categoriesMounted.current &&
@@ -168,6 +200,7 @@ const ManageCategoriesPage: React.FC<ManageCategoriesPageProps> = () => {
 								Search
 							</Button>
 						</form> */}
+
 						<Select
 							onChange={(event) => handleSelectChange(event)}
 							value={categoryAlphabet}
@@ -184,6 +217,116 @@ const ManageCategoriesPage: React.FC<ManageCategoriesPageProps> = () => {
 								</option>
 							))}
 						</Select>
+						<Flex
+							direction="row"
+							justifyContent={"end"}
+							gap={2}
+							className="items-center"
+						>
+							{/* <div
+								className="
+								flex-1 flex-col
+								hidden
+								data-[search=true]:flex
+							"
+								data-search={searchResultDetails.text.trim().length > 0}
+							>
+								<p className="w-full text-sm max-w-full inline text-gray-500 truncate break-words whitespace-pre-wrap">
+									<span>Showing {booksData.length.toString()} out of </span>
+									<span>
+										{searchResultDetails.total.toString()} results for{" "}
+									</span>
+									<span>"{searchResultDetails.text}"</span>
+								</p>
+							</div> */}
+							<Button
+								leftIcon={<AiOutlinePlus />}
+								colorScheme="whatsapp"
+								variant="solid"
+								// onClick={() => handleBooksModalOpen("add")}
+							>
+								Add Book
+							</Button>
+						</Flex>
+					</Flex>
+
+					<Grid className="grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+						{categoriesData.length > 0 ? (
+							<>
+								{categoriesData.map((category, index) => (
+									<React.Fragment key={category.id}>
+										<Box
+											title={category.name}
+											className="flex flex-col gap-y-4  p-4 shadow-page-box-1 rounded-lg bg-white border border-transparent group hover:border-blue-500 relative"
+										>
+											<Box className="flex flex-row gap-x-2">
+												<Text className="group-hover:bg-blue-500 font-bold bg-slate-700 text-white px-2 py-1 absolute top-0 left-0 text-2xs -translate-x-1 -translate-y-2 rounded-full">
+													{index + 1 + itemsPerPage * (cPage - 1)}
+												</Text>
+												<Text className="flex-1 font-semibold text-xl leading-5 truncate">
+													{category.name}
+												</Text>
+											</Box>
+											<Box className="flex flex-col items-end">
+												<Stack
+													display={"flex"}
+													direction="row"
+													align="center"
+													alignItems={"center"}
+													justifyContent={"center"}
+												>
+													<Button
+														display={"flex"}
+														flexDirection={"column"}
+														alignItems={"center"}
+														justifyContent={"center"}
+														colorScheme="blue"
+														variant="solid"
+														size={"sm"}
+														padding={1}
+														// onClick={() => onEdit && onEdit(bookInfo)}
+													>
+														<Icon as={FiEdit} />
+													</Button>
+													<Button
+														display={"flex"}
+														flexDirection={"column"}
+														alignItems={"center"}
+														justifyContent={"center"}
+														colorScheme="red"
+														variant="solid"
+														size={"sm"}
+														padding={1}
+														// onClick={() => onDelete && onDelete(bookInfo)}
+													>
+														<Icon as={MdOutlineDeleteOutline} />
+													</Button>
+												</Stack>
+											</Box>
+										</Box>
+									</React.Fragment>
+								))}
+							</>
+						) : (
+							<>
+								<Text className="p-2 text-xl font-semibold text-center text-gray-500 col-span-full">
+									No Categories Found
+								</Text>
+							</>
+						)}
+					</Grid>
+
+					<Flex
+						direction={"row"}
+						className="items-center justify-center"
+					>
+						<div className="flex flex-col items-center p-2 shadow-page-box-1 bg-white rounded-lg">
+							<Pagination
+								currentPage={cPage}
+								totalPages={tPages > 1 ? tPages : 1}
+								onPageChange={handlePageChange}
+							/>
+						</div>
 					</Flex>
 				</Box>
 			</Box>
