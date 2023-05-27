@@ -17,8 +17,6 @@ import {
 	Flex,
 	FormControl,
 	FormLabel,
-	Grid,
-	GridItem,
 	Icon,
 	Input,
 	List,
@@ -42,11 +40,12 @@ import {
 	Th,
 	Thead,
 	Tr,
+	useToast,
 } from "@chakra-ui/react";
 import axios from "axios";
 import Head from "next/head";
 import React, { useEffect, useRef, useState } from "react";
-import { AiOutlineBook, AiOutlinePlus } from "react-icons/ai";
+import { AiOutlinePlus } from "react-icons/ai";
 import { APIEndpointBooksParameters } from "../api/books";
 import Pagination from "@/components/Table/Pagination";
 import { FiLoader } from "react-icons/fi";
@@ -69,6 +68,8 @@ const ManageBooksPage: React.FC<ManageBooksPageProps> = () => {
 	const { loadingUser } = useAuth();
 	const { usersStateValue } = useUser();
 	const { uploadImageOrVideo } = useInput();
+
+	const toast = useToast();
 
 	const [cPage, setCPage] = useState(1);
 	const [tPages, setTPages] = useState(1);
@@ -378,6 +379,14 @@ const ManageBooksPage: React.FC<ManageBooksPageProps> = () => {
 					await fetchBooks(cPage);
 					handleBooksModalOpen("");
 					setBookForm(defaultBookForm);
+					toast({
+						title: "Book Added",
+						description: "Book is successfully added in the library.",
+						status: "success",
+						duration: 5000,
+						isClosable: true,
+						position: "top",
+					});
 				}
 
 				setSubmitting(false);
