@@ -614,7 +614,7 @@ const ManageBooksPage: React.FC<ManageBooksPageProps> = () => {
 				await fetchBooks(1);
 			}
 		} catch (error: any) {
-			console.error(`=>API: Search BooksfetchBooks Failed:\n${error}`);
+			console.error(`=>API: Search Books fetchBooks Failed:\n${error}`);
 		}
 	};
 
