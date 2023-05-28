@@ -451,8 +451,8 @@ const IndexPage = () => {
 						<ModalHeader isTruncated>{viewBook?.book.title}</ModalHeader>
 						<ModalCloseButton />
 						<ModalBody>
-							<Flex className="flex flex-row gap-x-8">
-								<Box className="flex-1">
+							<Flex className="flex flex-col sm:flex-row gap-8">
+								<Box className="sm:flex-1">
 									<Box className="flex flex-col aspect-[2/3] w-full bg-gray-200 items justify-center relative rounded-lg overflow-hidden shadow-lg group/image">
 										{viewBook?.book.cover ? (
 											<>
@@ -488,7 +488,7 @@ const IndexPage = () => {
 										)}
 									</Box>
 								</Box>
-								<Box className="flex-1 flex flex-col">
+								<Box className="sm:flex-1 flex flex-col">
 									<Box className="flex flex-col gap-y-2">
 										<Text className="font-bold text-gray-700 text-2xl">
 											{viewBook?.book.title}
