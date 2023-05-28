@@ -389,7 +389,7 @@ const IndexPage = () => {
 								</Text>
 								<div className="h-[1px] w-full bg-gray-300 mb-2"></div>
 							</Flex>
-							<Grid className="w-full grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+							<Grid className="w-full grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-4 gap-y-6">
 								{fetchingData ||
 								!booksMounted.current ||
 								loadingUser ||

@@ -145,7 +145,7 @@ const BookCard: React.FC<BookCardProps> = ({ bookData, onViewBook }) => {
 							<Box className="flex flex-row font-mono gap-x-2 items-center text-xs text-gray-500">
 								<Text>{bookData.author.name}</Text>
 								<Text>|</Text>
-								<Text>
+								<Text isTruncated>
 									{moment(bookData.book.publicationDate).format("MMMM DD, YYYY")}
 								</Text>
 							</Box>
