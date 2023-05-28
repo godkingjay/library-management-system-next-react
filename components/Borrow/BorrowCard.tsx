@@ -175,47 +175,53 @@ const BorrowCard: React.FC<BorrowCardProps> = ({
 												borrowData.borrower?.email
 										  }`}
 								</Text>
-								<Box className="flex flex-col my-2">
+								<Box className="flex flex-col my-2 gap-y-2">
 									{borrowData.borrow?.requestedAt && (
 										<>
-											<Text className="text-gray-700 truncate text-xs">
-												Requested At:
-											</Text>
-											<Text className="font-bold text-gray-700 text-sm truncate">
-												{moment(borrowData.borrow.requestedAt).format(
-													"MMMM DD, YYYY, h:mm:ss a"
-												)}
-											</Text>
+											<Box>
+												<Text className="text-gray-700 truncate text-xs">
+													Requested At:
+												</Text>
+												<Text className="font-bold text-gray-700 text-sm truncate">
+													{moment(borrowData.borrow.requestedAt).format(
+														"MMMM DD, YYYY, h:mm:ss a"
+													)}
+												</Text>
+											</Box>
 										</>
 									)}
 									{borrowData.borrow?.borrowedAt && (
 										<>
-											<Text className="text-gray-700 truncate text-xs">
-												Borrowed At:
-											</Text>
-											<Text className="font-bold text-gray-700 text-sm truncate">
-												{moment(borrowData.borrow.borrowedAt).format(
-													"MMMM DD, YYYY, h:mm:ss a"
-												)}
-											</Text>
+											<Box>
+												<Text className="text-gray-700 truncate text-xs">
+													Borrowed At:
+												</Text>
+												<Text className="font-bold text-gray-700 text-sm truncate">
+													{moment(borrowData.borrow.borrowedAt).format(
+														"MMMM DD, YYYY, h:mm:ss a"
+													)}
+												</Text>
+											</Box>
 										</>
 									)}
 									{borrowData.borrow?.returnedAt && (
 										<>
-											<Text className="text-gray-700 truncate text-xs">
-												Returned At:
-											</Text>
-											<Text className="font-bold text-gray-700 text-sm truncate">
-												{moment(borrowData.borrow.returnedAt).format(
-													"MMMM DD, YYYY, h:mm:ss a"
-												)}
-											</Text>
+											<Box>
+												<Text className="text-gray-700 truncate text-xs">
+													Returned At:
+												</Text>
+												<Text className="font-bold text-gray-700 text-sm truncate">
+													{moment(borrowData.borrow.returnedAt).format(
+														"MMMM DD, YYYY, h:mm:ss a"
+													)}
+												</Text>
+											</Box>
 										</>
 									)}
 								</Box>
 							</Box>
 							<Divider />
-							<Box className="my-2 flex flex-col flex-1 p-2 bg-gray-100 rounded-lg">
+							<Box className="my-2 flex flex-col p-2 bg-gray-100 rounded-lg">
 								<Text className="font-bold text-gray-700 truncate">Note</Text>
 								<Divider className="my-2" />
 								<Text className="text-gray-700 text-sm">
