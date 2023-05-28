@@ -13,9 +13,20 @@ import {
 	Box,
 	Button,
 	Flex,
+	FormControl,
+	FormLabel,
 	Grid,
 	Icon,
+	Input,
+	Modal,
+	ModalBody,
+	ModalCloseButton,
+	ModalContent,
+	ModalFooter,
+	ModalHeader,
+	ModalOverlay,
 	Text,
+	Textarea,
 	useToast,
 } from "@chakra-ui/react";
 import axios from "axios";
@@ -26,6 +37,7 @@ import Pagination from "@/components/Table/Pagination";
 import { FiLoader } from "react-icons/fi";
 import BorrowCard from "@/components/Borrow/BorrowCard";
 import { APIEndpointBorrowParameters } from "../api/books/borrows/borrow";
+import moment from "moment";
 
 type ManagePendingPageProps = {};
 
@@ -95,6 +107,81 @@ const ManagePendingPage: React.FC<ManagePendingPageProps> = () => {
 			default: {
 				break;
 			}
+		}
+	};
+
+	const addNote = async (event: React.FormEvent<HTMLFormElement>) => {
+		event.preventDefault();
+
+		try {
+			if (!updatingBorrow) {
+				setUpdatingBorrow(true);
+
+				if (!updateBorrow) {
+					toast({
+						title: "Error",
+						description: "An error occurred while adding the note.",
+						status: "error",
+						duration: 5000,
+						isClosable: true,
+						position: "top",
+					});
+				}
+
+				const {
+					statusCode,
+				}: {
+					statusCode: number;
+				} = await axios
+					.put(apiConfig.apiEndpoint + "/books/borrows/borrow", {
+						apiKey: usersStateValue.currentUser?.auth?.keys[0].key,
+						bookId: updateBorrow?.book?.id,
+						borrowType: "request",
+						note: note.note,
+						dueAt:
+							typeof note.dueAt === "string" ? new Date(note.dueAt) : note.dueAt,
+					} as APIEndpointBorrowParameters)
+					.then((response) => response.data)
+					.catch((error) => {
+						const errorData = error.response.data;
+
+						if (errorData.error.message) {
+							toast({
+								title: "Note Addition Failed",
+								description: errorData.error.message,
+								status: "error",
+								duration: 5000,
+								isClosable: true,
+								position: "top",
+							});
+						}
+
+						throw new Error(
+							`=>API: Add Note API Call Failed:\n${error.response.data.error.message}`
+						);
+					});
+
+				if (statusCode === 200) {
+					toast({
+						title: "Note Added",
+						description: "The note has been added.",
+						status: "success",
+						colorScheme: "green",
+						duration: 5000,
+						isClosable: true,
+						position: "top",
+					});
+
+					handleManagePendingModalOpen("");
+					setUpdatingBorrow(false);
+					await fetchBookBorrows(cPage);
+				}
+
+				setUpdatingBorrow(false);
+			}
+		} catch (error: any) {
+			console.log(`=>API: Add Note Failed:\n${error}`);
+			setUpdatingBorrow(false);
 		}
 	};
 
@@ -279,6 +366,19 @@ const ManagePendingPage: React.FC<ManagePendingPageProps> = () => {
 		}
 	};
 
+	const handleUpdateNoteChange = (
+		event:
+			| React.ChangeEvent<HTMLInputElement>
+			| React.ChangeEvent<HTMLTextAreaElement>
+	) => {
+		const { name, value } = event.target;
+
+		setNote((prev) => ({
+			...prev,
+			[name]: value,
+		}));
+	};
+
 	const handlePageChange = async (page: number) => {
 		setCPage(page);
 		await fetchBookBorrows(page);
@@ -385,6 +485,97 @@ const ManagePendingPage: React.FC<ManagePendingPageProps> = () => {
 					</Flex>
 				</Box>
 			</Box>
+
+			{/**
+			 *
+			 * Add Note Modal
+			 *
+			 */}
+			<Modal
+				isOpen={managePendingModalOpen === "note"}
+				onClose={() => handleManagePendingModalOpen("")}
+			>
+				<ModalOverlay />
+				<ModalContent>
+					<ModalHeader>Add Note</ModalHeader>
+					<ModalCloseButton />
+					<ModalBody>
+						<form
+							onSubmit={(event) =>
+								updatingBorrow ||
+								(updateBorrow?.borrow?.note === note.note &&
+									updateBorrow?.borrow?.dueAt === note.dueAt)
+									? event.preventDefault()
+									: addNote(event)
+							}
+						>
+							<Flex
+								direction={"column"}
+								gap={4}
+							>
+								<FormControl>
+									<FormLabel>Note</FormLabel>
+									<Textarea
+										name="note"
+										placeholder={updateBorrow?.borrow?.note || "Note[Optional]"}
+										maxLength={4000}
+										disabled={updatingBorrow}
+										isDisabled={updatingBorrow}
+										value={note.note}
+										onChange={(event) =>
+											!updatingBorrow && handleUpdateNoteChange(event)
+										}
+									/>
+								</FormControl>
+								<FormControl>
+									<FormLabel>Due Date</FormLabel>
+									<Input
+										type="date"
+										name="dueAt"
+										disabled={updatingBorrow}
+										isDisabled={updatingBorrow}
+										value={
+											note.dueAt
+												? typeof note.dueAt === "string"
+													? moment(note.dueAt).format("YYYY-MM-DD")
+													: moment(new Date(note.dueAt).toISOString()).format(
+															"YYYY-MM-DD"
+													  )
+												: ""
+										}
+										onChange={(event) =>
+											!updatingBorrow && handleUpdateNoteChange(event)
+										}
+									/>
+								</FormControl>
+								<div className="h-[1px] bg-gray-200 my-1"></div>
+								<Button
+									type="submit"
+									colorScheme="whatsapp"
+									disabled={
+										updatingBorrow ||
+										(updateBorrow?.borrow?.note === note.note &&
+											updateBorrow?.borrow?.dueAt === note.dueAt)
+									}
+									loadingText="Updating Borrow"
+									isLoading={updatingBorrow}
+									isDisabled={
+										updatingBorrow ||
+										(updateBorrow?.borrow?.note === note.note &&
+											updateBorrow?.borrow?.dueAt === note.dueAt)
+									}
+									_disabled={{
+										filter: "grayscale(100%)",
+									}}
+								>
+									Add Note
+								</Button>
+							</Flex>
+						</form>
+					</ModalBody>
+					<ModalFooter></ModalFooter>
+				</ModalContent>
+			</Modal>
 
 			{/**
 			 *

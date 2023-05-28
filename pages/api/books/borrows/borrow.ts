@@ -31,10 +31,13 @@ export default async function handler(
 			apiKey,
 			borrowId = undefined,
 			bookId = undefined,
-			note = "",
+			note: rawNote = "",
 			dueAt = "",
 			borrowType = "request",
 		}: APIEndpointBorrowParameters = req.body || req.query;
+
+		const note =
+			typeof rawNote === "string" ? rawNote.trim() : rawNote || undefined;
 
 		if (!apiKey) {
 			return res.status(400).json({
@@ -233,7 +236,11 @@ export default async function handler(
 					});
 				}
 
-				if (borrowType !== "accept" && borrowType !== "return") {
+				if (
+					borrowType !== "accept" &&
+					borrowType !== "return" &&
+					borrowType !== "request"
+				) {
 					return res.status(400).json({
 						statusCode: 400,
 						error: {
@@ -365,8 +372,11 @@ export default async function handler(
 
 				const updatedBookBorrow: Partial<BookBorrow> = {
 					note: note,
-					borrowStatus: borrowType === "accept" ? "borrowed" : "returned",
 				};
+
+				if (dueAt) {
+					updatedBookBorrow.dueAt = dueAt;
+				}
 
 				if (borrowType === "accept") {
 					if (bookData.available <= 0) {
@@ -379,6 +389,7 @@ export default async function handler(
 						});
 					}
 
+					updatedBookBorrow.borrowStatus = "borrowed";
 					updatedBookBorrow.borrowedAt = requestedAt.toISOString();
 
 					await booksCollection.updateOne(
@@ -408,6 +419,7 @@ export default async function handler(
 						}
 					);
 
+					updatedBookBorrow.borrowStatus = "returned";
 					updatedBookBorrow.returnedAt = requestedAt.toISOString();
 				}
 
