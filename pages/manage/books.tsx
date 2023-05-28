@@ -363,25 +363,38 @@ const ManageBooksPage: React.FC<ManageBooksPageProps> = () => {
 						}
 					)
 					.then(async (response) => response.data)
-					.catch((error) => {
+					.catch((error: any) => {
+						const errorData = error.response.data;
+
+						if (errorData.error.message) {
+							toast({
+								title: "Create Book Failed",
+								description: errorData.error.message,
+								status: "error",
+								duration: 5000,
+								isClosable: true,
+								position: "top",
+							});
+						}
+
 						throw new Error(
 							`=>API: Create Book Failed:\n${error?.response?.data?.error?.message}`
 						);
 					});
 
 				if (statusCode === 201) {
-					await fetchBooks(cPage);
-					handleBooksModalOpen("");
-					setBookForm(defaultBookForm);
 					toast({
 						title: "Book Added",
-						description: "Book is added successfully in the library.",
+						description: `${bookForm.title} is added successfully in the library.`,
 						status: "success",
 						duration: 5000,
 						isClosable: true,
 						position: "top",
 					});
 					setBookFormSearchAuthor("");
+					handleBooksModalOpen("");
+					setBookForm(defaultBookForm);
+					await fetchBooks(cPage);
 				}
 
 				setSubmitting(false);
@@ -429,24 +442,37 @@ const ManageBooksPage: React.FC<ManageBooksPageProps> = () => {
 					})
 					.then(async (response) => response.data)
 					.catch((error) => {
+						const errorData = error.response.data;
+
+						if (errorData.error.message) {
+							toast({
+								title: "Update Book Failed",
+								description: errorData.error.message,
+								status: "error",
+								duration: 5000,
+								isClosable: true,
+								position: "top",
+							});
+						}
+
 						throw new Error(
 							`=>API: Update Book Failed:\n${error?.response?.data?.error?.message}`
 						);
 					});
 
 				if (statusCode === 200) {
-					await fetchBooks(cPage);
-					handleBooksModalOpen("");
-					setEditUpdateBookForm(defaultEditBookForm);
 					toast({
 						title: "Book Updated",
-						description: "Book is updated successfully in the library.",
+						description: `${editUpdateBookForm.title} is updated successfully in the library.`,
 						status: "success",
 						duration: 5000,
 						isClosable: true,
 						position: "top",
 					});
+					handleBooksModalOpen("");
 					setEditBookFormSearchAuthor("");
+					setEditUpdateBookForm(defaultEditBookForm);
+					await fetchBooks(cPage);
 				}
 
 				setUpdating(false);
@@ -481,6 +507,19 @@ const ManageBooksPage: React.FC<ManageBooksPageProps> = () => {
 					})
 					.then((response) => response.data)
 					.catch((error) => {
+						const errorData = error.response.data;
+
+						if (errorData.error.message) {
+							toast({
+								title: "Fetch Books Failed",
+								description: errorData.error.message,
+								status: "error",
+								duration: 5000,
+								isClosable: true,
+								position: "top",
+							});
+						}
+
 						throw new Error(
 							`=>API: Fetch Books Failed:\n${error.response.data.error.message}`
 						);
@@ -579,23 +618,37 @@ const ManageBooksPage: React.FC<ManageBooksPageProps> = () => {
 					})
 					.then(async (response) => response.data)
 					.catch((error) => {
+						const errorData = error.response.data;
+
+						if (errorData.error.message) {
+							toast({
+								title: "Delete Book Failed",
+								description: errorData.error.message,
+								status: "error",
+								duration: 5000,
+								isClosable: true,
+								position: "top",
+							});
+						}
+
 						throw new Error(
 							`=>API: Delete Book Failed:\n${error?.response?.data?.error?.message}`
 						);
 					});
 
 				if (statusCode === 200) {
-					await fetchBooks(cPage);
-					handleBooksModalOpen("");
 					toast({
 						title: "Book Deleted",
-						description: "Book is deleted successfully in the library.",
-						status: "warning",
+						description: `${deleteBookForm?.title} is deleted successfully in the library.`,
+						status: "success",
 						duration: 5000,
 						colorScheme: "red",
 						isClosable: true,
 						position: "top",
 					});
+					handleBooksModalOpen("");
+					setDeleteBookForm(null);
+					await fetchBooks(cPage);
 				}
 
 				setDeleting(false);
