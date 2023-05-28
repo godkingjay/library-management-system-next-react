@@ -1,9 +1,23 @@
 import ManageBreadcrumb from "@/components/Breadcrumb/ManageBreadcrumb";
 import useAuth from "@/hooks/useAuth";
 import useUser from "@/hooks/useUser";
-import { BookInfo } from "@/utils/models/book";
+import { BookBorrow, BookInfo } from "@/utils/models/book";
 import { apiConfig } from "@/utils/site";
-import { Box, Flex, Grid, Icon, Text, useToast } from "@chakra-ui/react";
+import {
+	AlertDialog,
+	AlertDialogBody,
+	AlertDialogContent,
+	AlertDialogFooter,
+	AlertDialogHeader,
+	AlertDialogOverlay,
+	Box,
+	Button,
+	Flex,
+	Grid,
+	Icon,
+	Text,
+	useToast,
+} from "@chakra-ui/react";
 import axios from "axios";
 import Head from "next/head";
 import React, { useEffect, useRef, useState } from "react";
@@ -11,6 +25,7 @@ import { APIEndpointBorrowsParameters } from "../api/books/borrows";
 import Pagination from "@/components/Table/Pagination";
 import { FiLoader } from "react-icons/fi";
 import BorrowCard from "@/components/Borrow/BorrowCard";
+import { APIEndpointBorrowParameters } from "../api/books/borrows/borrow";
 
 type ManagePendingPageProps = {};
 
@@ -35,10 +50,52 @@ const ManagePendingPage: React.FC<ManagePendingPageProps> = () => {
 
 	const [updateBorrow, setUpdateBorrow] = useState<BookInfo | null>(null);
 
+	const [note, setNote] = useState<Pick<BookBorrow, "note" | "dueAt">>({
+		note: "",
+		dueAt: "",
+	});
+
 	const bookBorrowsMounted = useRef(false);
+	const updateRef = useRef(null);
+	const deleteRef = useRef(null);
 
 	const handleManagePendingModalOpen = (type: ManagePendingModalTypes) => {
 		setManagePendingModalOpen(type);
+	};
+
+	const handleNoteModalOpen = (borrowData: BookInfo) => {
+		handleManagePendingModalOpen("note");
+
+		setUpdateBorrow(borrowData);
+		setNote({
+			note: borrowData.borrow?.note || "",
+			dueAt: borrowData.borrow?.dueAt || "",
+		});
+	};
+
+	const handleAcceptRejectBorrowModal = (
+		borrowData: BookInfo,
+		borrowType: APIEndpointBorrowParameters["borrowType"]
+	) => {
+		switch (borrowType) {
+			case "request": {
+				handleManagePendingModalOpen("reject");
+				setUpdateBorrow(borrowData);
+
+				break;
+			}
+
+			case "accept": {
+				handleManagePendingModalOpen("accept");
+				setUpdateBorrow(borrowData);
+
+				break;
+			}
+
+			default: {
+				break;
+			}
+		}
 	};
 
 	const fetchBookBorrows = async (page: number) => {
@@ -78,6 +135,147 @@ const ManagePendingPage: React.FC<ManagePendingPageProps> = () => {
 		} catch (error: any) {
 			console.error(`=>API: Fetch Books Failed:\n${error}`);
 			setFetchingData(false);
+		}
+	};
+
+	const acceptBorrow = async () => {
+		try {
+			if (!updatingBorrow) {
+				setUpdatingBorrow(true);
+
+				if (!updateBorrow) {
+					toast({
+						title: "Error",
+						description: "An error occurred while accepting the borrow.",
+						status: "error",
+						duration: 5000,
+						isClosable: true,
+						position: "top",
+					});
+				}
+
+				const {
+					statusCode,
+				}: {
+					statusCode: number;
+				} = await axios
+					.put(apiConfig.apiEndpoint + "/books/borrows/borrow", {
+						apiKey: usersStateValue.currentUser?.auth?.keys[0].key,
+						bookId: updateBorrow?.book?.id,
+						borrowType: "accept",
+					} as APIEndpointBorrowParameters)
+					.then((response) => response.data)
+					.catch((error) => {
+						const errorData = error.response.data;
+
+						if (errorData.error.message) {
+							toast({
+								title: "Borrow Acceptance Failed",
+								description: errorData.error.message,
+								status: "error",
+								duration: 5000,
+								isClosable: true,
+								position: "top",
+							});
+						}
+
+						throw new Error(
+							`=>API: Accept Borrow API Call Failed:\n${error.response.data.error.message}`
+						);
+					});
+
+				if (statusCode === 200) {
+					toast({
+						title: "Borrow Accepted",
+						description: "The borrow has been accepted.",
+						status: "success",
+						colorScheme: "green",
+						duration: 5000,
+						isClosable: true,
+						position: "top",
+					});
+
+					handleManagePendingModalOpen("");
+					setUpdatingBorrow(false);
+					await fetchBookBorrows(cPage);
+				}
+
+				setUpdatingBorrow(false);
+			}
+		} catch (error: any) {
+			console.error(`=>API: Accept Borrow Failed:\n${error}`);
+			setUpdatingBorrow(false);
+		}
+	};
+
+	const rejectBorrow = async () => {
+		try {
+			if (!updatingBorrow) {
+				setUpdatingBorrow(true);
+
+				if (!updateBorrow) {
+					toast({
+						title: "Error",
+						description: "An error occurred while rejecting the borrow.",
+						status: "error",
+						duration: 5000,
+						isClosable: true,
+						position: "top",
+					});
+				}
+
+				const {
+					statusCode,
+				}: {
+					statusCode: number;
+				} = await axios
+					.delete(apiConfig.apiEndpoint + "/books/borrows/borrow", {
+						params: {
+							apiKey: usersStateValue.currentUser?.auth?.keys[0].key,
+							borrowId: updateBorrow?.borrow?.id,
+						} as APIEndpointBorrowParameters,
+					})
+					.then((response) => response.data)
+					.catch((error) => {
+						const errorData = error.response.data;
+
+						if (errorData.error.message) {
+							toast({
+								title: "Borrow Rejection Failed",
+								description: errorData.error.message,
+								status: "error",
+								duration: 5000,
+								isClosable: true,
+								position: "top",
+							});
+						}
+
+						throw new Error(
+							`=>API: Reject Borrow API Call Failed:\n${error.response.data.error.message}`
+						);
+					});
+
+				if (statusCode === 200) {
+					toast({
+						title: "Borrow Rejected",
+						description: "The borrow has been rejected.",
+						status: "success",
+						colorScheme: "red",
+						duration: 5000,
+						isClosable: true,
+						position: "top",
+					});
+
+					handleManagePendingModalOpen("");
+					setUpdatingBorrow(false);
+					await fetchBookBorrows(cPage);
+				}
+
+				setUpdatingBorrow(false);
+			}
+		} catch (error: any) {
+			console.error(`=>API: Reject Borrow Failed:\n${error}`);
+			setUpdatingBorrow(false);
 		}
 	};
 
@@ -151,7 +349,13 @@ const ManagePendingPage: React.FC<ManagePendingPageProps> = () => {
 											{bookBorrowsData.map((bookBorrow) => (
 												<>
 													<React.Fragment key={bookBorrow.borrow?.id}>
-														<BorrowCard borrowData={bookBorrow} />
+														<BorrowCard
+															borrowData={bookBorrow}
+															onNote={handleNoteModalOpen}
+															onAcceptRejectBorrow={
+																handleAcceptRejectBorrowModal
+															}
+														/>
 													</React.Fragment>
 												</>
 											))}
@@ -181,6 +385,114 @@ const ManagePendingPage: React.FC<ManagePendingPageProps> = () => {
 					</Flex>
 				</Box>
 			</Box>
+
+			{/**
+			 *
+			 * Accept Borrow Modal
+			 *
+			 */}
+			<AlertDialog
+				isOpen={managePendingModalOpen === "accept"}
+				leastDestructiveRef={updateRef}
+				onClose={() => handleManagePendingModalOpen("")}
+				isCentered
+			>
+				<AlertDialogOverlay>
+					<AlertDialogContent>
+						<AlertDialogHeader
+							fontSize="lg"
+							fontWeight="bold"
+						>
+							Accept Borrow
+						</AlertDialogHeader>
+
+						<AlertDialogBody>
+							<Text>Are you sure you want to accept this request?</Text>
+						</AlertDialogBody>
+
+						<AlertDialogFooter className="flex flex-row gap-x-2">
+							<Button
+								disabled={updatingBorrow}
+								isDisabled={updatingBorrow}
+								_disabled={{
+									filter: "grayscale(100%)",
+								}}
+								ref={updateRef}
+								onClick={() => handleManagePendingModalOpen("")}
+							>
+								Cancel
+							</Button>
+							<Button
+								colorScheme="whatsapp"
+								disabled={updatingBorrow}
+								isDisabled={updatingBorrow}
+								_disabled={{
+									filter: "grayscale(100%)",
+								}}
+								isLoading={updatingBorrow}
+								loadingText="Accepting"
+								onClick={() => updateBorrow && !updatingBorrow && acceptBorrow()}
+							>
+								Accept
+							</Button>
+						</AlertDialogFooter>
+					</AlertDialogContent>
+				</AlertDialogOverlay>
+			</AlertDialog>
+
+			{/**
+			 *
+			 * Reject Borrow Modal
+			 *
+			 */}
+			<AlertDialog
+				isOpen={managePendingModalOpen === "reject"}
+				leastDestructiveRef={deleteRef}
+				onClose={() => handleManagePendingModalOpen("")}
+				isCentered
+			>
+				<AlertDialogOverlay>
+					<AlertDialogContent>
+						<AlertDialogHeader
+							fontSize="lg"
+							fontWeight="bold"
+						>
+							Reject Borrow
+						</AlertDialogHeader>
+
+						<AlertDialogBody>
+							<Text>Are you sure you want to reject this request?</Text>
+						</AlertDialogBody>
+
+						<AlertDialogFooter className="flex flex-row gap-x-2">
+							<Button
+								disabled={updatingBorrow}
+								isDisabled={updatingBorrow}
+								_disabled={{
+									filter: "grayscale(100%)",
+								}}
+								ref={deleteRef}
+								onClick={() => handleManagePendingModalOpen("")}
+							>
+								Cancel
+							</Button>
+							<Button
+								colorScheme="red"
+								disabled={updatingBorrow}
+								isDisabled={updatingBorrow}
+								_disabled={{
+									filter: "grayscale(100%)",
+								}}
+								isLoading={updatingBorrow}
+								loadingText="Deleting"
+								onClick={() => updateBorrow && !updatingBorrow && rejectBorrow()}
+							>
+								Reject
+							</Button>
+						</AlertDialogFooter>
+					</AlertDialogContent>
+				</AlertDialogOverlay>
+			</AlertDialog>
 		</>
 	);
 };

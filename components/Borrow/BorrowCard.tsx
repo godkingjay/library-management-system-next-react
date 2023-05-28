@@ -21,6 +21,7 @@ import { HiCheck, HiOutlineClock, HiOutlineX } from "react-icons/hi";
 import { BsCheck2All, BsCheckAll } from "react-icons/bs";
 import { FaHandHolding } from "react-icons/fa";
 import { APIEndpointBorrowParameters } from "@/pages/api/books/borrows/borrow";
+import moment from "moment";
 
 type BorrowCardProps = {
 	borrowData: BookInfo;
@@ -158,7 +159,11 @@ const BorrowCard: React.FC<BorrowCardProps> = ({
 							<Divider />
 							<Box className="my-2 flex flex-col flex-1">
 								<Text className="text-gray-700 truncate text-xs">
-									Requested By:
+									{borrowData.borrow?.borrowStatus === "pending" && "Requested"}
+									{borrowData.borrow?.borrowStatus === "borrowed" && "Borrowed"}
+									{borrowData.borrow?.borrowStatus === "returned" &&
+										"Returned"}{" "}
+									By:
 								</Text>
 								<Text className="font-bold text-gray-700 truncate">
 									{borrowData.borrower?.firstName
@@ -168,6 +173,44 @@ const BorrowCard: React.FC<BorrowCardProps> = ({
 												borrowData.borrower?.email
 										  }`}
 								</Text>
+								<Box className="flex flex-col my-2">
+									{borrowData.borrow?.requestedAt && (
+										<>
+											<Text className="text-gray-700 truncate text-xs">
+												Requested At:
+											</Text>
+											<Text className="font-bold text-gray-700 text-sm truncate">
+												{moment(borrowData.borrow.requestedAt).format(
+													"MMMM DD, YYYY, h:mm:ss a"
+												)}
+											</Text>
+										</>
+									)}
+									{borrowData.borrow?.borrowedAt && (
+										<>
+											<Text className="text-gray-700 truncate text-xs">
+												Borrowed At:
+											</Text>
+											<Text className="font-bold text-gray-700 text-sm truncate">
+												{moment(borrowData.borrow.borrowedAt).format(
+													"MMMM DD, YYYY, h:mm:ss a"
+												)}
+											</Text>
+										</>
+									)}
+									{borrowData.borrow?.returnedAt && (
+										<>
+											<Text className="text-gray-700 truncate text-xs">
+												Returned At:
+											</Text>
+											<Text className="font-bold text-gray-700 text-sm truncate">
+												{moment(borrowData.borrow.returnedAt).format(
+													"MMMM DD, YYYY, h:mm:ss a"
+												)}
+											</Text>
+										</>
+									)}
+								</Box>
 							</Box>
 							<Divider />
 							<Box className="my-2 flex flex-col flex-1 p-2 bg-gray-100 rounded-lg">
@@ -179,6 +222,18 @@ const BorrowCard: React.FC<BorrowCardProps> = ({
 										: "No note found."}
 								</Text>
 							</Box>
+							{borrowData.borrow?.dueAt && (
+								<>
+									<Box className="my-2 flex flex-col flex-1">
+										<Text className="text-gray-700 truncate text-xs">
+											Due At:
+										</Text>
+										<Text className="font-bold text-gray-700 text-sm truncate">
+											{moment(borrowData.borrow.dueAt).format("MMMM DD, YYYY")}
+										</Text>
+									</Box>
+								</>
+							)}
 							<Divider />
 						</Box>
 						<Box className="mt-auto flex flex-col items-end p-1">
