@@ -25,7 +25,7 @@ export default async function handler(
 
 		const { usersCollection } = await userDb();
 
-		const { bookBorrowsCollection } = await bookDb();
+		const { booksCollection, bookBorrowsCollection } = await bookDb();
 
 		const {
 			apiKey,
@@ -66,7 +66,7 @@ export default async function handler(
 			});
 		}
 
-		if (!bookBorrowsCollection) {
+		if (!booksCollection || !bookBorrowsCollection) {
 			return res.status(500).json({
 				statusCode: 500,
 				error: {
@@ -158,19 +158,19 @@ export default async function handler(
 					});
 				}
 
-				// const bookData = (await bookBorrowsCollection.findOne({
-				// 	id: bookId,
-				// })) as unknown as Book;
+				const bookData = (await booksCollection.findOne({
+					id: bookId,
+				})) as unknown as Book;
 
-				// if (bookData.available <= 0) {
-				// 	return res.status(400).json({
-				// 		statusCode: 400,
-				// 		error: {
-				// 			type: "Book Unavailable",
-				// 			message: "Book Unavailable",
-				// 		},
-				// 	});
-				// }
+				if (bookData.available <= 0) {
+					return res.status(400).json({
+						statusCode: 400,
+						error: {
+							type: "Book Unavailable",
+							message: "Book Unavailable",
+						},
+					});
+				}
 
 				const borrowId = new ObjectId();
 
@@ -313,6 +313,20 @@ export default async function handler(
 					});
 				}
 
+				const bookData = (await booksCollection.findOne({
+					id: bookId,
+				})) as unknown as Book;
+
+				if (!bookData) {
+					return res.status(400).json({
+						statusCode: 400,
+						error: {
+							type: "No Book",
+							message: "No Book",
+						},
+					});
+				}
+
 				// if (
 				// 	existingBorrow[0].borrowStatus === "borrowed" &&
 				// 	borrowType === "accept"
@@ -355,10 +369,42 @@ export default async function handler(
 				};
 
 				if (borrowType === "accept") {
+					if (bookData.available <= 0) {
+						return res.status(400).json({
+							statusCode: 400,
+							error: {
+								type: "Book Not Available",
+								message: "Book Not Available",
+							},
+						});
+					}
+
 					updatedBookBorrow.borrowedAt = requestedAt.toISOString();
+
+					await booksCollection.updateOne(
+						{
+							id: bookId,
+						},
+						{
+							$inc: {
+								available: -1,
+							},
+						}
+					);
 				}
 
 				if (borrowType === "return") {
+					await booksCollection.updateOne(
+						{
+							id: bookId,
+						},
+						{
+							$inc: {
+								available: 1,
+							},
+						}
+					);
+
 					updatedBookBorrow.returnedAt = requestedAt.toISOString();
 				}
 
