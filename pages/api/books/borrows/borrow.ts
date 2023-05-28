@@ -388,6 +388,8 @@ export default async function handler(
 						{
 							$inc: {
 								available: -1,
+								borrows: 1,
+								borrowedTimes: 1,
 							},
 						}
 					);
@@ -401,6 +403,7 @@ export default async function handler(
 						{
 							$inc: {
 								available: 1,
+								borrows: -1,
 							},
 						}
 					);
