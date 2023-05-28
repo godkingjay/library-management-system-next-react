@@ -4,6 +4,7 @@ import { Author } from "./author";
 export interface BookInfo {
 	book: Book;
 	author: Author;
+	borrow: BookBorrow | null;
 }
 
 export interface Book {
@@ -51,7 +52,11 @@ export interface BookBorrow {
 	id: string;
 	userId: string;
 	bookId: string;
+	note?: string;
 	borrowStatus: "borrowed" | "pending" | "returned";
 	borrowedAt: Date | string;
+	requestedAt: Date | string;
+	returnedAt: Date | string;
+	createdAt: Date | string;
 	dueAt: Date | string;
 }
