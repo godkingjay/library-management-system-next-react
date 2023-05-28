@@ -361,9 +361,11 @@ export default async function handler(
 				// 	});
 				// }
 
-				const updatedBookBorrow: Partial<BookBorrow> = {
-					note: note,
-				};
+				const updatedBookBorrow: Partial<BookBorrow> = {};
+
+				if (note) {
+					updatedBookBorrow.note = note;
+				}
 
 				if (dueAt) {
 					updatedBookBorrow.dueAt = dueAt;
@@ -388,7 +390,7 @@ export default async function handler(
 
 					await booksCollection.updateOne(
 						{
-							id: bookId,
+							id: existingBorrow[0].bookId,
 						},
 						{
 							$inc: {
@@ -406,7 +408,7 @@ export default async function handler(
 				) {
 					await booksCollection.updateOne(
 						{
-							id: bookId,
+							id: existingBorrow[0].bookId,
 						},
 						{
 							$inc: {
