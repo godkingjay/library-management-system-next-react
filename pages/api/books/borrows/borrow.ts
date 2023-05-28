@@ -369,7 +369,10 @@ export default async function handler(
 					updatedBookBorrow.dueAt = dueAt;
 				}
 
-				if (borrowType === "accept") {
+				if (
+					borrowType === "accept" &&
+					existingBorrow[0].borrowStatus === "pending"
+				) {
 					if (bookData.available <= 0) {
 						return res.status(400).json({
 							statusCode: 400,
@@ -397,7 +400,10 @@ export default async function handler(
 					);
 				}
 
-				if (borrowType === "return") {
+				if (
+					borrowType === "return" &&
+					existingBorrow[0].borrowStatus === "borrowed"
+				) {
 					await booksCollection.updateOne(
 						{
 							id: bookId,

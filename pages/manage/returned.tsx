@@ -117,7 +117,7 @@ const ManageReturnedPage: React.FC<ManageReturnedPageProps> = () => {
 					.put(apiConfig.apiEndpoint + "/books/borrows/borrow", {
 						apiKey: usersStateValue.currentUser?.auth?.keys[0].key,
 						borrowId: updateBorrow?.borrow?.id,
-						borrowType: "request",
+						borrowType: "return",
 						note: note.note,
 						dueAt:
 							typeof note.dueAt === "string" ? new Date(note.dueAt) : note.dueAt,

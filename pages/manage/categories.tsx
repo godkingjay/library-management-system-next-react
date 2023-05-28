@@ -1,9 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
-import SearchBar from "@/components/Input/SearchBar";
 import {
 	Box,
 	Button,
-	Collapse,
 	Flex,
 	Grid,
 	Select,

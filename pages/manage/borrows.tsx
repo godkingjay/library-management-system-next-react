@@ -116,7 +116,7 @@ const ManageBorrowsPage: React.FC<ManageBorrowsPageProps> = () => {
 					.put(apiConfig.apiEndpoint + "/books/borrows/borrow", {
 						apiKey: usersStateValue.currentUser?.auth?.keys[0].key,
 						borrowId: updateBorrow?.borrow?.id,
-						borrowType: "request",
+						borrowType: "accept",
 						note: note.note,
 						dueAt:
 							typeof note.dueAt === "string" ? new Date(note.dueAt) : note.dueAt,
