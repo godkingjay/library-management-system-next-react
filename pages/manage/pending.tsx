@@ -10,8 +10,11 @@ import React, { useEffect, useRef, useState } from "react";
 import { APIEndpointBorrowsParameters } from "../api/books/borrows";
 import Pagination from "@/components/Table/Pagination";
 import { FiLoader } from "react-icons/fi";
+import BorrowCard from "@/components/Borrow/PendingBorrowCard";
 
 type ManagePendingPageProps = {};
+
+export type ManagePendingModalTypes = "" | "accept" | "reject" | "note";
 
 const ManagePendingPage: React.FC<ManagePendingPageProps> = () => {
 	const { loadingUser } = useAuth();
@@ -27,7 +30,16 @@ const ManagePendingPage: React.FC<ManagePendingPageProps> = () => {
 	const [fetchingData, setFetchingData] = useState<boolean>(false);
 	const [updatingBorrow, setUpdatingBorrow] = useState<boolean>(false);
 
+	const [managePendingModalOpen, setManagePendingModalOpen] =
+		useState<ManagePendingModalTypes>("");
+
+	const [updateBorrow, setUpdateBorrow] = useState<BookInfo | null>(null);
+
 	const bookBorrowsMounted = useRef(false);
+
+	const handleManagePendingModalOpen = (type: ManagePendingModalTypes) => {
+		setManagePendingModalOpen(type);
+	};
 
 	const fetchBookBorrows = async (page: number) => {
 		try {
@@ -112,7 +124,7 @@ const ManagePendingPage: React.FC<ManagePendingPageProps> = () => {
 						<div className="h-[1px] w-full bg-gray-300 mb-2"></div>
 						<ManageBreadcrumb />
 					</Flex>
-					<Grid className="grid-cols-2 gap-4">
+					<Grid className="grid-cols-1 sm2:grid-cols-2 gap-4">
 						<>
 							{fetchingData ||
 							!bookBorrowsMounted.current ||
@@ -138,9 +150,9 @@ const ManagePendingPage: React.FC<ManagePendingPageProps> = () => {
 										<>
 											{bookBorrowsData.map((bookBorrow) => (
 												<>
-													<React.Fragment
-														key={bookBorrow.borrow?.id}
-													></React.Fragment>
+													<React.Fragment key={bookBorrow.borrow?.id}>
+														<BorrowCard borrowData={bookBorrow} />
+													</React.Fragment>
 												</>
 											))}
 										</>
