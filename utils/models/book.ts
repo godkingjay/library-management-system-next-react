@@ -1,5 +1,13 @@
 import { ObjectId } from "mongodb";
 import { Author } from "./author";
+import { SiteUser } from "./user";
+
+export interface BorrowInfo {
+	book: Book;
+	user: SiteUser;
+	author: Author;
+	borrow: BookBorrow;
+}
 
 export interface BookInfo {
 	book: Book;
