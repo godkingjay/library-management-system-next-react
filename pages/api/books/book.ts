@@ -69,10 +69,10 @@ export default async function handler(
 			title = undefined,
 			description = "",
 			categories: rawCategories = [],
-			amount: rawAmount = 0,
-			available: rawAvailable = 0,
-			borrows: rawBorrows = 0,
-			borrowedTimes: rawBorrowedTimes = 0,
+			amount: rawAmount = undefined,
+			available: rawAvailable = undefined,
+			borrows: rawBorrows = undefined,
+			borrowedTimes: rawBorrowedTimes = undefined,
 			ISBN = "",
 			publicationDate: rawPublicationDate = undefined,
 			image: rawImage = undefined,
@@ -294,10 +294,10 @@ export default async function handler(
 					description,
 					author: authorData.name,
 					categories: categories || [],
-					amount,
-					available,
-					borrows,
-					borrowedTimes,
+					amount: amount || 0,
+					available: available || 0,
+					borrows: borrows || 0,
+					borrowedTimes: borrowedTimes || 0,
 					ISBN,
 					publicationDate,
 					updatedAt: requestedAt,
@@ -440,19 +440,19 @@ export default async function handler(
 					updatedBook.description = description;
 				}
 
-				if (amount) {
+				if (amount !== undefined) {
 					updatedBook.amount = amount;
 				}
 
-				if (available) {
+				if (available !== undefined) {
 					updatedBook.available = available;
 				}
 
-				if (borrows) {
+				if (borrows !== undefined) {
 					updatedBook.borrows = borrows;
 				}
 
-				if (borrowedTimes) {
+				if (borrowedTimes !== undefined) {
 					updatedBook.borrowedTimes = borrowedTimes;
 				}
 
