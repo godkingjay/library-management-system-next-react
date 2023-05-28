@@ -57,7 +57,7 @@ const ManageCategoriesPage: React.FC<ManageCategoriesPageProps> = () => {
 
 	const [cPage, setCPage] = useState(1);
 	const [tPages, setTPages] = useState(1);
-	const [itemsPerPage, setItemsPerPage] = useState(10);
+	const [itemsPerPage, setItemsPerPage] = useState(12);
 	const [categoriesData, setCategoriesData] = useState<BookCategory[]>([]);
 
 	const [fetchingData, setFetchingData] = useState(false);
