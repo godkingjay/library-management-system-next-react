@@ -135,7 +135,7 @@ const ManagePendingPage: React.FC<ManagePendingPageProps> = () => {
 				} = await axios
 					.put(apiConfig.apiEndpoint + "/books/borrows/borrow", {
 						apiKey: usersStateValue.currentUser?.auth?.keys[0].key,
-						bookId: updateBorrow?.book?.id,
+						borrowId: updateBorrow?.borrow?.id,
 						borrowType: "request",
 						note: note.note,
 						dueAt:
@@ -453,9 +453,7 @@ const ManagePendingPage: React.FC<ManagePendingPageProps> = () => {
 														<BorrowCard
 															borrowData={bookBorrow}
 															onNote={handleNoteModalOpen}
-															onAcceptRejectBorrow={
-																handleAcceptRejectBorrowModal
-															}
+															onAcceptReject={handleAcceptRejectBorrowModal}
 														/>
 													</React.Fragment>
 												</>

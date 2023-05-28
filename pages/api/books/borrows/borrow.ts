@@ -351,15 +351,15 @@ export default async function handler(
 					});
 				}
 
-				if (existingBorrow[0].borrowStatus === "returned") {
-					return res.status(400).json({
-						statusCode: 400,
-						error: {
-							type: "Book Already Returned",
-							message: "Book Already Returned",
-						},
-					});
-				}
+				// if (existingBorrow[0].borrowStatus === "returned") {
+				// 	return res.status(400).json({
+				// 		statusCode: 400,
+				// 		error: {
+				// 			type: "Book Already Returned",
+				// 			message: "Book Already Returned",
+				// 		},
+				// 	});
+				// }
 
 				const updatedBookBorrow: Partial<BookBorrow> = {
 					note: note,

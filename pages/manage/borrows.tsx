@@ -115,7 +115,7 @@ const ManageBorrowsPage: React.FC<ManageBorrowsPageProps> = () => {
 				} = await axios
 					.put(apiConfig.apiEndpoint + "/books/borrows/borrow", {
 						apiKey: usersStateValue.currentUser?.auth?.keys[0].key,
-						bookId: updateBorrow?.book?.id,
+						borrowId: updateBorrow?.borrow?.id,
 						borrowType: "request",
 						note: note.note,
 						dueAt:

@@ -14,7 +14,11 @@ import {
 } from "@chakra-ui/react";
 import Image from "next/image";
 import React from "react";
-import { MdBrokenImage, MdOutlineNoteAdd } from "react-icons/md";
+import {
+	MdBrokenImage,
+	MdDeleteOutline,
+	MdOutlineNoteAdd,
+} from "react-icons/md";
 import { BiCheckDouble, BiChevronUp } from "react-icons/bi";
 import { IoSettingsOutline } from "react-icons/io5";
 import { HiCheck, HiOutlineClock, HiOutlineX, HiX } from "react-icons/hi";
@@ -27,17 +31,19 @@ type BorrowCardProps = {
 	borrowData: BookInfo;
 	onNote?: (borrowData: BookInfo) => void;
 	onReturn?: (borrowData: BookInfo) => void;
-	onAcceptRejectBorrow?: (
+	onAcceptReject?: (
 		borrowData: BookInfo,
 		borrowType: APIEndpointBorrowParameters["borrowType"]
 	) => void;
+	onRemove?: (borrowData: BookInfo) => void;
 };
 
 const BorrowCard: React.FC<BorrowCardProps> = ({
 	borrowData,
 	onNote,
-	onAcceptRejectBorrow,
+	onAcceptReject,
 	onReturn,
+	onRemove,
 }) => {
 	const renderBorrowMenu = (borrowStatus?: BookBorrow["borrowStatus"]) => {
 		switch (borrowStatus) {
@@ -256,7 +262,7 @@ const BorrowCard: React.FC<BorrowCardProps> = ({
 											>
 												<MenuDivider className="!my-1" />
 												<MenuItem
-													className="text-sm !text-gray-700 font-semibold flex flex-row gap-x-2"
+													className="text-sm !text-gray-700 font-semibold flex flex-row gap-x-2 hover:bg-blue-100 focus-within:bg-blue-100 hover:!text-blue-500 focus-within:!text-blue-500"
 													onClick={() => onNote && onNote(borrowData)}
 												>
 													<Icon as={MdOutlineNoteAdd} />
@@ -265,8 +271,8 @@ const BorrowCard: React.FC<BorrowCardProps> = ({
 												<MenuItem
 													className="text-sm !text-green-500 font-semibold flex flex-row gap-x-2 hover:bg-green-100 focus-within:bg-green-100"
 													onClick={() =>
-														onAcceptRejectBorrow &&
-														onAcceptRejectBorrow(borrowData, "accept")
+														onAcceptReject &&
+														onAcceptReject(borrowData, "accept")
 													}
 												>
 													<Icon as={HiCheck} />
@@ -275,8 +281,8 @@ const BorrowCard: React.FC<BorrowCardProps> = ({
 												<MenuItem
 													className="text-sm !text-red-500 font-semibold flex flex-row gap-x-2 hover:bg-red-100 focus-within:bg-red-100"
 													onClick={() =>
-														onAcceptRejectBorrow &&
-														onAcceptRejectBorrow(borrowData, "request")
+														onAcceptReject &&
+														onAcceptReject(borrowData, "request")
 													}
 												>
 													<Icon as={HiX} />
@@ -293,7 +299,7 @@ const BorrowCard: React.FC<BorrowCardProps> = ({
 											>
 												<MenuDivider className="!my-1" />
 												<MenuItem
-													className="text-sm !text-gray-700 font-semibold flex flex-row gap-x-2"
+													className="text-sm !text-gray-700 font-semibold flex flex-row gap-x-2 hover:bg-blue-100 focus-within:bg-blue-100 hover:!text-blue-500 focus-within:!text-blue-500"
 													onClick={() => onNote && onNote(borrowData)}
 												>
 													<Icon as={MdOutlineNoteAdd} />
@@ -305,6 +311,30 @@ const BorrowCard: React.FC<BorrowCardProps> = ({
 												>
 													<Icon as={HiCheck} />
 													<Text>Return</Text>
+												</MenuItem>
+											</MenuGroup>
+										</>
+									)}
+									{borrowData.borrow?.borrowStatus === "returned" && (
+										<>
+											<MenuGroup
+												title="Returned"
+												className="text-gray-700 !font-bold"
+											>
+												<MenuDivider className="!my-1" />
+												<MenuItem
+													className="text-sm !text-gray-700 font-semibold flex flex-row gap-x-2 hover:bg-blue-100 focus-within:bg-blue-100 hover:!text-blue-500 focus-within:!text-blue-500"
+													onClick={() => onNote && onNote(borrowData)}
+												>
+													<Icon as={MdOutlineNoteAdd} />
+													<Text>Add Note</Text>
+												</MenuItem>
+												<MenuItem
+													className="text-sm !text-red-500 font-semibold flex flex-row gap-x-2 hover:bg-red-100 focus-within:bg-red-100"
+													onClick={() => onRemove && onRemove(borrowData)}
+												>
+													<Icon as={MdDeleteOutline} />
+													<Text>Remove</Text>
 												</MenuItem>
 											</MenuGroup>
 										</>

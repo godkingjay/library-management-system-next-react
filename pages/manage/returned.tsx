@@ -36,6 +36,8 @@ import Head from "next/head";
 import React, { useEffect, useRef, useState } from "react";
 import { FiLoader } from "react-icons/fi";
 import { APIEndpointBorrowsParameters } from "../api/books/borrows";
+import { APIEndpointBorrowParameters } from "../api/books/borrows/borrow";
+import moment from "moment";
 
 type ManageReturnedPageProps = {};
 
@@ -67,6 +69,7 @@ const ManageReturnedPage: React.FC<ManageReturnedPageProps> = () => {
 
 	const bookBorrowsMounted = useRef(false);
 	const updateRef = useRef(null);
+	const deleteRef = useRef(null);
 
 	const handleManageReturnedModalOpen = (type: ManageReturnedModalTypes) => {
 		setManageReturnedModalOpen(type);
@@ -80,6 +83,87 @@ const ManageReturnedPage: React.FC<ManageReturnedPageProps> = () => {
 			note: borrowData.borrow?.note || "",
 			dueAt: borrowData.borrow?.dueAt || "",
 		});
+	};
+
+	const handleRemoveModalOpen = (borrowData: BookInfo) => {
+		handleManageReturnedModalOpen("remove");
+
+		setUpdateBorrow(borrowData);
+	};
+
+	const addNote = async (event: React.FormEvent<HTMLFormElement>) => {
+		event.preventDefault();
+
+		try {
+			if (!updatingBorrow) {
+				setUpdatingBorrow(true);
+
+				if (!updateBorrow) {
+					toast({
+						title: "Error",
+						description: "An error occurred while adding the note.",
+						status: "error",
+						duration: 5000,
+						isClosable: true,
+						position: "top",
+					});
+				}
+
+				const {
+					statusCode,
+				}: {
+					statusCode: number;
+				} = await axios
+					.put(apiConfig.apiEndpoint + "/books/borrows/borrow", {
+						apiKey: usersStateValue.currentUser?.auth?.keys[0].key,
+						borrowId: updateBorrow?.borrow?.id,
+						borrowType: "request",
+						note: note.note,
+						dueAt:
+							typeof note.dueAt === "string" ? new Date(note.dueAt) : note.dueAt,
+					} as APIEndpointBorrowParameters)
+					.then((response) => response.data)
+					.catch((error) => {
+						const errorData = error.response.data;
+
+						if (errorData.error.message) {
+							toast({
+								title: "Note Addition Failed",
+								description: errorData.error.message,
+								status: "error",
+								duration: 5000,
+								isClosable: true,
+								position: "top",
+							});
+						}
+
+						throw new Error(
+							`=>API: Add Note API Call Failed:\n${error.response.data.error.message}`
+						);
+					});
+
+				if (statusCode === 200) {
+					toast({
+						title: "Note Added",
+						description: "The note has been added successfully.",
+						status: "success",
+						colorScheme: "green",
+						duration: 5000,
+						isClosable: true,
+						position: "top",
+					});
+
+					handleManageReturnedModalOpen("");
+					setUpdatingBorrow(false);
+					await fetchBookBorrows(cPage);
+				}
+
+				setUpdatingBorrow(false);
+			}
+		} catch (error: any) {
+			console.log(`=>API: Add Note Failed:\n${error}`);
+			setUpdatingBorrow(false);
+		}
 	};
 
 	const fetchBookBorrows = async (page: number) => {
@@ -120,6 +204,91 @@ const ManageReturnedPage: React.FC<ManageReturnedPageProps> = () => {
 			console.error(`=>API: Fetch Books Failed:\n${error}`);
 			setFetchingData(false);
 		}
+	};
+
+	const removeBorrow = async () => {
+		try {
+			if (!updatingBorrow) {
+				setUpdatingBorrow(true);
+
+				if (!updateBorrow) {
+					toast({
+						title: "Error",
+						description: "An error occurred while removing the borrow.",
+						status: "error",
+						duration: 5000,
+						isClosable: true,
+						position: "top",
+					});
+				}
+
+				const {
+					statusCode,
+				}: {
+					statusCode: number;
+				} = await axios
+					.delete(apiConfig.apiEndpoint + "/books/borrows/borrow", {
+						params: {
+							apiKey: usersStateValue.currentUser?.auth?.keys[0].key,
+							borrowId: updateBorrow?.borrow?.id,
+						} as APIEndpointBorrowParameters,
+					})
+					.then((response) => response.data)
+					.catch((error) => {
+						const errorData = error.response.data;
+
+						if (errorData.error.message) {
+							toast({
+								title: "Return Removal Failed",
+								description: errorData.error.message,
+								status: "error",
+								duration: 5000,
+								isClosable: true,
+								position: "top",
+							});
+						}
+
+						throw new Error(
+							`=>API: Remove Borrow API Call Failed:\n${error.response.data.error.message}`
+						);
+					});
+
+				if (statusCode === 200) {
+					toast({
+						title: "Return Removed",
+						description:
+							"The returned book request has been removed successfully.",
+						status: "success",
+						colorScheme: "green",
+						duration: 5000,
+						isClosable: true,
+						position: "top",
+					});
+
+					handleManageReturnedModalOpen("");
+					setUpdatingBorrow(false);
+					await fetchBookBorrows(cPage);
+				}
+
+				setUpdatingBorrow(false);
+			}
+		} catch (error: any) {
+			console.error(`=>API: Remove Borrow Failed:\n${error}`);
+			setUpdatingBorrow(false);
+		}
+	};
+
+	const handleUpdateNoteChange = (
+		event:
+			| React.ChangeEvent<HTMLInputElement>
+			| React.ChangeEvent<HTMLTextAreaElement>
+	) => {
+		const { name, value } = event.target;
+
+		setNote((prev) => ({
+			...prev,
+			[name]: value,
+		}));
 	};
 
 	const handlePageChange = async (page: number) => {
@@ -195,6 +364,7 @@ const ManageReturnedPage: React.FC<ManageReturnedPageProps> = () => {
 														<BorrowCard
 															borrowData={bookBorrow}
 															onNote={handleNoteModalOpen}
+															onRemove={handleRemoveModalOpen}
 														/>
 													</React.Fragment>
 												</>
@@ -225,6 +395,151 @@ const ManageReturnedPage: React.FC<ManageReturnedPageProps> = () => {
 					</Flex>
 				</Box>
 			</Box>
+
+			{/**
+			 *
+			 * Add Note Modal
+			 *
+			 */}
+			<Modal
+				isOpen={manageReturnedModalOpen === "note"}
+				onClose={() => handleManageReturnedModalOpen("")}
+			>
+				<ModalOverlay />
+				<ModalContent>
+					<ModalHeader>Add Note</ModalHeader>
+					<ModalCloseButton />
+					<ModalBody>
+						<form
+							onSubmit={(event) =>
+								updatingBorrow ||
+								(updateBorrow?.borrow?.note === note.note &&
+									updateBorrow?.borrow?.dueAt === note.dueAt)
+									? event.preventDefault()
+									: addNote(event)
+							}
+						>
+							<Flex
+								direction={"column"}
+								gap={4}
+							>
+								<FormControl>
+									<FormLabel>Note</FormLabel>
+									<Textarea
+										name="note"
+										placeholder={updateBorrow?.borrow?.note || "Note[Optional]"}
+										maxLength={4000}
+										disabled={updatingBorrow}
+										isDisabled={updatingBorrow}
+										value={note.note}
+										onChange={(event) =>
+											!updatingBorrow && handleUpdateNoteChange(event)
+										}
+									/>
+								</FormControl>
+								<FormControl>
+									<FormLabel>Due Date</FormLabel>
+									<Input
+										type="date"
+										name="dueAt"
+										disabled={updatingBorrow}
+										isDisabled={updatingBorrow}
+										value={
+											note.dueAt
+												? typeof note.dueAt === "string"
+													? moment(note.dueAt).format("YYYY-MM-DD")
+													: moment(new Date(note.dueAt).toISOString()).format(
+															"YYYY-MM-DD"
+													  )
+												: ""
+										}
+										onChange={(event) =>
+											!updatingBorrow && handleUpdateNoteChange(event)
+										}
+									/>
+								</FormControl>
+								<div className="h-[1px] bg-gray-200 my-1"></div>
+								<Button
+									type="submit"
+									colorScheme="whatsapp"
+									disabled={
+										updatingBorrow ||
+										(updateBorrow?.borrow?.note === note.note &&
+											updateBorrow?.borrow?.dueAt === note.dueAt)
+									}
+									loadingText="Updating Returned"
+									isLoading={updatingBorrow}
+									isDisabled={
+										updatingBorrow ||
+										(updateBorrow?.borrow?.note === note.note &&
+											updateBorrow?.borrow?.dueAt === note.dueAt)
+									}
+									_disabled={{
+										filter: "grayscale(100%)",
+									}}
+								>
+									Add Note
+								</Button>
+							</Flex>
+						</form>
+					</ModalBody>
+					<ModalFooter></ModalFooter>
+				</ModalContent>
+			</Modal>
+
+			{/**
+			 *
+			 * Remove Returned Modal
+			 *
+			 */}
+			<AlertDialog
+				isOpen={manageReturnedModalOpen === "remove"}
+				leastDestructiveRef={deleteRef}
+				onClose={() => handleManageReturnedModalOpen("")}
+				isCentered
+			>
+				<AlertDialogOverlay>
+					<AlertDialogContent>
+						<AlertDialogHeader
+							fontSize="lg"
+							fontWeight="bold"
+						>
+							Remove Returned Borrow
+						</AlertDialogHeader>
+
+						<AlertDialogBody>
+							<Text>Are you sure you want to remove this borrow request?</Text>
+						</AlertDialogBody>
+
+						<AlertDialogFooter className="flex flex-row gap-x-2">
+							<Button
+								disabled={updatingBorrow}
+								isDisabled={updatingBorrow}
+								_disabled={{
+									filter: "grayscale(100%)",
+								}}
+								ref={deleteRef}
+								onClick={() => handleManageReturnedModalOpen("")}
+							>
+								Cancel
+							</Button>
+							<Button
+								colorScheme="red"
+								disabled={updatingBorrow}
+								isDisabled={updatingBorrow}
+								_disabled={{
+									filter: "grayscale(100%)",
+								}}
+								isLoading={updatingBorrow}
+								loadingText="Removing"
+								onClick={() => updateBorrow && !updatingBorrow && removeBorrow()}
+							>
+								Remove
+							</Button>
+						</AlertDialogFooter>
+					</AlertDialogContent>
+				</AlertDialogOverlay>
+			</AlertDialog>
 		</>
 	);
 };
