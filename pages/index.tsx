@@ -379,10 +379,25 @@ const IndexPage = () => {
 								<div className="h-[1px] w-full bg-gray-300 mb-2"></div>
 							</Flex>
 							<Grid className="w-full grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-								{!fetchingData ||
-								booksMounted.current ||
-								!loadingUser ||
-								usersStateValue.currentUser?.auth ? (
+								{fetchingData ||
+								!booksMounted.current ||
+								loadingUser ||
+								!usersStateValue.currentUser?.auth ? (
+									<>
+										<Box
+											textAlign={"center"}
+											className="text-gray-500 font-bold col-span-full p-2"
+										>
+											<Flex className="justify-center flex flex-row items-center gap-x-4">
+												<Icon
+													as={FiLoader}
+													className="h-12 w-12 animate-spin"
+												/>
+												<Text>Loading Books...</Text>
+											</Flex>
+										</Box>
+									</>
+								) : (
 									<>
 										{booksData.length > 0 ? (
 											<>
@@ -404,21 +419,6 @@ const IndexPage = () => {
 												</Text>
 											</>
 										)}
-									</>
-								) : (
-									<>
-										<Box
-											textAlign={"center"}
-											className="text-gray-500 font-bold col-span-full p-2"
-										>
-											<Flex className="justify-center flex flex-row items-center gap-x-4">
-												<Icon
-													as={FiLoader}
-													className="h-12 w-12 animate-spin"
-												/>
-												<Text>Loading Books...</Text>
-											</Flex>
-										</Box>
 									</>
 								)}
 							</Grid>

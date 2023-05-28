@@ -114,10 +114,25 @@ const ManagePendingPage: React.FC<ManagePendingPageProps> = () => {
 					</Flex>
 					<Grid className="grid-cols-2 gap-4">
 						<>
-							{!fetchingData ||
-							bookBorrowsMounted.current ||
-							!loadingUser ||
-							usersStateValue.currentUser?.auth ? (
+							{fetchingData ||
+							!bookBorrowsMounted.current ||
+							loadingUser ||
+							!usersStateValue.currentUser?.auth ? (
+								<>
+									<Box
+										textAlign={"center"}
+										className="text-gray-500 font-bold col-span-full p-2"
+									>
+										<Flex className="justify-center flex flex-row items-center gap-x-4">
+											<Icon
+												as={FiLoader}
+												className="h-12 w-12 animate-spin"
+											/>
+											<Text>Loading Borrows...</Text>
+										</Flex>
+									</Box>
+								</>
+							) : (
 								<>
 									{bookBorrowsData.length > 0 ? (
 										<>
@@ -136,21 +151,6 @@ const ManagePendingPage: React.FC<ManagePendingPageProps> = () => {
 											</Text>
 										</>
 									)}
-								</>
-							) : (
-								<>
-									<Box
-										textAlign={"center"}
-										className="text-gray-500 font-bold col-span-full p-2"
-									>
-										<Flex className="justify-center flex flex-row items-center gap-x-4">
-											<Icon
-												as={FiLoader}
-												className="h-12 w-12 animate-spin"
-											/>
-											<Text>Loading Borrows...</Text>
-										</Flex>
-									</Box>
 								</>
 							)}
 						</>
