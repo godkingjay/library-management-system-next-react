@@ -206,7 +206,7 @@ export default async function handler(
 						...query,
 					})
 					.sort({
-						name: 1,
+						title: 1,
 					})
 					.collation(collationOptions)
 					.skip(skip)
