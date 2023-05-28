@@ -48,7 +48,7 @@ const IndexPage = () => {
 
 	const [cPage, setCPage] = useState(1);
 	const [tPages, setTPages] = useState(1);
-	const [itemsPerPage, setItemsPerPage] = useState(10);
+	const [itemsPerPage, setItemsPerPage] = useState(12);
 	const [booksData, setBooksData] = useState<BookInfo[]>([]);
 
 	const [fetchingData, setFetchingData] = useState<boolean>(false);
