@@ -69,10 +69,10 @@ export default async function handler(
 			title = undefined,
 			description = "",
 			categories: rawCategories = [],
-			amount = 0,
-			available = 0,
-			borrows = 0,
-			borrowedTimes = 0,
+			amount: rawAmount = 0,
+			available: rawAvailable = 0,
+			borrows: rawBorrows = 0,
+			borrowedTimes: rawBorrowedTimes = 0,
 			ISBN = "",
 			publicationDate: rawPublicationDate = undefined,
 			image: rawImage = undefined,
@@ -81,6 +81,20 @@ export default async function handler(
 			: req.body || req.query;
 
 		const imageFile = (files["imageFile"] as FormidableFile) || undefined;
+
+		const amount: APIEndpointBookParameters["amount"] =
+			typeof rawAmount === "string" ? parseInt(rawAmount) : rawAmount;
+
+		const available: APIEndpointBookParameters["available"] =
+			typeof rawAvailable === "string" ? parseInt(rawAvailable) : rawAvailable;
+
+		const borrows: APIEndpointBookParameters["borrows"] =
+			typeof rawBorrows === "string" ? parseInt(rawBorrows) : rawBorrows;
+
+		const borrowedTimes: APIEndpointBookParameters["borrowedTimes"] =
+			typeof rawBorrowedTimes === "string"
+				? parseInt(rawBorrowedTimes)
+				: rawBorrowedTimes;
 
 		const categories: APIEndpointBookParameters["categories"] =
 			typeof rawCategories === "string"
