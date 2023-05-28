@@ -181,7 +181,7 @@ export default async function handler(
 						})) as unknown as Author;
 
 						const userData = (await usersCollection.findOne({
-							username: bookBorrowData.userId,
+							id: bookBorrowData.userId,
 						})) as unknown as SiteUser;
 
 						return {

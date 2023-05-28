@@ -10,21 +10,32 @@ import {
 	MenuGroup,
 	Text,
 	MenuDivider,
+	Divider,
 } from "@chakra-ui/react";
 import Image from "next/image";
 import React from "react";
-import { MdBrokenImage } from "react-icons/md";
+import { MdBrokenImage, MdOutlineNoteAdd } from "react-icons/md";
 import { BiCheckDouble, BiChevronUp } from "react-icons/bi";
 import { IoSettingsOutline } from "react-icons/io5";
 import { HiCheck, HiOutlineClock, HiOutlineX } from "react-icons/hi";
 import { BsCheck2All, BsCheckAll } from "react-icons/bs";
 import { FaHandHolding } from "react-icons/fa";
+import { APIEndpointBorrowParameters } from "@/pages/api/books/borrows/borrow";
 
-type PendingBorrowCardProps = {
+type BorrowCardProps = {
 	borrowData: BookInfo;
+	onNote?: (borrowData: BookInfo) => void;
+	onAcceptRejectBorrow?: (
+		borrowData: BookInfo,
+		borrowType: APIEndpointBorrowParameters["borrowType"]
+	) => void;
 };
 
-const PendingBorrowCard: React.FC<PendingBorrowCardProps> = ({ borrowData }) => {
+const BorrowCard: React.FC<BorrowCardProps> = ({
+	borrowData,
+	onNote,
+	onAcceptRejectBorrow,
+}) => {
 	const renderBorrowMenu = (borrowStatus?: BookBorrow["borrowStatus"]) => {
 		switch (borrowStatus) {
 			case "pending": {
@@ -135,6 +146,41 @@ const PendingBorrowCard: React.FC<PendingBorrowCardProps> = ({ borrowData }) => 
 						className="flex-1 flex flex-col"
 						isTruncated
 					>
+						<Box className="flex flex-col">
+							<Box className="my-2 flex flex-col">
+								<Text className="font-bold text-gray-700 truncate text-xl">
+									{borrowData.book.title}
+								</Text>
+								<Text className="text-xs text-gray-500">
+									by {borrowData.author.name}
+								</Text>
+							</Box>
+							<Divider />
+							<Box className="my-2 flex flex-col flex-1">
+								<Text className="text-gray-700 truncate text-xs">
+									Requested By:
+								</Text>
+								<Text className="font-bold text-gray-700 truncate">
+									{borrowData.borrower?.firstName
+										? `${borrowData.borrower.firstName} ${borrowData.borrower.lastName}`
+										: `${
+												borrowData.borrower?.username ||
+												borrowData.borrower?.email
+										  }`}
+								</Text>
+							</Box>
+							<Divider />
+							<Box className="my-2 flex flex-col flex-1 p-2 bg-gray-100 rounded-lg">
+								<Text className="font-bold text-gray-700 truncate">Note</Text>
+								<Divider className="my-2" />
+								<Text className="text-gray-700 text-sm">
+									{borrowData.borrow?.note
+										? borrowData.borrow.note
+										: "No note found."}
+								</Text>
+							</Box>
+							<Divider />
+						</Box>
 						<Box className="mt-auto flex flex-col items-end p-1">
 							<Menu placement="top">
 								{renderBorrowMenu(borrowData.borrow?.borrowStatus)}
@@ -146,11 +192,30 @@ const PendingBorrowCard: React.FC<PendingBorrowCardProps> = ({ borrowData }) => 
 												className="text-gray-700 !font-bold"
 											>
 												<MenuDivider className="!my-1" />
-												<MenuItem className="text-sm !text-green-500 font-semibold flex flex-row gap-x-2 hover:bg-green-100 focus-within:bg-green-100">
+												<MenuItem
+													className="text-sm !text-gray-700 font-semibold flex flex-row gap-x-2"
+													onClick={() => onNote && onNote(borrowData)}
+												>
+													<Icon as={MdOutlineNoteAdd} />
+													<Text>Add Note</Text>
+												</MenuItem>
+												<MenuItem
+													className="text-sm !text-green-500 font-semibold flex flex-row gap-x-2 hover:bg-green-100 focus-within:bg-green-100"
+													onClick={() =>
+														onAcceptRejectBorrow &&
+														onAcceptRejectBorrow(borrowData, "accept")
+													}
+												>
 													<Icon as={HiCheck} />
 													<Text>Borrow</Text>
 												</MenuItem>
-												<MenuItem className="text-sm !text-red-500 font-semibold flex flex-row gap-x-2 hover:bg-red-100 focus-within:bg-red-100">
+												<MenuItem
+													className="text-sm !text-red-500 font-semibold flex flex-row gap-x-2 hover:bg-red-100 focus-within:bg-red-100"
+													onClick={() =>
+														onAcceptRejectBorrow &&
+														onAcceptRejectBorrow(borrowData, "request")
+													}
+												>
 													<Icon as={HiOutlineX} />
 													<Text>Reject</Text>
 												</MenuItem>
@@ -167,4 +232,4 @@ const PendingBorrowCard: React.FC<PendingBorrowCardProps> = ({ borrowData }) => 
 	);
 };
 
-export default PendingBorrowCard;
+export default BorrowCard;

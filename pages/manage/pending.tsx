@@ -10,7 +10,7 @@ import React, { useEffect, useRef, useState } from "react";
 import { APIEndpointBorrowsParameters } from "../api/books/borrows";
 import Pagination from "@/components/Table/Pagination";
 import { FiLoader } from "react-icons/fi";
-import BorrowCard from "@/components/Borrow/PendingBorrowCard";
+import BorrowCard from "@/components/Borrow/BorrowCard";
 
 type ManagePendingPageProps = {};
 
