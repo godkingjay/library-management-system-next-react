@@ -100,7 +100,7 @@ const IndexPage = () => {
 					.then((response) => response.data)
 					.catch((error) => {
 						throw new Error(
-							`=>API: Fetch Books Failed:\n${error.response.data.error.message}`
+							`=>API: Fetch Books API Call Failed:\n${error.response.data.error.message}`
 						);
 					});
 
@@ -156,7 +156,7 @@ const IndexPage = () => {
 								}
 
 								throw new Error(
-									`=>API: Borrow Book Failed:\n${error.response.data.error.message}`
+									`=>API: Borrow API Call Book Failed:\n${error.response.data.error.message}`
 								);
 							});
 
@@ -195,7 +195,7 @@ const IndexPage = () => {
 								}
 
 								throw new Error(
-									`=>API: Borrow Book Failed:\n${error.response.data.error.message}`
+									`=>API: Borrow API Call Book Failed:\n${error.response.data.error.message}`
 								);
 							});
 
@@ -203,6 +203,7 @@ const IndexPage = () => {
 							title: "Borrow Book Success",
 							description: "You requested to borrow this book.",
 							status: "success",
+							colorScheme: "messenger",
 							duration: 5000,
 							isClosable: true,
 							position: "top",
@@ -217,7 +218,7 @@ const IndexPage = () => {
 				setBorrowing(false);
 			}
 		} catch (error: any) {
-			console.error(`=>API: Borrow Book Failed:\n${error}`);
+			console.error(`=>API: Borrow Function Book Failed:\n${error}`);
 			setBorrowing(false);
 		}
 	};
