@@ -34,9 +34,23 @@ export default async function handler(
 			apiKey,
 			title = undefined,
 			fromTitle = undefined,
-			page = 1,
-			limit = 10,
+			page: rawPage = 1,
+			limit: rawLimit = 10,
 		}: APIEndpointBooksParameters = req.body || req.query;
+
+		const page: APIEndpointBooksParameters["page"] =
+			typeof rawPage === "number"
+				? rawPage
+				: typeof rawPage === "string"
+				? parseInt(rawPage)
+				: 1;
+
+		const limit: APIEndpointBooksParameters["limit"] =
+			typeof rawLimit === "number"
+				? rawLimit
+				: typeof rawLimit === "string"
+				? parseInt(rawLimit)
+				: 10;
 
 		if (!apiKey) {
 			return res.status(400).json({
@@ -128,6 +142,11 @@ export default async function handler(
 								},
 							},
 							{
+								ISBN: {
+									$regex: new RegExp(title, "i"),
+								},
+							},
+							{
 								categories: {
 									$in: [title],
 								},
@@ -143,6 +162,11 @@ export default async function handler(
 							},
 							{
 								author: {
+									$regex: new RegExp(title, "i"),
+								},
+							},
+							{
+								ISBN: {
 									$regex: new RegExp(title, "i"),
 								},
 							},
@@ -180,21 +204,7 @@ export default async function handler(
 					};
 				}
 
-				const pageNumber =
-					typeof page === "number"
-						? page
-						: typeof page === "string"
-						? parseInt(page)
-						: 1;
-
-				const itemsPerPage =
-					typeof limit === "number"
-						? limit
-						: typeof limit === "string"
-						? parseInt(limit)
-						: 10;
-
-				const skip = (pageNumber - 1) * itemsPerPage;
+				const skip = (page - 1) * limit;
 
 				const collationOptions: CollationOptions = {
 					locale: "en",
@@ -247,7 +257,7 @@ export default async function handler(
 					statusCode: 200,
 					books: booksInfo,
 					page: page,
-					totalPages: Math.ceil(totalCount / itemsPerPage),
+					totalPages: Math.ceil(totalCount / limit),
 					totalCount,
 				});
 

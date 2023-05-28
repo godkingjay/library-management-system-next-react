@@ -21,8 +21,8 @@ const BookCard: React.FC<BookCardProps> = ({ bookData, onViewBook }) => {
 	return (
 		<>
 			<Box
-				className="shadow-page-box-1 p-4 border border-transparent rounded-lg bg-white group relative cursor-pointer hover:border-blue-500"
-				onClick={() => onViewBook(bookData)}
+				className="shadow-page-box-1 p-4 border border-transparent rounded-lg bg-white group relative hover:border-blue-500"
+				// onClick={() => onViewBook(bookData)}
 			>
 				<Box className="flex flex-row gap-x-4">
 					<>
