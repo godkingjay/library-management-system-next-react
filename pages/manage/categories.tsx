@@ -358,8 +358,8 @@ const ManageCategoriesPage: React.FC<ManageCategoriesPageProps> = () => {
 	) => {
 		if (!fetchingData) {
 			setCategoryAlphabet(event.target.value);
-
-			await fetchCategories(event.target.value, cPage);
+			setCPage(1);
+			await fetchCategories(event.target.value, 1);
 		}
 	};
 
