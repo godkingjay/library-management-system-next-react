@@ -1,15 +1,15 @@
 import ManageBreadcrumb from "@/components/Breadcrumb/ManageBreadcrumb";
 import { Box, Flex, Text } from "@chakra-ui/react";
 import Head from "next/head";
-import React, { useState } from "react";
+import React from "react";
 
-type ManageBorrowsPageProps = {};
+type ManagePendingPageProps = {};
 
-const ManageBorrowsPage: React.FC<ManageBorrowsPageProps> = () => {
+const ManagePendingPage: React.FC<ManagePendingPageProps> = () => {
 	return (
 		<>
 			<Head>
-				<title>Manage Borrows | LibMS</title>
+				<title>Manage Pending | LibMS</title>
 			</Head>
 			<Box
 				display="flex"
@@ -31,7 +31,7 @@ const ManageBorrowsPage: React.FC<ManageBorrowsPageProps> = () => {
 							fontWeight={"bold"}
 							className="text-gray-700"
 						>
-							Borrows
+							Pending
 						</Text>
 						<div className="h-[1px] w-full bg-gray-300 mb-2"></div>
 						<ManageBreadcrumb />
@@ -44,4 +44,4 @@ const ManageBorrowsPage: React.FC<ManageBorrowsPageProps> = () => {
 	);
 };
 
-export default ManageBorrowsPage;
+export default ManagePendingPage;
