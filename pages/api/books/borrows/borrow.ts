@@ -2,7 +2,7 @@ import authDb from "@/server/mongo/authDb";
 import bookDb from "@/server/mongo/bookDb";
 import userDb from "@/server/mongo/userDb";
 import { UserAuth } from "@/utils/models/auth";
-import { BookBorrow } from "@/utils/models/book";
+import { Book, BookBorrow } from "@/utils/models/book";
 import { SiteUser } from "@/utils/models/user";
 import { ObjectId } from "mongodb";
 import { NextApiRequest, NextApiResponse } from "next";
@@ -157,6 +157,20 @@ export default async function handler(
 						},
 					});
 				}
+
+				// const bookData = (await bookBorrowsCollection.findOne({
+				// 	id: bookId,
+				// })) as unknown as Book;
+
+				// if (bookData.available <= 0) {
+				// 	return res.status(400).json({
+				// 		statusCode: 400,
+				// 		error: {
+				// 			type: "Book Unavailable",
+				// 			message: "Book Unavailable",
+				// 		},
+				// 	});
+				// }
 
 				const borrowId = new ObjectId();
 
