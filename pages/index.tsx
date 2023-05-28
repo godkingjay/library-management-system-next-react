@@ -461,6 +461,7 @@ const IndexPage = () => {
 												<a
 													href={viewBook.book.cover.fileUrl}
 													target="_blank"
+													title="View Full Image"
 												>
 													<Image
 														src={viewBook?.book.cover.fileUrl}
