@@ -4,7 +4,7 @@ import bookDb from "@/server/mongo/bookDb";
 import userDb from "@/server/mongo/userDb";
 import { UserAuth } from "@/utils/models/auth";
 import { Author } from "@/utils/models/author";
-import { Book, BookBorrow, BookInfo, BorrowInfo } from "@/utils/models/book";
+import { Book, BookBorrow, BookInfo } from "@/utils/models/book";
 import { SiteUser } from "@/utils/models/user";
 import { NextApiRequest, NextApiResponse } from "next";
 
@@ -168,7 +168,7 @@ export default async function handler(
 					countQuery
 				);
 
-				const borrowInfo: BorrowInfo[] = await Promise.all(
+				const borrowInfo: BookInfo[] = await Promise.all(
 					bookBorrowsData.map(async (bookBorrow) => {
 						const bookData = (await booksCollection.findOne({
 							id: bookBorrow.bookId,
@@ -188,8 +188,8 @@ export default async function handler(
 							book: bookData,
 							borrow: bookBorrowData,
 							author: authorData,
-							user: userData,
-						} as BorrowInfo;
+							borrower: userData,
+						} as BookInfo;
 					})
 				);
 
