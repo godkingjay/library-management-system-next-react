@@ -242,8 +242,8 @@ const ManagePage: React.FC<ManagePageProps> = () => {
 								</Flex>
 							</Flex>
 						</Link>
-						{/* <Link
-							href="/manage/authors"
+						<Link
+							href="/manage/pending"
 							className="
 							 w-full bg-gradient-to-br from-[#fcb0f3] to-[#3d05dd] rounded-lg p-4 py-2 relative overflow-hidden shadow-page-box-1
 							 duration-200
@@ -274,7 +274,7 @@ const ManagePage: React.FC<ManagePageProps> = () => {
 									</Text>
 								</Flex>
 							</Flex>
-						</Link> */}
+						</Link>
 						<Link
 							href="/manage/returned"
 							className="

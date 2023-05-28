@@ -6,15 +6,13 @@ import { UserAuth } from "@/utils/models/auth";
 import { Author } from "@/utils/models/author";
 import { Book, BookBorrow, BookInfo } from "@/utils/models/book";
 import { SiteUser } from "@/utils/models/user";
-import { CollationOptions } from "mongodb";
 import { NextApiRequest, NextApiResponse } from "next";
 
-export interface APIEndpointBooksParameters {
+export interface APIEndpointBorrowsParameters {
 	apiKey: string;
-	title?: string;
-	fromTitle?: string;
+	borrowStatus?: BookBorrow["borrowStatus"];
 	page?: number;
-	limit?: number;
+	limit: number;
 }
 
 export default async function handler(
@@ -32,11 +30,13 @@ export default async function handler(
 
 		const {
 			apiKey,
-			title = undefined,
-			fromTitle = undefined,
-			page = 1,
-			limit = 10,
-		}: APIEndpointBooksParameters = req.body || req.query;
+			borrowStatus = "borrowed",
+			page: rawPage = 1,
+			limit: rawLimit = 10,
+		}: APIEndpointBorrowsParameters = req.body || req.query;
+
+		const page = typeof rawPage === "number" ? rawPage : parseInt(rawPage);
+		const limit = typeof rawLimit === "number" ? rawLimit : parseInt(rawLimit);
 
 		if (!apiKey) {
 			return res.status(400).json({
@@ -58,6 +58,16 @@ export default async function handler(
 			});
 		}
 
+		if (!usersCollection) {
+			return res.status(500).json({
+				statusCode: 500,
+				error: {
+					type: "Database Connection Error",
+					message: "Could not connect to user database",
+				},
+			});
+		}
+
 		if (!authorsCollection) {
 			return res.status(500).json({
 				statusCode: 500,
@@ -68,7 +78,7 @@ export default async function handler(
 			});
 		}
 
-		if (!booksCollection) {
+		if (!booksCollection || !bookBorrowsCollection) {
 			return res.status(500).json({
 				statusCode: 500,
 				error: {
@@ -111,144 +121,88 @@ export default async function handler(
 
 		switch (req.method) {
 			case "GET": {
-				let query: any = {};
-				let countQuery: any = {};
-
-				if (title) {
-					countQuery = {
-						$or: [
-							{
-								title: {
-									$regex: new RegExp(title, "i"),
-								},
-							},
-							{
-								author: {
-									$regex: new RegExp(title, "i"),
-								},
-							},
-							{
-								categories: {
-									$in: [title],
-								},
-							},
-						],
-					};
-					query = {
-						$or: [
-							{
-								title: {
-									$regex: new RegExp(title, "i"),
-								},
-							},
-							{
-								author: {
-									$regex: new RegExp(title, "i"),
-								},
-							},
-							{
-								categories: {
-									$in: [title],
-								},
-							},
-						],
-					};
+				if (!borrowStatus) {
+					return res.status(400).json({
+						statusCode: 400,
+						error: {
+							type: "Missing Borrow Status",
+							message: "Please enter Borrow Status",
+						},
+					});
 				}
 
-				if (fromTitle) {
-					query = {
-						...query,
-						$or: [
-							{
-								title: {
-									...query.$or[0].title,
-									$lt: fromTitle,
-								},
-							},
-							{
-								author: {
-									...query.$or[1].author,
-									$lt: fromTitle,
-								},
-							},
-							{
-								categories: {
-									...query.$or[2].categories,
-								},
-							},
-						],
-					};
+				if (
+					borrowStatus !== "pending" &&
+					borrowStatus !== "borrowed" &&
+					borrowStatus !== "returned"
+				) {
+					return res.status(400).json({
+						statusCode: 400,
+						error: {
+							type: "Invalid Borrow Status",
+							message: "Invalid Borrow Status",
+						},
+					});
 				}
 
-				const pageNumber =
-					typeof page === "number"
-						? page
-						: typeof page === "string"
-						? parseInt(page)
-						: 1;
-
-				const itemsPerPage =
-					typeof limit === "number"
-						? limit
-						: typeof limit === "string"
-						? parseInt(limit)
-						: 10;
-
-				const skip = (pageNumber - 1) * itemsPerPage;
-
-				const collationOptions: CollationOptions = {
-					locale: "en",
-					numericOrdering: true,
+				let query: any = {
+					borrowStatus,
 				};
 
-				const booksData = await booksCollection
-					.find({
-						...query,
-					})
+				let countQuery: any = {
+					borrowStatus,
+				};
+
+				const skip = (page - 1) * limit;
+
+				const bookBorrowsData = await bookBorrowsCollection
+					.find(query)
 					.sort({
-						title: 1,
+						createdAt: -1,
 					})
-					.collation(collationOptions)
 					.skip(skip)
-					.limit(
-						typeof limit === "number"
-							? limit
-							: typeof limit === "string"
-							? parseInt(limit)
-							: 10
-					)
+					.limit(limit)
 					.toArray();
 
-				const totalCount = await booksCollection.countDocuments(countQuery);
+				const totalCount = await bookBorrowsCollection.countDocuments(
+					countQuery
+				);
 
-				const booksInfo: BookInfo[] = await Promise.all(
-					booksData.map(async (book) => {
-						const bookDoc = book as unknown as Book;
+				const borrowInfo: BookInfo[] = await Promise.all(
+					bookBorrowsData.map(async (bookBorrow) => {
+						const bookData = (await booksCollection.findOne({
+							id: bookBorrow.bookId,
+						})) as unknown as Book;
+
+						const bookBorrowData = bookBorrow as unknown as BookBorrow;
 
 						const authorData = (await authorsCollection.findOne({
-							name: bookDoc.author,
+							name: bookData.author,
 						})) as unknown as Author;
 
-						const borrowData = await bookBorrowsCollection
-							.find({ userId: userData.id, bookId: bookDoc.id })
-							.sort({ createdAt: -1 })
-							.limit(1)
-							.toArray();
+						const userData = (await usersCollection.findOne({
+							username: bookBorrowData.userId,
+						})) as unknown as SiteUser;
 
 						return {
-							book: bookDoc,
+							book: bookData,
+							borrow: bookBorrowData,
 							author: authorData,
-							borrow: borrowData[0] ? borrowData[0] : null,
+							borrower: userData,
 						} as BookInfo;
 					})
 				);
 
 				return res.status(200).json({
 					statusCode: 200,
-					books: booksInfo,
+					success: {
+						type: "Borrows Data",
+						message: "Fetching borrow book information successful",
+					},
+					borrows: borrowInfo,
 					page: page,
-					totalPages: Math.ceil(totalCount / itemsPerPage),
-					totalCount,
+					totalPages: Math.ceil(totalCount / limit),
+					totalCount: totalCount,
 				});
 
 				break;
@@ -270,8 +224,8 @@ export default async function handler(
 		return res.status(500).json({
 			statusCode: 500,
 			error: {
-				type: "Server Error",
-				...error,
+				type: "Internal Server Error",
+				message: error.message || "Internal Server Error",
 			},
 		});
 	}

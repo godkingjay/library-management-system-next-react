@@ -69,10 +69,10 @@ export default async function handler(
 			title = undefined,
 			description = "",
 			categories: rawCategories = [],
-			amount = 0,
-			available = 0,
-			borrows = 0,
-			borrowedTimes = 0,
+			amount: rawAmount = undefined,
+			available: rawAvailable = undefined,
+			borrows: rawBorrows = undefined,
+			borrowedTimes: rawBorrowedTimes = undefined,
 			ISBN = "",
 			publicationDate: rawPublicationDate = undefined,
 			image: rawImage = undefined,
@@ -81,6 +81,20 @@ export default async function handler(
 			: req.body || req.query;
 
 		const imageFile = (files["imageFile"] as FormidableFile) || undefined;
+
+		const amount: APIEndpointBookParameters["amount"] =
+			typeof rawAmount === "string" ? parseInt(rawAmount) : rawAmount;
+
+		const available: APIEndpointBookParameters["available"] =
+			typeof rawAvailable === "string" ? parseInt(rawAvailable) : rawAvailable;
+
+		const borrows: APIEndpointBookParameters["borrows"] =
+			typeof rawBorrows === "string" ? parseInt(rawBorrows) : rawBorrows;
+
+		const borrowedTimes: APIEndpointBookParameters["borrowedTimes"] =
+			typeof rawBorrowedTimes === "string"
+				? parseInt(rawBorrowedTimes)
+				: rawBorrowedTimes;
 
 		const categories: APIEndpointBookParameters["categories"] =
 			typeof rawCategories === "string"
@@ -280,14 +294,14 @@ export default async function handler(
 					description,
 					author: authorData.name,
 					categories: categories || [],
-					amount,
-					available,
-					borrows,
-					borrowedTimes,
+					amount: amount || 0,
+					available: available || 0,
+					borrows: borrows || 0,
+					borrowedTimes: borrowedTimes || 0,
 					ISBN,
 					publicationDate,
-					updatedAt: requestedAt,
-					createdAt: requestedAt,
+					updatedAt: requestedAt.toISOString(),
+					createdAt: requestedAt.toISOString(),
 				};
 
 				if (image && imageFile) {
@@ -310,7 +324,7 @@ export default async function handler(
 						fileType: image.type,
 						fileSize: image.size,
 						fileExtension: image.name.split(".").pop() || "",
-						createdAt: new Date().toISOString(),
+						createdAt: requestedAt.toISOString(),
 					};
 				}
 
@@ -426,19 +440,19 @@ export default async function handler(
 					updatedBook.description = description;
 				}
 
-				if (amount) {
+				if (amount !== undefined) {
 					updatedBook.amount = amount;
 				}
 
-				if (available) {
+				if (available !== undefined) {
 					updatedBook.available = available;
 				}
 
-				if (borrows) {
+				if (borrows !== undefined) {
 					updatedBook.borrows = borrows;
 				}
 
-				if (borrowedTimes) {
+				if (borrowedTimes !== undefined) {
 					updatedBook.borrowedTimes = borrowedTimes;
 				}
 
@@ -492,7 +506,7 @@ export default async function handler(
 						fileType: image.type,
 						fileSize: image.size,
 						fileExtension: image.name.split(".").pop() || "",
-						createdAt: new Date().toISOString(),
+						createdAt: requestedAt.toISOString(),
 					};
 
 					if (existingBook.cover) {
