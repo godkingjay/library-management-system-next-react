@@ -356,7 +356,9 @@ const IndexPage = () => {
 								<Box className="flex-1">
 									<MainSearchBar
 										value={searchText}
-										placeholder={"Search Books..."}
+										placeholder={
+											"Search book title, author, category, genre, ISBN..."
+										}
 										onSearch={handleSearchChange}
 									/>
 								</Box>
