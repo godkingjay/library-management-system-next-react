@@ -295,12 +295,23 @@ const ManageBorrowsPage: React.FC<ManageBorrowsPageProps> = () => {
 	};
 
 	useEffect(() => {
-		if (!loadingUser && !bookBorrowsMounted.current) {
+		if (
+			!fetchingData &&
+			!bookBorrowsMounted.current &&
+			usersStateValue.currentUser?.auth
+		) {
 			bookBorrowsMounted.current = true;
 
 			fetchBookBorrows(1);
 		}
-	}, [bookBorrowsMounted.current, loadingUser]);
+	}, [bookBorrowsMounted.current]);
+
+	// console.log({
+	// 	loadingUser,
+	// 	bookBorrowsMounted: bookBorrowsMounted.current,
+	// 	fetchingData,
+	// 	usersStateValue,
+	// });
 
 	return (
 		<>

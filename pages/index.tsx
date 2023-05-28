@@ -250,14 +250,21 @@ const IndexPage = () => {
 	useEffect(() => {
 		if (
 			!booksMounted.current &&
-			usersStateValue.currentUser?.auth &&
-			!loadingUser
+			!fetchingData &&
+			usersStateValue.currentUser?.auth
 		) {
 			booksMounted.current = true;
 
 			fetchBooks(1);
 		}
-	}, [booksMounted, loadingUser]);
+	}, [booksMounted.current]);
+
+	// console.log({
+	// 	loadingUser,
+	// 	booksMounted: booksMounted.current,
+	// 	fetchingData,
+	// 	usersStateValue,
+	// });
 
 	const renderBorrowButton = (
 		borrowStatus: BookBorrow["borrowStatus"] | undefined

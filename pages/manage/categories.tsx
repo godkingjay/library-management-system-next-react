@@ -401,14 +401,20 @@ const ManageCategoriesPage: React.FC<ManageCategoriesPageProps> = () => {
 	useEffect(() => {
 		if (
 			!categoriesMounted.current &&
-			usersStateValue.currentUser?.auth &&
 			!fetchingData &&
-			!loadingUser
+			usersStateValue.currentUser?.auth
 		) {
 			categoriesMounted.current = true;
 			fetchCategories(categoryAlphabet, cPage);
 		}
-	}, [loadingUser, categoriesMounted.current]);
+	}, [categoriesMounted.current]);
+
+	// console.log({
+	// 	loadingUser,
+	// 	categoriesMounted: categoriesMounted.current,
+	// 	fetchingData,
+	// 	usersStateValue,
+	// });
 
 	return (
 		<>

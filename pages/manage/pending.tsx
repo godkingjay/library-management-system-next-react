@@ -67,7 +67,7 @@ const ManagePendingPage: React.FC<ManagePendingPageProps> = () => {
 		dueAt: "",
 	});
 
-	const bookBorrowsMounted = useRef(false);
+	const bookPendingMounted = useRef(false);
 	const updateRef = useRef(null);
 	const deleteRef = useRef(null);
 
@@ -386,12 +386,23 @@ const ManagePendingPage: React.FC<ManagePendingPageProps> = () => {
 	};
 
 	useEffect(() => {
-		if (!loadingUser && !bookBorrowsMounted.current) {
-			bookBorrowsMounted.current = true;
+		if (
+			!fetchingData &&
+			!bookPendingMounted.current &&
+			usersStateValue.currentUser?.auth
+		) {
+			bookPendingMounted.current = true;
 
 			fetchBookBorrows(1);
 		}
-	}, [bookBorrowsMounted.current, loadingUser]);
+	}, [bookPendingMounted.current]);
+
+	// console.log({
+	// 	loadingUser,
+	// 	bookPendingMounted: bookPendingMounted.current,
+	// 	fetchingData,
+	// 	usersStateValue,
+	// });
 
 	return (
 		<>
@@ -426,7 +437,7 @@ const ManagePendingPage: React.FC<ManagePendingPageProps> = () => {
 					<Grid className="grid-cols-1 sm2:grid-cols-2 gap-4">
 						<>
 							{fetchingData ||
-							!bookBorrowsMounted.current ||
+							!bookPendingMounted.current ||
 							loadingUser ||
 							!usersStateValue.currentUser?.auth ? (
 								<>

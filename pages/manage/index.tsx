@@ -28,7 +28,7 @@ type ManagePageProps = {};
 
 const ManagePage: React.FC<ManagePageProps> = () => {
 	const { usersStateValue } = useUser();
-	const dashboardRef = useRef(false);
+	const dashboardMounted = useRef(false);
 
 	const [dashboardData, setDashboardData] = useState({
 		books: 0,
@@ -67,12 +67,17 @@ const ManagePage: React.FC<ManagePageProps> = () => {
 	};
 
 	useEffect(() => {
-		if (!dashboardRef.current) {
-			dashboardRef.current = true;
+		if (!dashboardMounted.current && usersStateValue.currentUser?.auth) {
+			dashboardMounted.current = true;
 
 			fetchDatabaseDataCount();
 		}
-	}, [dashboardRef]);
+	}, [dashboardMounted.current]);
+
+	// console.log({
+	// 	dashboardMounted: dashboardMounted.current,
+	// 	usersStateValue,
+	// });
 
 	return (
 		<>

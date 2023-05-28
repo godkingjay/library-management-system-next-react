@@ -67,7 +67,7 @@ const ManageReturnedPage: React.FC<ManageReturnedPageProps> = () => {
 		dueAt: "",
 	});
 
-	const bookBorrowsMounted = useRef(false);
+	const bookReturnsMounted = useRef(false);
 	const updateRef = useRef(null);
 	const deleteRef = useRef(null);
 
@@ -297,12 +297,23 @@ const ManageReturnedPage: React.FC<ManageReturnedPageProps> = () => {
 	};
 
 	useEffect(() => {
-		if (!loadingUser && !bookBorrowsMounted.current) {
-			bookBorrowsMounted.current = true;
+		if (
+			!fetchingData &&
+			!bookReturnsMounted.current &&
+			usersStateValue.currentUser?.auth
+		) {
+			bookReturnsMounted.current = true;
 
 			fetchBookBorrows(1);
 		}
-	}, [bookBorrowsMounted.current, loadingUser]);
+	}, [bookReturnsMounted.current]);
+
+	// console.log({
+	// 	loadingUser,
+	// 	bookReturnsMounted: bookReturnsMounted.current,
+	// 	fetchingData,
+	// 	usersStateValue,
+	// });
 
 	return (
 		<>
@@ -337,7 +348,7 @@ const ManageReturnedPage: React.FC<ManageReturnedPageProps> = () => {
 					<Grid className="grid-cols-1 sm2:grid-cols-2 gap-4">
 						<>
 							{fetchingData ||
-							!bookBorrowsMounted.current ||
+							!bookReturnsMounted.current ||
 							loadingUser ||
 							!usersStateValue.currentUser?.auth ? (
 								<>
