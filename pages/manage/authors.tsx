@@ -426,12 +426,23 @@ const ManageAuthorsPage: React.FC<ManageAuthorsPageProps> = () => {
 	};
 
 	useEffect(() => {
-		if (!authorsMounted.current && usersStateValue.currentUser?.auth) {
+		if (
+			!authorsMounted.current &&
+			!fetchingData &&
+			usersStateValue.currentUser?.auth
+		) {
 			authorsMounted.current = true;
 
 			fetchAuthors(cPage);
 		}
-	}, [authorsMounted]);
+	}, [authorsMounted.current]);
+
+	// console.log({
+	// 	loadingUser,
+	// 	authorsMounted: authorsMounted.current,
+	// 	fetchingData,
+	// 	usersStateValue,
+	// });
 
 	return (
 		<>

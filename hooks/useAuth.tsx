@@ -252,18 +252,18 @@ const useAuth = () => {
 	useEffect(() => {
 		const sessionToken = localStorage.getItem("sessionToken");
 
-		if (!userMounted.current) {
+		if (!userMounted.current && loadingUserMemo) {
 			userMounted.current = true;
 
 			if (sessionToken && !usersStateValue.currentUser?.auth) {
 				getSession({
 					sessionToken,
 				});
-			} else {
-				setLoadingUserMemo(false);
 			}
+		} else {
+			setLoadingUserMemo(false);
 		}
-	}, [userMounted.current]);
+	}, [userMounted.current, loadingUserMemo]);
 
 	return {
 		loadingUser: loadingUserMemo,

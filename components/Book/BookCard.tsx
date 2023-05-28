@@ -1,5 +1,5 @@
 import { BookInfo } from "@/utils/models/book";
-import { Box, Button, Icon, Text, Tooltip } from "@chakra-ui/react";
+import { Box, Button, Grid, Icon, Text, Tooltip } from "@chakra-ui/react";
 import moment from "moment";
 import Image from "next/image";
 import React from "react";
@@ -10,6 +10,7 @@ import { FaHandHolding } from "react-icons/fa";
 import { ImBooks } from "react-icons/im";
 import { SiBookstack } from "react-icons/si";
 import { AiOutlineEye } from "react-icons/ai";
+import { HiOutlineClock } from "react-icons/hi";
 
 type BookCardProps = {
 	bookData: BookInfo;
@@ -20,8 +21,8 @@ const BookCard: React.FC<BookCardProps> = ({ bookData, onViewBook }) => {
 	return (
 		<>
 			<Box
-				className="shadow-page-box-1 p-4 border border-transparent rounded-lg bg-white group relative cursor-pointer hover:border-blue-500"
-				onClick={() => onViewBook(bookData)}
+				className="shadow-page-box-1 p-4 border border-transparent rounded-lg bg-white group relative hover:border-blue-500"
+				// onClick={() => onViewBook(bookData)}
 			>
 				<Box className="flex flex-row gap-x-4">
 					<>
@@ -144,7 +145,7 @@ const BookCard: React.FC<BookCardProps> = ({ bookData, onViewBook }) => {
 							<Box className="flex flex-row font-mono gap-x-2 items-center text-xs text-gray-500">
 								<Text>{bookData.author.name}</Text>
 								<Text>|</Text>
-								<Text>
+								<Text isTruncated>
 									{moment(bookData.book.publicationDate).format("MMMM DD, YYYY")}
 								</Text>
 							</Box>
@@ -156,7 +157,7 @@ const BookCard: React.FC<BookCardProps> = ({ bookData, onViewBook }) => {
 								items={bookData.book.categories}
 								maxItems={3}
 							/>
-							<Box className="mt-auto w-full flex flex-row items-center justify-end gap-x-2 flex-wrap">
+							<Box className="mt-auto p-1 w-full flex flex-row items-center justify-end gap-x-2 flex-wrap">
 								<Button
 									colorScheme="messenger"
 									size={"sm"}
@@ -181,6 +182,38 @@ const BookCard: React.FC<BookCardProps> = ({ bookData, onViewBook }) => {
 						</Box>
 					</>
 				</Box>
+				<>
+					{bookData.borrow && bookData.borrow.borrowStatus !== "returned" && (
+						<>
+							<Box
+								className="py-1 duration-200 flex flex-row items-center px-1.5 text-2xs font-semibold text-white shadow-page-box-1 rounded-full absolute top-0 translate-y-[-50%] right-2"
+								bgColor={
+									bookData.borrow.borrowStatus === "borrowed"
+										? "whatsapp.500"
+										: "messenger.500"
+								}
+							>
+								<Icon
+									as={
+										bookData.borrow.borrowStatus === "borrowed"
+											? FaHandHolding
+											: HiOutlineClock
+									}
+									height={3}
+									className="!w-0 !duration-200 !opacity-0 !mr-0
+										group-hover:!block group-hover:!w-3 group-hover:!opacity-100 group-hover:!mr-1
+										group-focus-within:!block group-focus-within:!w-3 group-focus-within:!opacity-100 group-focus-within:!mr-1
+									"
+								/>
+								<Text>
+									{bookData.borrow.borrowStatus === "borrowed" && "Borrowed"}
+									{bookData.borrow.borrowStatus === "pending" &&
+										"Pending Borrow"}
+								</Text>
+							</Box>
+						</>
+					)}
+				</>
 			</Box>
 		</>
 	);

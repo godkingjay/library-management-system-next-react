@@ -28,7 +28,14 @@ const CategoryTagsList: React.FC<CategoryTagsListProps> = ({
 					title={item}
 					className="h-6 flex text-sm px-2 py-0.5 rounded-full items-center space-x-2 duration-200 bg-blue-100 hover:text-blue-700 hover:bg-blue-200"
 				>
-					<span className="text-2xs px-1 truncate text-blue-500">{item}</span>
+					<span className="text-2xs px-1 truncate text-blue-500">
+						{item
+							.split("-")
+							.map((word) => {
+								return word.charAt(0).toUpperCase() + word.slice(1);
+							})
+							.join(" ")}
+					</span>
 				</div>
 			))}
 			{hiddenCount > 0 && (

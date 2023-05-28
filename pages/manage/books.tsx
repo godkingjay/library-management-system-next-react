@@ -894,15 +894,21 @@ const ManageBooksPage: React.FC<ManageBooksPageProps> = () => {
 	useEffect(() => {
 		if (
 			!booksMounted.current &&
-			usersStateValue.currentUser?.auth &&
 			!fetchingData &&
-			!loadingUser
+			usersStateValue.currentUser?.auth
 		) {
 			booksMounted.current = true;
 
 			fetchBooks(cPage);
 		}
-	}, [loadingUser]);
+	}, [booksMounted.current]);
+
+	// console.log({
+	// 	loadingUser,
+	// 	booksMounted: booksMounted.current,
+	// 	fetchingData,
+	// 	usersStateValue,
+	// });
 
 	return (
 		<>

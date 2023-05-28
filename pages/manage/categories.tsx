@@ -1,9 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
-import SearchBar from "@/components/Input/SearchBar";
 import {
 	Box,
 	Button,
-	Collapse,
 	Flex,
 	Grid,
 	Select,
@@ -57,7 +55,7 @@ const ManageCategoriesPage: React.FC<ManageCategoriesPageProps> = () => {
 
 	const [cPage, setCPage] = useState(1);
 	const [tPages, setTPages] = useState(1);
-	const [itemsPerPage, setItemsPerPage] = useState(10);
+	const [itemsPerPage, setItemsPerPage] = useState(12);
 	const [categoriesData, setCategoriesData] = useState<BookCategory[]>([]);
 
 	const [fetchingData, setFetchingData] = useState(false);
@@ -360,8 +358,8 @@ const ManageCategoriesPage: React.FC<ManageCategoriesPageProps> = () => {
 	) => {
 		if (!fetchingData) {
 			setCategoryAlphabet(event.target.value);
-
-			await fetchCategories(event.target.value, cPage);
+			setCPage(1);
+			await fetchCategories(event.target.value, 1);
 		}
 	};
 
@@ -403,14 +401,20 @@ const ManageCategoriesPage: React.FC<ManageCategoriesPageProps> = () => {
 	useEffect(() => {
 		if (
 			!categoriesMounted.current &&
-			usersStateValue.currentUser?.auth &&
 			!fetchingData &&
-			!loadingUser
+			usersStateValue.currentUser?.auth
 		) {
 			categoriesMounted.current = true;
 			fetchCategories(categoryAlphabet, cPage);
 		}
-	}, [loadingUser, categoriesMounted.current]);
+	}, [categoriesMounted.current]);
+
+	// console.log({
+	// 	loadingUser,
+	// 	categoriesMounted: categoriesMounted.current,
+	// 	fetchingData,
+	// 	usersStateValue,
+	// });
 
 	return (
 		<>

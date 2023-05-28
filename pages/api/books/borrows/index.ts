@@ -155,11 +155,45 @@ export default async function handler(
 
 				const skip = (page - 1) * limit;
 
+				let sort: Partial<Record<keyof BookBorrow, number>> = {};
+
+				switch (borrowStatus) {
+					case "pending": {
+						sort = {
+							requestedAt: -1,
+						};
+
+						break;
+					}
+
+					case "borrowed": {
+						sort = {
+							borrowedAt: -1,
+						};
+
+						break;
+					}
+
+					case "returned": {
+						sort = {
+							returnedAt: -1,
+						};
+
+						break;
+					}
+
+					default: {
+						sort = {
+							createdAt: -1,
+						};
+
+						break;
+					}
+				}
+
 				const bookBorrowsData = await bookBorrowsCollection
 					.find(query)
-					.sort({
-						createdAt: -1,
-					})
+					.sort(sort as any)
 					.skip(skip)
 					.limit(limit)
 					.toArray();
@@ -181,7 +215,7 @@ export default async function handler(
 						})) as unknown as Author;
 
 						const userData = (await usersCollection.findOne({
-							username: bookBorrowData.userId,
+							id: bookBorrowData.userId,
 						})) as unknown as SiteUser;
 
 						return {

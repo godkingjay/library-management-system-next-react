@@ -31,10 +31,13 @@ export default async function handler(
 			apiKey,
 			borrowId = undefined,
 			bookId = undefined,
-			note = "",
+			note: rawNote = "",
 			dueAt = "",
 			borrowType = "request",
 		}: APIEndpointBorrowParameters = req.body || req.query;
+
+		const note =
+			typeof rawNote === "string" ? rawNote.trim() : rawNote || undefined;
 
 		if (!apiKey) {
 			return res.status(400).json({
@@ -213,27 +216,31 @@ export default async function handler(
 			}
 
 			case "PUT": {
-				// if (!borrowId) {
-				// 	return res.status(400).json({
-				// 		statusCode: 400,
-				// 		error: {
-				// 			type: "Missing Borrow ID",
-				// 			message: "Please enter Borrow ID",
-				// 		},
-				// 	});
-				// }
-
-				if (!bookId) {
+				if (!borrowId) {
 					return res.status(400).json({
 						statusCode: 400,
 						error: {
-							type: "Missing Book ID",
-							message: "Please enter Book ID",
+							type: "Missing Borrow ID",
+							message: "Please enter Borrow ID",
 						},
 					});
 				}
 
-				if (borrowType !== "accept" && borrowType !== "return") {
+				// if (!bookId) {
+				// 	return res.status(400).json({
+				// 		statusCode: 400,
+				// 		error: {
+				// 			type: "Missing Book ID",
+				// 			message: "Please enter Book ID",
+				// 		},
+				// 	});
+				// }
+
+				if (
+					borrowType !== "accept" &&
+					borrowType !== "return" &&
+					borrowType !== "request"
+				) {
 					return res.status(400).json({
 						statusCode: 400,
 						error: {
@@ -276,16 +283,7 @@ export default async function handler(
 
 				const existingBorrow = (await bookBorrowsCollection
 					.find({
-						userId: userData.id,
-						bookId: bookId,
-						$or: [
-							{
-								borrowStatus: "pending",
-							},
-							{
-								borrowStatus: "borrowed",
-							},
-						],
+						id: borrowId,
 					})
 					.sort({
 						createdAt: -1,
@@ -314,7 +312,7 @@ export default async function handler(
 				}
 
 				const bookData = (await booksCollection.findOne({
-					id: bookId,
+					id: existingBorrow[0].bookId,
 				})) as unknown as Book;
 
 				if (!bookData) {
@@ -353,22 +351,30 @@ export default async function handler(
 					});
 				}
 
-				if (existingBorrow[0].borrowStatus === "returned") {
-					return res.status(400).json({
-						statusCode: 400,
-						error: {
-							type: "Book Already Returned",
-							message: "Book Already Returned",
-						},
-					});
+				// if (existingBorrow[0].borrowStatus === "returned") {
+				// 	return res.status(400).json({
+				// 		statusCode: 400,
+				// 		error: {
+				// 			type: "Book Already Returned",
+				// 			message: "Book Already Returned",
+				// 		},
+				// 	});
+				// }
+
+				const updatedBookBorrow: Partial<BookBorrow> = {};
+
+				if (note) {
+					updatedBookBorrow.note = note;
 				}
 
-				const updatedBookBorrow: Partial<BookBorrow> = {
-					note: note,
-					borrowStatus: borrowType === "accept" ? "borrowed" : "returned",
-				};
+				if (dueAt) {
+					updatedBookBorrow.dueAt = dueAt;
+				}
 
-				if (borrowType === "accept") {
+				if (
+					borrowType === "accept" &&
+					existingBorrow[0].borrowStatus === "pending"
+				) {
 					if (bookData.available <= 0) {
 						return res.status(400).json({
 							statusCode: 400,
@@ -379,11 +385,12 @@ export default async function handler(
 						});
 					}
 
+					updatedBookBorrow.borrowStatus = "borrowed";
 					updatedBookBorrow.borrowedAt = requestedAt.toISOString();
 
 					await booksCollection.updateOne(
 						{
-							id: bookId,
+							id: existingBorrow[0].bookId,
 						},
 						{
 							$inc: {
@@ -395,10 +402,13 @@ export default async function handler(
 					);
 				}
 
-				if (borrowType === "return") {
+				if (
+					borrowType === "return" &&
+					existingBorrow[0].borrowStatus === "borrowed"
+				) {
 					await booksCollection.updateOne(
 						{
-							id: bookId,
+							id: existingBorrow[0].bookId,
 						},
 						{
 							$inc: {
@@ -408,6 +418,7 @@ export default async function handler(
 						}
 					);
 
+					updatedBookBorrow.borrowStatus = "returned";
 					updatedBookBorrow.returnedAt = requestedAt.toISOString();
 				}
 
@@ -415,16 +426,16 @@ export default async function handler(
 					{
 						// id: existingBorrow.id,
 						id: existingBorrow[0].id,
-						bookId: bookId,
-						userId: userData.id,
-						$or: [
-							{
-								borrowStatus: "pending",
-							},
-							{
-								borrowStatus: "borrowed",
-							},
-						],
+						// bookId: bookId,
+						// userId: userData.id,
+						// $or: [
+						// 	{
+						// 		borrowStatus: "pending",
+						// 	},
+						// 	{
+						// 		borrowStatus: "borrowed",
+						// 	},
+						// ],
 					},
 					{
 						$set: {
