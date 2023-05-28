@@ -216,25 +216,25 @@ export default async function handler(
 			}
 
 			case "PUT": {
-				// if (!borrowId) {
-				// 	return res.status(400).json({
-				// 		statusCode: 400,
-				// 		error: {
-				// 			type: "Missing Borrow ID",
-				// 			message: "Please enter Borrow ID",
-				// 		},
-				// 	});
-				// }
-
-				if (!bookId) {
+				if (!borrowId) {
 					return res.status(400).json({
 						statusCode: 400,
 						error: {
-							type: "Missing Book ID",
-							message: "Please enter Book ID",
+							type: "Missing Borrow ID",
+							message: "Please enter Borrow ID",
 						},
 					});
 				}
+
+				// if (!bookId) {
+				// 	return res.status(400).json({
+				// 		statusCode: 400,
+				// 		error: {
+				// 			type: "Missing Book ID",
+				// 			message: "Please enter Book ID",
+				// 		},
+				// 	});
+				// }
 
 				if (
 					borrowType !== "accept" &&
@@ -283,16 +283,7 @@ export default async function handler(
 
 				const existingBorrow = (await bookBorrowsCollection
 					.find({
-						userId: userData.id,
-						bookId: bookId,
-						$or: [
-							{
-								borrowStatus: "pending",
-							},
-							{
-								borrowStatus: "borrowed",
-							},
-						],
+						id: borrowId,
 					})
 					.sort({
 						createdAt: -1,
@@ -321,7 +312,7 @@ export default async function handler(
 				}
 
 				const bookData = (await booksCollection.findOne({
-					id: bookId,
+					id: existingBorrow[0].bookId,
 				})) as unknown as Book;
 
 				if (!bookData) {
@@ -427,16 +418,16 @@ export default async function handler(
 					{
 						// id: existingBorrow.id,
 						id: existingBorrow[0].id,
-						bookId: bookId,
-						userId: userData.id,
-						$or: [
-							{
-								borrowStatus: "pending",
-							},
-							{
-								borrowStatus: "borrowed",
-							},
-						],
+						// bookId: bookId,
+						// userId: userData.id,
+						// $or: [
+						// 	{
+						// 		borrowStatus: "pending",
+						// 	},
+						// 	{
+						// 		borrowStatus: "borrowed",
+						// 	},
+						// ],
 					},
 					{
 						$set: {

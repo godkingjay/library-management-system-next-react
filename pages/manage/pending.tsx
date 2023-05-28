@@ -248,7 +248,8 @@ const ManagePendingPage: React.FC<ManagePendingPageProps> = () => {
 				} = await axios
 					.put(apiConfig.apiEndpoint + "/books/borrows/borrow", {
 						apiKey: usersStateValue.currentUser?.auth?.keys[0].key,
-						bookId: updateBorrow?.book?.id,
+						// bookId: updateBorrow?.book?.id,
+						borrowId: updateBorrow?.borrow?.id,
 						borrowType: "accept",
 					} as APIEndpointBorrowParameters)
 					.then((response) => response.data)

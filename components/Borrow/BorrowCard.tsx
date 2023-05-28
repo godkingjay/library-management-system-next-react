@@ -17,7 +17,7 @@ import React from "react";
 import { MdBrokenImage, MdOutlineNoteAdd } from "react-icons/md";
 import { BiCheckDouble, BiChevronUp } from "react-icons/bi";
 import { IoSettingsOutline } from "react-icons/io5";
-import { HiCheck, HiOutlineClock, HiOutlineX } from "react-icons/hi";
+import { HiCheck, HiOutlineClock, HiOutlineX, HiX } from "react-icons/hi";
 import { BsCheck2All, BsCheckAll } from "react-icons/bs";
 import { FaHandHolding } from "react-icons/fa";
 import { APIEndpointBorrowParameters } from "@/pages/api/books/borrows/borrow";
@@ -26,6 +26,7 @@ import moment from "moment";
 type BorrowCardProps = {
 	borrowData: BookInfo;
 	onNote?: (borrowData: BookInfo) => void;
+	onReturn?: (borrowData: BookInfo) => void;
 	onAcceptRejectBorrow?: (
 		borrowData: BookInfo,
 		borrowType: APIEndpointBorrowParameters["borrowType"]
@@ -36,6 +37,7 @@ const BorrowCard: React.FC<BorrowCardProps> = ({
 	borrowData,
 	onNote,
 	onAcceptRejectBorrow,
+	onReturn,
 }) => {
 	const renderBorrowMenu = (borrowStatus?: BookBorrow["borrowStatus"]) => {
 		switch (borrowStatus) {
@@ -105,7 +107,7 @@ const BorrowCard: React.FC<BorrowCardProps> = ({
 	return (
 		<>
 			<Box className="shadow-page-box-1 p-4 flex flex-col gap-y-4 border border-transparent rounded-lg bg-white group relative">
-				<Box className="flex flex-row gap-4">
+				<Box className="flex-1 flex flex-row gap-4">
 					<Box className="flex flex-col gap-y-2 max-w-[96px]">
 						<Box className="flex flex-col aspect-[2/3] min-w-[96px] max-w-[96px] bg-gray-200 items justify-center relative rounded-lg overflow-hidden shadow-md group/image">
 							{borrowData.book.cover ? (
@@ -236,7 +238,7 @@ const BorrowCard: React.FC<BorrowCardProps> = ({
 							)}
 							<Divider />
 						</Box>
-						<Box className="mt-auto flex flex-col items-end p-1">
+						<Box className="mt-auto flex flex-col items-end p-1 pt-4">
 							<Menu placement="top">
 								{renderBorrowMenu(borrowData.borrow?.borrowStatus)}
 								<MenuList>
@@ -271,8 +273,32 @@ const BorrowCard: React.FC<BorrowCardProps> = ({
 														onAcceptRejectBorrow(borrowData, "request")
 													}
 												>
-													<Icon as={HiOutlineX} />
+													<Icon as={HiX} />
 													<Text>Reject</Text>
+												</MenuItem>
+											</MenuGroup>
+										</>
+									)}
+									{borrowData.borrow?.borrowStatus === "borrowed" && (
+										<>
+											<MenuGroup
+												title="Borrow"
+												className="text-gray-700 !font-bold"
+											>
+												<MenuDivider className="!my-1" />
+												<MenuItem
+													className="text-sm !text-gray-700 font-semibold flex flex-row gap-x-2"
+													onClick={() => onNote && onNote(borrowData)}
+												>
+													<Icon as={MdOutlineNoteAdd} />
+													<Text>Add Note</Text>
+												</MenuItem>
+												<MenuItem
+													className="text-sm !text-green-500 font-semibold flex flex-row gap-x-2 hover:bg-green-100 focus-within:bg-green-100"
+													onClick={() => onReturn && onReturn(borrowData)}
+												>
+													<Icon as={HiCheck} />
+													<Text>Return</Text>
 												</MenuItem>
 											</MenuGroup>
 										</>
