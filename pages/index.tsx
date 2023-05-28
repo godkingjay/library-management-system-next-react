@@ -36,6 +36,7 @@ import { FaHandHolding } from "react-icons/fa";
 import { HiOutlineClock } from "react-icons/hi";
 import { AiOutlineCheck } from "react-icons/ai";
 import { APIEndpointBorrowParameters } from "./api/books/borrows/borrow";
+import moment from "moment";
 
 export type BookCardModalType = "" | "view";
 
@@ -489,13 +490,28 @@ const IndexPage = () => {
 									</Box>
 								</Box>
 								<Box className="sm:flex-1 flex flex-col">
-									<Box className="flex flex-col gap-y-2">
+									<Box className="flex flex-col gap-y-1">
 										<Text className="font-bold text-gray-700 text-2xl">
 											{viewBook?.book.title}
 										</Text>
 										<Text className="text-gray-500">
 											by {viewBook?.author.name}
 										</Text>
+										<Text className="text-gray-500 font-bold text-sm">
+											ISBN: {viewBook?.book.ISBN}
+										</Text>
+										<>
+											{viewBook?.book.publicationDate && (
+												<>
+													<Text className="text-xs text-gray-500">
+														Published on{" "}
+														{moment(viewBook?.book.publicationDate).format(
+															"MMMM DD, YYYY"
+														)}
+													</Text>
+												</>
+											)}
+										</>
 									</Box>
 									<>
 										{viewBook?.book.categories && (
