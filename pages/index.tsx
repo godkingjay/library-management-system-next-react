@@ -1,11 +1,12 @@
 import React from "react";
 import MainSearchBar from "@/components/Input/MainSearchBar";
 import useUser from "@/hooks/useUser";
-import { BookInfo } from "@/utils/models/book";
+import { BookBorrow, BookInfo } from "@/utils/models/book";
 import { apiConfig } from "@/utils/site";
 import {
 	Box,
 	Button,
+	Divider,
 	Flex,
 	Grid,
 	Icon,
@@ -17,16 +18,24 @@ import {
 	ModalHeader,
 	ModalOverlay,
 	Text,
+	useToast,
 } from "@chakra-ui/react";
 import axios from "axios";
 import Head from "next/head";
 import { useEffect, useRef, useState } from "react";
 import { APIEndpointBooksParameters } from "./api/books";
-import { BsSearch } from "react-icons/bs";
+import { BsCheck2All } from "react-icons/bs";
 import useAuth from "@/hooks/useAuth";
 import Pagination from "@/components/Table/Pagination";
 import { FiLoader } from "react-icons/fi";
 import BookCard from "@/components/Book/BookCard";
+import Image from "next/image";
+import { MdBrokenImage } from "react-icons/md";
+import CategoryTagsList from "@/components/Category/CategoryTagsList";
+import { FaHandHolding } from "react-icons/fa";
+import { HiOutlineClock } from "react-icons/hi";
+import { AiOutlineCheck } from "react-icons/ai";
+import { APIEndpointBorrowParameters } from "./api/books/borrows/borrow";
 
 export type BookCardModalType = "" | "view";
 
@@ -34,12 +43,15 @@ const IndexPage = () => {
 	const { loadingUser } = useAuth();
 	const { usersStateValue } = useUser();
 
+	const toast = useToast();
+
 	const [cPage, setCPage] = useState(1);
 	const [tPages, setTPages] = useState(1);
 	const [itemsPerPage, setItemsPerPage] = useState(10);
 	const [booksData, setBooksData] = useState<BookInfo[]>([]);
 
 	const [fetchingData, setFetchingData] = useState<boolean>(false);
+	const [borrowing, setBorrowing] = useState<boolean>(false);
 
 	const [searchText, setSearchText] = useState<string>("");
 	const [searchResultDetails, setSearchResultDetails] = useState({
@@ -107,6 +119,108 @@ const IndexPage = () => {
 		}
 	};
 
+	const borrowBook = async (
+		borrowType: APIEndpointBorrowParameters["borrowType"] = "request"
+	) => {
+		try {
+			if (!borrowing) {
+				setBorrowing(true);
+
+				if (viewBook) {
+					if (
+						(borrowType === "request" &&
+							viewBook?.borrow?.borrowStatus === "pending") ||
+						(borrowType === "return" &&
+							viewBook?.borrow?.borrowStatus === "returned")
+					) {
+						await axios
+							.delete(apiConfig.apiEndpoint + "/books/borrows/borrow", {
+								params: {
+									apiKey: usersStateValue.currentUser?.auth?.keys[0].key,
+									borrowId: viewBook?.borrow.id,
+								} as APIEndpointBorrowParameters,
+							})
+							.catch((error) => {
+								const errorData = error.response.data;
+
+								if (errorData.error.message) {
+									toast({
+										title: "Borrow Book Failed",
+										description: errorData.error.message,
+										status: "error",
+										duration: 5000,
+										isClosable: true,
+										position: "top",
+									});
+								}
+
+								throw new Error(
+									`=>API: Borrow Book Failed:\n${error.response.data.error.message}`
+								);
+							});
+
+						toast({
+							title: "Borrow Book Removed",
+							description: "You removed your borrow request.",
+							status: "success",
+							colorScheme: "red",
+							duration: 5000,
+							isClosable: true,
+							position: "top",
+						});
+					} else if (
+						(borrowType === "request" && !viewBook?.borrow) ||
+						(borrowType === "request" &&
+							viewBook?.borrow?.borrowStatus === "returned")
+					) {
+						await axios
+							.post(apiConfig.apiEndpoint + "/books/borrows/borrow", {
+								apiKey: usersStateValue.currentUser?.auth?.keys[0].key,
+								bookId: viewBook?.book.id,
+								borrowType: borrowType,
+							})
+							.catch((error) => {
+								const errorData = error.response.data;
+
+								if (errorData.error.message) {
+									toast({
+										title: "Borrow Book Failed",
+										description: errorData.error.message,
+										status: "error",
+										duration: 5000,
+										isClosable: true,
+										position: "top",
+									});
+								}
+
+								throw new Error(
+									`=>API: Borrow Book Failed:\n${error.response.data.error.message}`
+								);
+							});
+
+						toast({
+							title: "Borrow Book Success",
+							description: "You requested to borrow this book.",
+							status: "success",
+							duration: 5000,
+							isClosable: true,
+							position: "top",
+						});
+					}
+
+					await fetchBooks(cPage);
+					handleBookCardModalOpen("");
+					setViewBook(null);
+				}
+
+				setBorrowing(false);
+			}
+		} catch (error: any) {
+			console.error(`=>API: Borrow Book Failed:\n${error}`);
+			setBorrowing(false);
+		}
+	};
+
 	const handleSearch = async (event: React.FormEvent<HTMLFormElement>) => {
 		event.preventDefault();
 
@@ -142,6 +256,70 @@ const IndexPage = () => {
 			fetchBooks(1);
 		}
 	}, [booksMounted, loadingUser]);
+
+	const renderBorrowButton = (
+		borrowStatus: BookBorrow["borrowStatus"] | undefined
+	) => {
+		switch (borrowStatus) {
+			case "borrowed": {
+				return (
+					<>
+						<Button
+							leftIcon={<BsCheck2All />}
+							colorScheme="whatsapp"
+							variant={"outline"}
+							className="flex flex-row items-center gap-x-1"
+							borderRadius={"full"}
+						>
+							Borrowed
+						</Button>
+					</>
+				);
+
+				break;
+			}
+
+			case "pending": {
+				return (
+					<>
+						<Button
+							leftIcon={<HiOutlineClock />}
+							colorScheme="messenger"
+							variant={"outline"}
+							className="flex flex-row items-center gap-x-1"
+							borderRadius={"full"}
+							isLoading={borrowing}
+							onClick={() => borrowBook("request")}
+						>
+							Pending
+						</Button>
+					</>
+				);
+
+				break;
+			}
+
+			default: {
+				return (
+					<>
+						<Button
+							leftIcon={<FaHandHolding />}
+							colorScheme="messenger"
+							className="flex flex-row items-center gap-x-1"
+							borderRadius={"full"}
+							loadingText="Borrowing"
+							isLoading={borrowing}
+							onClick={() => borrowBook("request")}
+						>
+							Borrow
+						</Button>
+					</>
+				);
+
+				break;
+			}
+		}
+	};
 
 	return (
 		<>
@@ -266,13 +444,95 @@ const IndexPage = () => {
 				<Modal
 					isOpen={bookCardModalOpen === "view"}
 					onClose={() => handleBookCardModalOpen("")}
-					size={"5xl"}
+					size={"3xl"}
 				>
 					<ModalOverlay />
 					<ModalContent borderRadius={"2xl"}>
-						<ModalHeader>Book</ModalHeader>
+						<ModalHeader isTruncated>{viewBook?.book.title}</ModalHeader>
 						<ModalCloseButton />
-						<ModalBody></ModalBody>
+						<ModalBody>
+							<Flex className="flex flex-row gap-x-8">
+								<Box className="flex-1">
+									<Box className="flex flex-col aspect-[2/3] w-full bg-gray-200 items justify-center relative rounded-lg overflow-hidden shadow-lg group/image">
+										{viewBook?.book.cover ? (
+											<>
+												<a
+													href={viewBook.book.cover.fileUrl}
+													target="_blank"
+												>
+													<Image
+														src={viewBook?.book.cover.fileUrl}
+														alt={viewBook?.book.title}
+														sizes="full"
+														fill
+														loading="lazy"
+														className="w-full bg-center object-cover duration-200 group-hover/image:scale-110"
+													/>
+												</a>
+											</>
+										) : (
+											<>
+												<Box className="flex flex-col h-full w-full p-4 bg-gradient-to-t from-slate-700 to-slate-600 items-center justify-center text-white">
+													<Box className="h-12 w-12">
+														<Icon
+															as={MdBrokenImage}
+															height={"full"}
+															width={"full"}
+														/>
+													</Box>
+													<Text className="text-center text-xs font-mono">
+														No cover image available
+													</Text>
+												</Box>
+											</>
+										)}
+									</Box>
+								</Box>
+								<Box className="flex-1 flex flex-col">
+									<Box className="flex flex-col gap-y-2">
+										<Text className="font-bold text-gray-700 text-2xl">
+											{viewBook?.book.title}
+										</Text>
+										<Text className="text-gray-500">
+											by {viewBook?.author.name}
+										</Text>
+									</Box>
+									<>
+										{viewBook?.book.categories && (
+											<>
+												<CategoryTagsList
+													itemName="Categories"
+													items={viewBook?.book.categories}
+													maxItems={5}
+												/>
+											</>
+										)}
+									</>
+									<Box className="flex flex-col gap-y-4">
+										<Box className="flex flex-col mt-4">
+											<>
+												{viewBook && (
+													<>
+														{renderBorrowButton(viewBook?.borrow?.borrowStatus)}
+													</>
+												)}
+											</>
+										</Box>
+										<Divider />
+										<Box className="py-2 px-4 bg-gray-50 rounded-lg">
+											<Text className="text-lg font-bold text-gray-700">
+												Description
+											</Text>
+											<Text className="text-sm text-gray-500">
+												{viewBook?.book.description
+													? viewBook?.book.description
+													: "No description available"}
+											</Text>
+										</Box>
+									</Box>
+								</Box>
+							</Flex>
+						</ModalBody>
 						<ModalFooter></ModalFooter>
 					</ModalContent>
 				</Modal>
