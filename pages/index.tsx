@@ -18,6 +18,7 @@ import {
 	ModalHeader,
 	ModalOverlay,
 	Text,
+	Tooltip,
 	useToast,
 } from "@chakra-ui/react";
 import axios from "axios";
@@ -37,6 +38,9 @@ import { HiOutlineClock } from "react-icons/hi";
 import { AiOutlineCheck } from "react-icons/ai";
 import { APIEndpointBorrowParameters } from "./api/books/borrows/borrow";
 import moment from "moment";
+import { IoBookSharp } from "react-icons/io5";
+import { ImBooks } from "react-icons/im";
+import { SiBookstack } from "react-icons/si";
 
 export type BookCardModalType = "" | "view";
 
@@ -527,15 +531,22 @@ const IndexPage = () => {
 												</>
 											)}
 										</>
+										<Divider />
 									</Box>
 									<>
 										{viewBook?.book.categories && (
 											<>
-												<CategoryTagsList
-													itemName="Categories"
-													items={viewBook?.book.categories}
-													maxItems={5}
-												/>
+												<Box className="flex flex-col mt-2 relative">
+													{/* <Box className="absolute top-0 left-0 h-full w-1 bg-blue-500" /> */}
+													<Text className="font-semibold text-gray-700">
+														Categories
+													</Text>
+													<CategoryTagsList
+														itemName="Categories"
+														items={viewBook?.book.categories}
+														maxItems={5}
+													/>
+												</Box>
 											</>
 										)}
 									</>
@@ -549,6 +560,80 @@ const IndexPage = () => {
 												)}
 											</>
 										</Box>
+										<Grid className="grid-cols-2 xs:grid-cols-4 items-center justify-center gap-1 flex-wrap">
+											<Tooltip
+												placement="top"
+												label={`Total Amount: ${viewBook?.book.amount}`}
+												fontSize={"md"}
+												hasArrow
+											>
+												<Box className="flex-1 border border-gray-300 bg-gray-100 rounded-full px-3 py-1 flex flex-row items-center gap-x-2 font-semibold sm:opacity-50 duration-200 group hover:opacity-100">
+													<Icon
+														as={IoBookSharp}
+														height={4}
+														width={4}
+														className="!text-gray-500"
+													/>
+													<Text className="flex-1 text-gray-700">
+														{viewBook?.book.amount}
+													</Text>
+												</Box>
+											</Tooltip>
+											<Tooltip
+												placement="top"
+												label={`Available: ${viewBook?.book.available}`}
+												fontSize={"md"}
+												hasArrow
+											>
+												<Box className="flex-1 border border-purple-300 bg-purple-100 rounded-full px-3 py-1 flex flex-row items-center gap-x-2 font-semibold sm:opacity-50 duration-200 group hover:opacity-100">
+													<Icon
+														as={ImBooks}
+														height={4}
+														width={4}
+														className="!text-purple-500"
+													/>
+													<Text className="text-purple-700">
+														{viewBook?.book.available}
+													</Text>
+												</Box>
+											</Tooltip>
+											<Tooltip
+												placement="top"
+												label={`Borrowed: ${viewBook?.book.borrows}`}
+												fontSize={"md"}
+												hasArrow
+											>
+												<Box className="flex-1 border border-cyan-300 bg-cyan-100 rounded-full px-3 py-1 flex flex-row items-center gap-x-2 font-semibold sm:opacity-50 duration-200 group hover:opacity-100">
+													<Icon
+														as={FaHandHolding}
+														height={4}
+														width={4}
+														className="!text-cyan-500"
+													/>
+													<Text className="text-cyan-700">
+														{viewBook?.book.borrows}
+													</Text>
+												</Box>
+											</Tooltip>
+											<Tooltip
+												placement="top"
+												label={`Borrowed Times: ${viewBook?.book.borrowedTimes}`}
+												fontSize={"md"}
+												hasArrow
+											>
+												<Box className="flex-1 border border-green-300 bg-green-100 rounded-full px-3 py-1 flex flex-row items-center gap-x-2 font-semibold sm:opacity-50 duration-200 group hover:opacity-100">
+													<Icon
+														as={SiBookstack}
+														height={4}
+														width={4}
+														className="!text-green-500"
+													/>
+													<Text className="text-green-700">
+														{viewBook?.book.borrowedTimes}
+													</Text>
+												</Box>
+											</Tooltip>
+										</Grid>
 										<Divider />
 										<Box className="py-2 px-4 bg-gray-50 rounded-lg">
 											<Text className="text-lg font-bold text-gray-700">
