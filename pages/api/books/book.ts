@@ -300,8 +300,8 @@ export default async function handler(
 					borrowedTimes: borrowedTimes || 0,
 					ISBN,
 					publicationDate,
-					updatedAt: requestedAt,
-					createdAt: requestedAt,
+					updatedAt: requestedAt.toISOString(),
+					createdAt: requestedAt.toISOString(),
 				};
 
 				if (image && imageFile) {
@@ -324,7 +324,7 @@ export default async function handler(
 						fileType: image.type,
 						fileSize: image.size,
 						fileExtension: image.name.split(".").pop() || "",
-						createdAt: new Date().toISOString(),
+						createdAt: requestedAt.toISOString(),
 					};
 				}
 
@@ -506,7 +506,7 @@ export default async function handler(
 						fileType: image.type,
 						fileSize: image.size,
 						fileExtension: image.name.split(".").pop() || "",
-						createdAt: new Date().toISOString(),
+						createdAt: requestedAt.toISOString(),
 					};
 
 					if (existingBook.cover) {
