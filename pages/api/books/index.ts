@@ -1,9 +1,11 @@
 import authDb from "@/server/mongo/authDb";
 import authorDb from "@/server/mongo/authorDb";
 import bookDb from "@/server/mongo/bookDb";
+import userDb from "@/server/mongo/userDb";
 import { UserAuth } from "@/utils/models/auth";
 import { Author } from "@/utils/models/author";
-import { Book, BookInfo } from "@/utils/models/book";
+import { Book, BookBorrow, BookInfo } from "@/utils/models/book";
+import { SiteUser } from "@/utils/models/user";
 import { CollationOptions } from "mongodb";
 import { NextApiRequest, NextApiResponse } from "next";
 
@@ -22,9 +24,11 @@ export default async function handler(
 	try {
 		const { authCollection } = await authDb();
 
+		const { usersCollection } = await userDb();
+
 		const { authorsCollection } = await authorDb();
 
-		const { booksCollection } = await bookDb();
+		const { booksCollection, bookBorrowsCollection } = await bookDb();
 
 		const {
 			apiKey,
@@ -84,6 +88,21 @@ export default async function handler(
 				error: {
 					type: "Invalid API Key",
 					message: "Invalid API Key",
+				},
+			});
+		}
+
+		const userData = (await usersCollection.findOne({
+			username: userAuthData.username,
+			email: userAuthData.email,
+		})) as unknown as SiteUser;
+
+		if (!userData) {
+			return res.status(400).json({
+				statusCode: 400,
+				error: {
+					type: "Invalid User Data",
+					message: "Invalid User Data",
 				},
 			});
 		}
@@ -210,9 +229,16 @@ export default async function handler(
 							name: bookDoc.author,
 						})) as unknown as Author;
 
+						const borrowData = await bookBorrowsCollection
+							.find({ userId: userData.id, bookId: bookDoc.id })
+							.sort({ createdAt: -1 })
+							.limit(1)
+							.toArray();
+
 						return {
 							book: bookDoc,
 							author: authorData,
+							borrow: borrowData[0] ? borrowData[0] : null,
 						} as BookInfo;
 					})
 				);
