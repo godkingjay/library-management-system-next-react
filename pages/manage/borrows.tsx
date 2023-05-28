@@ -144,7 +144,7 @@ const ManageBorrowsPage: React.FC<ManageBorrowsPageProps> = () => {
 				if (statusCode === 200) {
 					toast({
 						title: "Note Added",
-						description: "The note has been added.",
+						description: "The note has been added successfully.",
 						status: "success",
 						colorScheme: "green",
 						duration: 5000,
@@ -254,8 +254,8 @@ const ManageBorrowsPage: React.FC<ManageBorrowsPageProps> = () => {
 
 				if (statusCode === 200) {
 					toast({
-						title: "Borrowed Book Returned",
-						description: "The borrowed book has been returned.",
+						title: "Book Returned",
+						description: `The book ${updateBorrow?.book.title} has been returned.`,
 						status: "success",
 						colorScheme: "green",
 						duration: 5000,

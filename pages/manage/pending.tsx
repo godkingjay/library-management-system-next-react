@@ -164,7 +164,7 @@ const ManagePendingPage: React.FC<ManagePendingPageProps> = () => {
 				if (statusCode === 200) {
 					toast({
 						title: "Note Added",
-						description: "The note has been added.",
+						description: "The note has been added to the borrow request.",
 						status: "success",
 						colorScheme: "green",
 						duration: 5000,
@@ -274,8 +274,8 @@ const ManagePendingPage: React.FC<ManagePendingPageProps> = () => {
 
 				if (statusCode === 200) {
 					toast({
-						title: "Borrow Accepted",
-						description: "The borrow has been accepted.",
+						title: "Book Borrowed",
+						description: `The book ${updateBorrow?.book.title} request has been borrowed.`,
 						status: "success",
 						colorScheme: "green",
 						duration: 5000,
@@ -346,7 +346,7 @@ const ManagePendingPage: React.FC<ManagePendingPageProps> = () => {
 				if (statusCode === 200) {
 					toast({
 						title: "Borrow Rejected",
-						description: "The borrow has been rejected.",
+						description: `The book borrow request for ${updateBorrow?.book.title} has been rejected.`,
 						status: "success",
 						colorScheme: "red",
 						duration: 5000,
