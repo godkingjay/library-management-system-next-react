@@ -462,7 +462,13 @@ const IndexPage = () => {
 						<ModalBody>
 							<Flex className="flex flex-col sm:flex-row gap-8">
 								<Box className="sm:flex-1">
-									<Box className="flex flex-col aspect-[2/3] w-full bg-gray-200 items justify-center relative rounded-lg overflow-hidden shadow-lg group/image">
+									<Box
+										className="flex flex-col aspect-[2/3] w-full bg-gray-200 items justify-center relative rounded-lg overflow-hidden shadow-lg group/image"
+										_focusWithin={{
+											ring: 4,
+											ringColor: "cyan.200",
+										}}
+									>
 										{viewBook?.book.cover ? (
 											<>
 												<a
@@ -476,7 +482,7 @@ const IndexPage = () => {
 														sizes="full"
 														fill
 														loading="lazy"
-														className="w-full bg-center object-cover duration-200 group-hover/image:scale-110"
+														className="w-full bg-center object-cover duration-200 group-hover/image:scale-110 group-focus-within/image:scale-110"
 													/>
 												</a>
 											</>
