@@ -91,8 +91,10 @@ const AuthorItem: React.FC<AuthorItemProps> = ({
 						</PopoverContent>
 					</Popover>
 				</Td>
-				<Td className="text-sm">{author.name}</Td>
 				<Td className="text-sm break-words whitespace-pre-wrap">
+					{author.name}
+				</Td>
+				<Td className="text-sm break-words whitespace-pre-wrap min-w-[384px]">
 					{author.biography?.length
 						? author.biography.length > 256
 							? author.biography.slice(0, 256) + "..."
