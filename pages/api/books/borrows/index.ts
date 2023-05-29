@@ -10,6 +10,7 @@ import { NextApiRequest, NextApiResponse } from "next";
 
 export interface APIEndpointBorrowsParameters {
 	apiKey: string;
+	search?: string;
 	borrowStatus?: BookBorrow["borrowStatus"];
 	page?: number;
 	limit: number;
@@ -30,6 +31,7 @@ export default async function handler(
 
 		const {
 			apiKey,
+			search = undefined,
 			borrowStatus = "borrowed",
 			page: rawPage = 1,
 			limit: rawLimit = 10,
@@ -152,6 +154,15 @@ export default async function handler(
 				let countQuery: any = {
 					borrowStatus,
 				};
+
+				if (search) {
+					query.note = {
+						$regex: new RegExp(search, "i"),
+					};
+					countQuery.note = {
+						$regex: new RegExp(search, "i"),
+					};
+				}
 
 				const skip = (page - 1) * limit;
 
