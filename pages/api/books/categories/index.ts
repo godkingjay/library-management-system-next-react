@@ -7,6 +7,7 @@ import { NextApiRequest, NextApiResponse } from "next";
 
 export interface APIEndpointBooksCategoriesParameters {
 	apiKey: string;
+	search?: string;
 	alphabet?: string;
 	fromCategory?: string;
 	page?: number;
@@ -26,11 +27,26 @@ export default async function handler(
 
 		const {
 			apiKey,
+			search = undefined,
 			alphabet = undefined,
 			fromCategory = undefined,
-			page = 1,
-			limit = 10,
+			page: rawPage = 1,
+			limit: rawLimit = 10,
 		}: APIEndpointBooksCategoriesParameters = req.body || req.query;
+
+		const page: APIEndpointBooksCategoriesParameters["page"] =
+			typeof rawPage === "number"
+				? rawPage
+				: typeof rawPage === "string"
+				? parseInt(rawPage)
+				: 1;
+
+		const limit: APIEndpointBooksCategoriesParameters["limit"] =
+			typeof rawLimit === "number"
+				? rawLimit
+				: typeof rawLimit === "string"
+				? parseInt(rawLimit)
+				: 10;
 
 		if (!apiKey) {
 			return res.status(400).json({
@@ -93,14 +109,26 @@ export default async function handler(
 				let query: any = {};
 				let countQuery: any = {};
 
-				if (alphabet) {
+				if (search && alphabet) {
 					countQuery.name = {
-						$regex: `^${alphabet}`,
-						$options: "i",
+						$regex: new RegExp(`^(?=^${alphabet}.*)(?=.*${search}.*).*$`, "i"),
 					};
 					query.name = {
-						$regex: `^${alphabet}`,
-						$options: "i",
+						$regex: new RegExp(`^(?=^${alphabet}.*)(?=.*${search}.*).*$`, "i"),
+					};
+				} else if (alphabet) {
+					countQuery.name = {
+						$regex: new RegExp(`^${alphabet}.*$`, "i"),
+					};
+					query.name = {
+						$regex: new RegExp(`^${alphabet}.*$`, "i"),
+					};
+				} else if (search) {
+					countQuery.name = {
+						$regex: new RegExp(`^.*${search}.*$`, "i"),
+					};
+					query.name = {
+						$regex: new RegExp(`^.*${search}.*$`, "i"),
 					};
 				}
 
@@ -111,21 +139,7 @@ export default async function handler(
 					};
 				}
 
-				const pageNumber =
-					typeof page === "number"
-						? page
-						: typeof page === "string"
-						? parseInt(page)
-						: 1;
-
-				const itemsPerPage =
-					typeof limit === "number"
-						? limit
-						: typeof limit === "string"
-						? parseInt(limit)
-						: 10;
-
-				const skip = (pageNumber - 1) * itemsPerPage;
+				const skip = (page - 1) * limit;
 
 				const collationOptions: CollationOptions = {
 					locale: "en",
@@ -140,7 +154,7 @@ export default async function handler(
 					})
 					.collation(collationOptions)
 					.skip(skip)
-					.limit(itemsPerPage)
+					.limit(limit)
 					.toArray();
 
 				const bookCategoriesCount =
@@ -150,7 +164,7 @@ export default async function handler(
 					statusCode: 200,
 					categories: bookCategoriesData,
 					page,
-					totalPages: Math.ceil(bookCategoriesCount / itemsPerPage),
+					totalPages: Math.ceil(bookCategoriesCount / limit),
 					totalCount: bookCategoriesCount,
 				});
 			}
