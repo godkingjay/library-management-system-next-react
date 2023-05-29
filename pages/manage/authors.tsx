@@ -501,10 +501,9 @@ const ManageAuthorsPage: React.FC<ManageAuthorsPageProps> = () => {
 					</form>
 
 					<Flex
-						direction="row"
 						justifyContent={"end"}
 						gap={2}
-						className="items-center"
+						className="items-center flex-col-reverse md:flex-row"
 					>
 						<div
 							className="
@@ -520,23 +519,25 @@ const ManageAuthorsPage: React.FC<ManageAuthorsPageProps> = () => {
 								<span>"{searchResultDetails.text}"</span>
 							</p>
 						</div>
-						<Button
-							leftIcon={<HiOutlineRefresh />}
-							colorScheme="messenger"
-							variant="outline"
-							onClick={() => !fetchingData && handleAuthorsRefresh()}
-							isLoading={fetchingData}
-						>
-							Refresh
-						</Button>
-						<Button
-							leftIcon={<AiOutlinePlus />}
-							colorScheme="whatsapp"
-							variant="solid"
-							onClick={() => handleAuthorsModalOpen("add")}
-						>
-							Add Author
-						</Button>
+						<Box className="w-full md:w-auto flex flex-row justify-end items-center gap-2">
+							<Button
+								leftIcon={<HiOutlineRefresh />}
+								colorScheme="messenger"
+								variant="outline"
+								onClick={() => !fetchingData && handleAuthorsRefresh()}
+								isLoading={fetchingData}
+							>
+								Refresh
+							</Button>
+							<Button
+								leftIcon={<AiOutlinePlus />}
+								colorScheme="whatsapp"
+								variant="solid"
+								onClick={() => handleAuthorsModalOpen("add")}
+							>
+								Add Author
+							</Button>
+						</Box>
 					</Flex>
 					<TableContainer>
 						<Table
