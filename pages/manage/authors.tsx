@@ -145,7 +145,7 @@ const ManageAuthorsPage: React.FC<ManageAuthorsPageProps> = () => {
 						apiKey: usersStateValue.currentUser?.auth?.keys[0].key,
 						name: authorForm.name.trim(),
 						biography: authorForm.biography?.trim(),
-						birthdate: authorForm.birthdate,
+						birthdate: authorForm.birthdate && new Date(authorForm.birthdate),
 					} as APIEndpointAuthorParameters)
 					.then((response) => response.data)
 					.catch((error) => {
@@ -203,7 +203,8 @@ const ManageAuthorsPage: React.FC<ManageAuthorsPageProps> = () => {
 						authorId: editUpdateForm.id,
 						name: editUpdateForm.name.trim(),
 						biography: editUpdateForm.biography?.trim(),
-						birthdate: editUpdateForm.birthdate,
+						birthdate:
+							editUpdateForm.birthdate && new Date(editUpdateForm.birthdate),
 					} as APIEndpointAuthorParameters)
 					.then((response) => response.data)
 					.catch((error) => {
@@ -386,17 +387,10 @@ const ManageAuthorsPage: React.FC<ManageAuthorsPageProps> = () => {
 	) => {
 		const { name, value } = event.target;
 
-		if (name === "birthdate") {
-			setAuthorForm((prev) => ({
-				...prev,
-				[name]: new Date(value).toISOString(),
-			}));
-		} else {
-			setAuthorForm((prev) => ({
-				...prev,
-				[name]: value,
-			}));
-		}
+		setAuthorForm((prev) => ({
+			...prev,
+			[name]: value,
+		}));
 	};
 
 	const handleUpdateAuthorFormChange = (
@@ -406,17 +400,10 @@ const ManageAuthorsPage: React.FC<ManageAuthorsPageProps> = () => {
 	) => {
 		const { name, value } = event.target;
 
-		if (name === "birthdate") {
-			setEditUpdateForm((prev) => ({
-				...prev,
-				[name]: new Date(value).toISOString(),
-			}));
-		} else {
-			setEditUpdateForm((prev) => ({
-				...prev,
-				[name]: value,
-			}));
-		}
+		setEditUpdateForm((prev) => ({
+			...prev,
+			[name]: value,
+		}));
 	};
 
 	const handleSearchChange = (text: string) => {
