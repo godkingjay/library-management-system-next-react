@@ -8,6 +8,7 @@ import { NextApiRequest, NextApiResponse } from "next";
 
 export interface APIEndpointCountParams {
 	apiKey: string;
+	userId?: string;
 }
 
 export default async function handler(
@@ -24,7 +25,8 @@ export default async function handler(
 		const { booksCollection, bookCategoriesCollection, bookBorrowsCollection } =
 			await bookDb();
 
-		const { apiKey }: APIEndpointCountParams = req.body || req.query;
+		const { apiKey, userId = undefined }: APIEndpointCountParams =
+			req.body || req.query;
 
 		if (!apiKey) {
 			return res.status(400).json({
@@ -116,21 +118,30 @@ export default async function handler(
 				const booksCount = await booksCollection.countDocuments();
 				const authorsCount = await authorsCollection.countDocuments();
 
+				let query: any = {};
+
+				if (userId) {
+					query.userId = userId;
+				}
+
 				const bookCategoriesCount =
 					await bookCategoriesCollection.countDocuments();
 				const bookBorrowsBorrowsCount =
 					await bookBorrowsCollection.countDocuments({
 						borrowStatus: "borrowed",
+						...query,
 					});
 
 				const bookBorrowsPendingCount =
 					await bookBorrowsCollection.countDocuments({
 						borrowStatus: "pending",
+						...query,
 					});
 
 				const bookBorrowsReturnsCount =
 					await bookBorrowsCollection.countDocuments({
 						borrowStatus: "returned",
+						...query,
 					});
 
 				return res.status(200).json({
