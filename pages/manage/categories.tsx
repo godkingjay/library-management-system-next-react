@@ -26,6 +26,7 @@ import {
 	AlertDialogFooter,
 	AlertDialogHeader,
 	AlertDialogOverlay,
+	Highlight,
 } from "@chakra-ui/react";
 import Head from "next/head";
 import ManageBreadcrumb from "@/components/Breadcrumb/ManageBreadcrumb";
@@ -544,7 +545,7 @@ const ManageCategoriesPage: React.FC<ManageCategoriesPageProps> = () => {
 							gap={2}
 							className="items-center"
 						>
-							{/* <div
+							<div
 								className="
 								flex-1 flex-col
 								hidden
@@ -553,13 +554,13 @@ const ManageCategoriesPage: React.FC<ManageCategoriesPageProps> = () => {
 								data-search={searchResultDetails.text.trim().length > 0}
 							>
 								<p className="w-full text-sm max-w-full inline text-gray-500 truncate break-words whitespace-pre-wrap">
-									<span>Showing {booksData.length.toString()} out of </span>
+									<span>Showing {categoriesData.length.toString()} out of </span>
 									<span>
 										{searchResultDetails.total.toString()} results for{" "}
 									</span>
 									<span>"{searchResultDetails.text}"</span>
 								</p>
-							</div> */}
+							</div>
 							<Button
 								leftIcon={<HiOutlineRefresh />}
 								colorScheme="messenger"
@@ -599,14 +600,25 @@ const ManageCategoriesPage: React.FC<ManageCategoriesPageProps> = () => {
 															{index + 1 + itemsPerPage * (cPage - 1)}
 														</Text>
 														<Text className="first-letter:font-serif first-letter:underline text-gray-700 font-semibold group-hover:text-blue-500 group-hover:underline flex-1 text-xl truncate">
-															{category.name
-																.split("-")
-																.map((word) => {
-																	return (
-																		word.charAt(0).toUpperCase() + word.slice(1)
-																	);
-																})
-																.join(" ")}
+															<Highlight
+																query={[searchText]}
+																styles={{
+																	bg: "teal.100",
+																}}
+															>
+																{
+																	category.name
+																		.split("-")
+																		.map((word) => {
+																			return (
+																				word.charAt(0).toUpperCase() +
+																				word.slice(1)
+																			);
+																		})
+																		.join(" ")
+																		.toString() as string
+																}
+															</Highlight>
 														</Text>
 														<Text className="text-xs text-gray-500">
 															{category.name}
