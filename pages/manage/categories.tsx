@@ -601,7 +601,7 @@ const ManageCategoriesPage: React.FC<ManageCategoriesPageProps> = () => {
 														</Text>
 														<Text className="first-letter:font-serif first-letter:underline text-gray-700 font-semibold group-hover:text-blue-500 group-hover:underline flex-1 text-xl truncate">
 															<Highlight
-																query={[searchText]}
+																query={[searchResultDetails.text]}
 																styles={{
 																	bg: "teal.100",
 																}}
