@@ -97,7 +97,7 @@ const UserMenu: React.FC<UserMenuProps> = () => {
 						</>
 					)}
 
-					<MenuItem
+					{/* <MenuItem
 						className="
 									group
 									data-[active-directory=true]:bg-blue-100
@@ -118,7 +118,7 @@ const UserMenu: React.FC<UserMenuProps> = () => {
 							</Box>
 							<Text>Borrows</Text>
 						</Link>
-					</MenuItem>
+					</MenuItem> */}
 
 					<MenuItem
 						className="

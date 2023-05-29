@@ -380,7 +380,7 @@ const ManageBorrowsPage: React.FC<ManageBorrowsPageProps> = () => {
 							fontWeight={"bold"}
 							className="text-gray-700"
 						>
-							Pending
+							Borrows
 						</Text>
 						<div className="h-[1px] w-full bg-gray-300 mb-2"></div>
 						<ManageBreadcrumb />
