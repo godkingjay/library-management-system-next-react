@@ -638,7 +638,7 @@ const IndexPage = () => {
 										</Grid>
 										<Divider />
 										<Box className="py-2 px-4 bg-gray-50 rounded-lg">
-											<Text className="text-lg font-bold text-gray-700">
+											<Text className="text-lg font-bold text-gray-700 whitespace-pre-wrap break-words">
 												Description
 											</Text>
 											<Text className="text-sm text-gray-500">

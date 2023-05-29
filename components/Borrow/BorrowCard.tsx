@@ -230,7 +230,7 @@ const BorrowCard: React.FC<BorrowCardProps> = ({
 							<Box className="my-2 flex flex-col p-2 bg-gray-100 rounded-lg">
 								<Text className="font-bold text-gray-700 truncate">Note</Text>
 								<Divider className="my-2" />
-								<Text className="text-gray-700 text-sm">
+								<Text className="text-gray-700 text-sm whitespace-pre-wrap break-words">
 									{borrowData.borrow?.note
 										? borrowData.borrow.note
 										: "No note found."}
