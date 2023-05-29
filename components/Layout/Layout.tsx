@@ -49,11 +49,13 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
 									<>{children}</>
 								</>
 							)}
-							{!usersStateValue.currentUser && !loadingUser && (
-								<>
-									<AuthPageComponent />
-								</>
-							)}
+						</>
+					)}
+				</>
+				<>
+					{!usersStateValue.currentUser && !loadingUser && (
+						<>
+							<AuthPageComponent />
 						</>
 					)}
 				</>
