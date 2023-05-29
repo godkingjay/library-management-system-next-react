@@ -104,6 +104,7 @@ const BookItem: React.FC<BookItemProps> = ({
 								href={bookInfo.book.cover.fileUrl}
 								target="_blank"
 								className="flex flex-col aspect-[2/3] min-w-[64px] bg-gray-200 items justify-center relative rounded-lg overflow-hidden shadow-md group"
+								title="Click to view full image"
 							>
 								<Image
 									src={bookInfo.book.cover.fileUrl}
@@ -122,7 +123,7 @@ const BookItem: React.FC<BookItemProps> = ({
 					)}
 				</Td>
 				<Td className="text-sm">{bookInfo.book.title}</Td>
-				<Td className="text-sm break-words whitespace-pre break-words">
+				<Td className="text-sm break-words whitespace-pre-wrap">
 					{bookInfo.book.description?.length
 						? bookInfo.book.description.length > 256
 							? bookInfo.book.description.slice(0, 256) + "..."
