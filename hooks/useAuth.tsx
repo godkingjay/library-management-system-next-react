@@ -9,9 +9,12 @@ import { APIEndpointSignInParameters } from "@/pages/api/auth/signin";
 import { UserAuth } from "@/utils/models/auth";
 import { useAppDispatch } from "@/redux/hooks";
 import { clearUsersState } from "@/redux/slice/usersSlice";
+import { useToast } from "@chakra-ui/react";
 
 const useAuth = () => {
 	const { usersStateValue, setUsersStateValue } = useUser();
+
+	const toast = useToast();
 
 	const dispatch = useAppDispatch();
 
@@ -52,6 +55,19 @@ const useAuth = () => {
 						} as Pick<APIEndpointSignInParameters, "sessionToken">)
 						.then((response) => response.data)
 						.catch((error) => {
+							const errorData = error.response.data;
+
+							if (errorData.error.message) {
+								toast({
+									title: "Error",
+									description: errorData.error.message,
+									status: "error",
+									duration: 5000,
+									isClosable: true,
+									position: "top",
+								});
+							}
+
 							throw new Error(
 								`=>API: Sign In Failed:\n${error.response.data.error.message}`
 							);
@@ -123,7 +139,20 @@ const useAuth = () => {
 								password,
 							} as Pick<APIEndpointSignUpParameters, "email" | "password">)
 							.then((response) => response.data)
-							.catch((error) => {
+							.catch((error: any) => {
+								const errorData = error.response.data;
+
+								if (errorData.error.message) {
+									toast({
+										title: "Error",
+										description: errorData.error.message,
+										status: "error",
+										duration: 5000,
+										isClosable: true,
+										position: "top",
+									});
+								}
+
 								throw new Error(
 									`=>API: Sign Up Failed:\n${error.response.data.error.message}`
 								);
@@ -199,6 +228,19 @@ const useAuth = () => {
 						} as Pick<APIEndpointSignInParameters, "email" | "username" | "password">)
 						.then((response) => response.data)
 						.catch((error) => {
+							const errorData = error.response.data;
+
+							if (errorData.error.message) {
+								toast({
+									title: "Error",
+									description: errorData.error.message,
+									status: "error",
+									duration: 5000,
+									isClosable: true,
+									position: "top",
+								});
+							}
+
 							throw new Error(
 								`=>API: Sign In Failed:\n${error.response.data.error.message}`
 							);
