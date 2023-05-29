@@ -329,7 +329,8 @@ const ManageBooksPage: React.FC<ManageBooksPageProps> = () => {
 					available: bookForm.available || 0,
 					borrows: bookForm.borrows || 0,
 					borrowedTimes: bookForm.borrowedTimes || 0,
-					publicationDate: bookForm.publicationDate,
+					publicationDate:
+						bookForm.publicationDate && new Date(bookForm.publicationDate),
 					categories: JSON.stringify(bookForm.categories) as any,
 				};
 
@@ -425,7 +426,9 @@ const ManageBooksPage: React.FC<ManageBooksPageProps> = () => {
 					available: editUpdateBookForm.available || 0,
 					borrows: editUpdateBookForm.borrows || 0,
 					borrowedTimes: editUpdateBookForm.borrowedTimes || 0,
-					publicationDate: editUpdateBookForm.publicationDate,
+					publicationDate:
+						editUpdateBookForm.publicationDate &&
+						new Date(editUpdateBookForm.publicationDate),
 					categories: JSON.stringify(editUpdateBookForm.categories) as any,
 				};
 
@@ -696,31 +699,17 @@ const ManageBooksPage: React.FC<ManageBooksPageProps> = () => {
 
 		switch (booksModalOpen) {
 			case "add": {
-				if (name === "publicationDate") {
-					setBookForm((prev) => ({
-						...prev,
-						[name]: new Date(value).toISOString(),
-					}));
-				} else {
-					setBookForm((prev) => ({
-						...prev,
-						[name]: value,
-					}));
-				}
+				setBookForm((prev) => ({
+					...prev,
+					[name]: value,
+				}));
 			}
 
 			case "edit": {
-				if (name === "publicationDate") {
-					setEditUpdateBookForm((prev) => ({
-						...prev,
-						[name]: new Date(value).toISOString(),
-					}));
-				} else {
-					setEditUpdateBookForm((prev) => ({
-						...prev,
-						[name]: value,
-					}));
-				}
+				setEditUpdateBookForm((prev) => ({
+					...prev,
+					[name]: value,
+				}));
 
 				break;
 			}
