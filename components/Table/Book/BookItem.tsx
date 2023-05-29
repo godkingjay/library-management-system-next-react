@@ -122,8 +122,10 @@ const BookItem: React.FC<BookItemProps> = ({
 						</>
 					)}
 				</Td>
-				<Td className="text-sm">{bookInfo.book.title}</Td>
 				<Td className="text-sm break-words whitespace-pre-wrap">
+					{bookInfo.book.title}
+				</Td>
+				<Td className="text-sm break-words whitespace-pre-wrap min-w-[384px]">
 					{bookInfo.book.description?.length
 						? bookInfo.book.description.length > 256
 							? bookInfo.book.description.slice(0, 256) + "..."
