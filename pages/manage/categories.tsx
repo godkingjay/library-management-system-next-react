@@ -482,27 +482,6 @@ const ManageCategoriesPage: React.FC<ManageCategoriesPageProps> = () => {
 						<Flex className="flex-col gap-y-4"></Flex>
 					</Flex>
 					<Flex className="flex flex-col gap-y-4 shadow-page-box-1 bg-white rounded-lg p-4">
-						{/* <form
-							onSubmit={(event) => !fetchingData && handleSearch(event)}
-							className="flex flex-row gap-x-2 items-center"
-						>
-							<Flex
-								direction={"column"}
-								flex={1}
-							>
-								<SearchBar
-									placeholder={"Search Book..."}
-									onSearch={handleSearchChange}
-								/>
-							</Flex>
-							<Button
-								type="submit"
-								colorScheme="linkedin"
-							>
-								Search
-							</Button>
-						</form> */}
-
 						<Select
 							onChange={(event) => handleSelectChange(event)}
 							value={categoryAlphabet}
@@ -528,7 +507,7 @@ const ManageCategoriesPage: React.FC<ManageCategoriesPageProps> = () => {
 								flex={1}
 							>
 								<SearchBar
-									placeholder={"Search Book..."}
+									placeholder={"Search Categories..."}
 									onSearch={handleSearchChange}
 								/>
 							</Flex>
@@ -540,10 +519,9 @@ const ManageCategoriesPage: React.FC<ManageCategoriesPageProps> = () => {
 							</Button>
 						</form>
 						<Flex
-							direction="row"
 							justifyContent={"end"}
 							gap={2}
-							className="items-center"
+							className="items-center flex-col-reverse md:flex-row"
 						>
 							<div
 								className="
@@ -561,23 +539,25 @@ const ManageCategoriesPage: React.FC<ManageCategoriesPageProps> = () => {
 									<span>"{searchResultDetails.text}"</span>
 								</p>
 							</div>
-							<Button
-								leftIcon={<HiOutlineRefresh />}
-								colorScheme="messenger"
-								variant="outline"
-								onClick={() => !fetchingData && handleCategoriesRefresh()}
-								isLoading={fetchingData}
-							>
-								Refresh
-							</Button>
-							<Button
-								leftIcon={<AiOutlinePlus />}
-								colorScheme="whatsapp"
-								variant="solid"
-								onClick={() => handleCategoriesModalOpen("add")}
-							>
-								Add Book
-							</Button>
+							<Box className="w-full md:w-auto flex flex-row justify-end items-center gap-2">
+								<Button
+									leftIcon={<HiOutlineRefresh />}
+									colorScheme="messenger"
+									variant="outline"
+									onClick={() => !fetchingData && handleCategoriesRefresh()}
+									isLoading={fetchingData}
+								>
+									Refresh
+								</Button>
+								<Button
+									leftIcon={<AiOutlinePlus />}
+									colorScheme="whatsapp"
+									variant="solid"
+									onClick={() => handleCategoriesModalOpen("add")}
+								>
+									Add Book
+								</Button>
+							</Box>
 						</Flex>
 					</Flex>
 
