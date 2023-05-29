@@ -74,7 +74,9 @@ const BorrowsPage: React.FC<BorrowsPageProps> = () => {
 	return (
 		<>
 			<Head>
-				<title>Dashboard | LibMS</title>
+				<title>
+					{usersStateValue.currentUser?.user?.username} Borrows | LibMS
+				</title>
 			</Head>
 			<Box
 				display="flex"
@@ -96,7 +98,7 @@ const BorrowsPage: React.FC<BorrowsPageProps> = () => {
 							fontWeight={"bold"}
 							className="text-gray-700"
 						>
-							Borrows
+							{usersStateValue.currentUser?.user?.username} Borrows
 						</Text>
 						<div className="h-[1px] w-full bg-gray-300 mb-2"></div>
 					</Flex>

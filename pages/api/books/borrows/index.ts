@@ -10,6 +10,7 @@ import { NextApiRequest, NextApiResponse } from "next";
 
 export interface APIEndpointBorrowsParameters {
 	apiKey: string;
+	userId?: string;
 	search?: string;
 	borrowStatus?: BookBorrow["borrowStatus"];
 	page?: number;
@@ -31,6 +32,7 @@ export default async function handler(
 
 		const {
 			apiKey,
+			userId = undefined,
 			search = undefined,
 			borrowStatus = "borrowed",
 			page: rawPage = 1,
@@ -154,6 +156,11 @@ export default async function handler(
 				let countQuery: any = {
 					borrowStatus,
 				};
+
+				if (userId) {
+					query.userId = userId;
+					countQuery.userId = userId;
+				}
 
 				if (search) {
 					query.note = {
