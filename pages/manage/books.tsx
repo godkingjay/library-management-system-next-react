@@ -962,10 +962,9 @@ const ManageBooksPage: React.FC<ManageBooksPageProps> = () => {
 							</Button>
 						</form>
 						<Flex
-							direction="row"
 							justifyContent={"end"}
 							gap={2}
-							className="items-center"
+							className="items-center flex-col-reverse md:flex-row"
 						>
 							<div
 								className="
@@ -983,23 +982,25 @@ const ManageBooksPage: React.FC<ManageBooksPageProps> = () => {
 									<span>"{searchResultDetails.text}"</span>
 								</p>
 							</div>
-							<Button
-								leftIcon={<HiOutlineRefresh />}
-								colorScheme="messenger"
-								variant="outline"
-								onClick={() => !fetchingData && handleBooksRefresh()}
-								isLoading={fetchingData}
-							>
-								Refresh
-							</Button>
-							<Button
-								leftIcon={<AiOutlinePlus />}
-								colorScheme="whatsapp"
-								variant="solid"
-								onClick={() => handleBooksModalOpen("add")}
-							>
-								Add Book
-							</Button>
+							<Box className="w-full md:w-auto flex flex-row justify-end items-center gap-2">
+								<Button
+									leftIcon={<HiOutlineRefresh />}
+									colorScheme="messenger"
+									variant="outline"
+									onClick={() => !fetchingData && handleBooksRefresh()}
+									isLoading={fetchingData}
+								>
+									Refresh
+								</Button>
+								<Button
+									leftIcon={<AiOutlinePlus />}
+									colorScheme="whatsapp"
+									variant="solid"
+									onClick={() => handleBooksModalOpen("add")}
+								>
+									Add Book
+								</Button>
+							</Box>
 						</Flex>
 
 						{/**
