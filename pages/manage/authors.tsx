@@ -145,7 +145,7 @@ const ManageAuthorsPage: React.FC<ManageAuthorsPageProps> = () => {
 						apiKey: usersStateValue.currentUser?.auth?.keys[0].key,
 						name: authorForm.name.trim(),
 						biography: authorForm.biography?.trim(),
-						birthdate: authorForm.birthdate,
+						birthdate: authorForm.birthdate && new Date(authorForm.birthdate),
 					} as APIEndpointAuthorParameters)
 					.then((response) => response.data)
 					.catch((error) => {
@@ -203,7 +203,8 @@ const ManageAuthorsPage: React.FC<ManageAuthorsPageProps> = () => {
 						authorId: editUpdateForm.id,
 						name: editUpdateForm.name.trim(),
 						biography: editUpdateForm.biography?.trim(),
-						birthdate: editUpdateForm.birthdate,
+						birthdate:
+							editUpdateForm.birthdate && new Date(editUpdateForm.birthdate),
 					} as APIEndpointAuthorParameters)
 					.then((response) => response.data)
 					.catch((error) => {
@@ -386,17 +387,10 @@ const ManageAuthorsPage: React.FC<ManageAuthorsPageProps> = () => {
 	) => {
 		const { name, value } = event.target;
 
-		if (name === "birthdate") {
-			setAuthorForm((prev) => ({
-				...prev,
-				[name]: new Date(value).toISOString(),
-			}));
-		} else {
-			setAuthorForm((prev) => ({
-				...prev,
-				[name]: value,
-			}));
-		}
+		setAuthorForm((prev) => ({
+			...prev,
+			[name]: value,
+		}));
 	};
 
 	const handleUpdateAuthorFormChange = (
@@ -406,17 +400,10 @@ const ManageAuthorsPage: React.FC<ManageAuthorsPageProps> = () => {
 	) => {
 		const { name, value } = event.target;
 
-		if (name === "birthdate") {
-			setEditUpdateForm((prev) => ({
-				...prev,
-				[name]: new Date(value).toISOString(),
-			}));
-		} else {
-			setEditUpdateForm((prev) => ({
-				...prev,
-				[name]: value,
-			}));
-		}
+		setEditUpdateForm((prev) => ({
+			...prev,
+			[name]: value,
+		}));
 	};
 
 	const handleSearchChange = (text: string) => {
@@ -501,10 +488,9 @@ const ManageAuthorsPage: React.FC<ManageAuthorsPageProps> = () => {
 					</form>
 
 					<Flex
-						direction="row"
 						justifyContent={"end"}
 						gap={2}
-						className="items-center"
+						className="items-center flex-col-reverse md:flex-row"
 					>
 						<div
 							className="
@@ -520,23 +506,25 @@ const ManageAuthorsPage: React.FC<ManageAuthorsPageProps> = () => {
 								<span>"{searchResultDetails.text}"</span>
 							</p>
 						</div>
-						<Button
-							leftIcon={<HiOutlineRefresh />}
-							colorScheme="messenger"
-							variant="outline"
-							onClick={() => !fetchingData && handleAuthorsRefresh()}
-							isLoading={fetchingData}
-						>
-							Refresh
-						</Button>
-						<Button
-							leftIcon={<AiOutlinePlus />}
-							colorScheme="whatsapp"
-							variant="solid"
-							onClick={() => handleAuthorsModalOpen("add")}
-						>
-							Add Author
-						</Button>
+						<Box className="w-full md:w-auto flex flex-row justify-end items-center gap-2">
+							<Button
+								leftIcon={<HiOutlineRefresh />}
+								colorScheme="messenger"
+								variant="outline"
+								onClick={() => !fetchingData && handleAuthorsRefresh()}
+								isLoading={fetchingData}
+							>
+								Refresh
+							</Button>
+							<Button
+								leftIcon={<AiOutlinePlus />}
+								colorScheme="whatsapp"
+								variant="solid"
+								onClick={() => handleAuthorsModalOpen("add")}
+							>
+								Add Author
+							</Button>
+						</Box>
 					</Flex>
 					<TableContainer>
 						<Table

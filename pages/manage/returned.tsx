@@ -38,6 +38,8 @@ import { FiLoader } from "react-icons/fi";
 import { APIEndpointBorrowsParameters } from "../api/books/borrows";
 import { APIEndpointBorrowParameters } from "../api/books/borrows/borrow";
 import moment from "moment";
+import { HiOutlineRefresh } from "react-icons/hi";
+import SearchBar from "@/components/Input/SearchBar";
 
 type ManageReturnedPageProps = {};
 
@@ -56,6 +58,12 @@ const ManageReturnedPage: React.FC<ManageReturnedPageProps> = () => {
 
 	const [fetchingData, setFetchingData] = useState<boolean>(false);
 	const [updatingBorrow, setUpdatingBorrow] = useState<boolean>(false);
+
+	const [searchText, setSearchText] = useState("");
+	const [searchResultDetails, setSearchResultDetails] = useState({
+		text: "",
+		total: 0,
+	});
 
 	const [manageReturnedModalOpen, setManageReturnedModalOpen] =
 		useState<ManageReturnedModalTypes>("");
@@ -183,6 +191,7 @@ const ManageReturnedPage: React.FC<ManageReturnedPageProps> = () => {
 					.get(apiConfig.apiEndpoint + "/books/borrows/", {
 						params: {
 							apiKey: usersStateValue.currentUser?.auth?.keys[0].key,
+							search: searchText,
 							borrowStatus: "returned",
 							page: page,
 							limit: itemsPerPage,
@@ -197,6 +206,10 @@ const ManageReturnedPage: React.FC<ManageReturnedPageProps> = () => {
 
 				setBookBorrowsData(borrows);
 				setTPages(totalPages > 0 ? totalPages : 1);
+				setSearchResultDetails({
+					text: searchText,
+					total: totalCount,
+				});
 
 				setFetchingData(false);
 			}
@@ -296,6 +309,35 @@ const ManageReturnedPage: React.FC<ManageReturnedPageProps> = () => {
 		await fetchBookBorrows(page);
 	};
 
+	const handleSearch = async (event: React.FormEvent<HTMLFormElement>) => {
+		event.preventDefault();
+
+		try {
+			if (!fetchingData) {
+				setCPage(1);
+				await fetchBookBorrows(1);
+			}
+		} catch (error: any) {
+			console.error(`=>API: Search Books Failed:\n${error}`);
+		}
+	};
+
+	const handleSearchChange = (text: string) => {
+		if (!fetchingData) {
+			setSearchText(text);
+		}
+	};
+
+	const handleRefresh = async () => {
+		try {
+			if (!fetchingData) {
+				await fetchBookBorrows(cPage);
+			}
+		} catch (error: any) {
+			console.error(`=>API: Refresh Books Failed:\n${error}`);
+		}
+	};
+
 	useEffect(() => {
 		if (
 			!fetchingData &&
@@ -340,10 +382,67 @@ const ManageReturnedPage: React.FC<ManageReturnedPageProps> = () => {
 							fontWeight={"bold"}
 							className="text-gray-700"
 						>
-							Pending
+							Returned
 						</Text>
 						<div className="h-[1px] w-full bg-gray-300 mb-2"></div>
 						<ManageBreadcrumb />
+					</Flex>
+					<Flex className="flex flex-col gap-y-4 shadow-page-box-1 bg-white rounded-lg p-4">
+						<form
+							onSubmit={(event) => !fetchingData && handleSearch(event)}
+							className="flex flex-row gap-x-2 items-center"
+						>
+							<Flex
+								direction={"column"}
+								flex={1}
+							>
+								<SearchBar
+									placeholder={"Search Returned..."}
+									onSearch={handleSearchChange}
+								/>
+							</Flex>
+							<Button
+								type="submit"
+								colorScheme="linkedin"
+							>
+								Search
+							</Button>
+						</form>
+						<Flex
+							justifyContent={"end"}
+							gap={2}
+							className="items-center flex-col-reverse md:flex-row"
+						>
+							<div
+								className="
+								flex-1 flex-col
+								hidden
+								data-[search=true]:flex
+							"
+								data-search={searchResultDetails.text.trim().length > 0}
+							>
+								<p className="w-full text-sm max-w-full inline text-gray-500 truncate break-words whitespace-pre-wrap">
+									<span>
+										Showing {bookBorrowsData.length.toString()} out of{" "}
+									</span>
+									<span>
+										{searchResultDetails.total.toString()} results for{" "}
+									</span>
+									<span>"{searchResultDetails.text}"</span>
+								</p>
+							</div>
+							<Box className="w-full md:w-auto flex flex-row justify-end items-center gap-2">
+								<Button
+									leftIcon={<HiOutlineRefresh />}
+									colorScheme="messenger"
+									variant="outline"
+									onClick={() => !fetchingData && handleRefresh()}
+									isLoading={fetchingData}
+								>
+									Refresh
+								</Button>
+							</Box>
+						</Flex>
 					</Flex>
 					<Grid className="grid-cols-1 sm2:grid-cols-2 gap-4">
 						<>

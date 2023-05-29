@@ -2,7 +2,10 @@ import useAuth from "@/hooks/useAuth";
 import { APIEndpointSignInParameters } from "@/pages/api/auth/signin";
 import { EmailRegex, PasswordRegex } from "@/utils/regex";
 import {
+	Box,
 	Button,
+	Divider,
+	Highlight,
 	Modal,
 	ModalBody,
 	ModalCloseButton,
@@ -10,8 +13,10 @@ import {
 	ModalFooter,
 	ModalHeader,
 	ModalOverlay,
+	Text,
 } from "@chakra-ui/react";
 import React, { useState } from "react";
+import { IoLibrary } from "react-icons/io5";
 
 type AuthPageComponentProps = {};
 
@@ -104,8 +109,74 @@ const AuthPageComponent: React.FC<AuthPageComponentProps> = () => {
 	return (
 		<>
 			<>
-				<Button onClick={() => handleAuthModalOpen("signin")}>Sign In</Button>
-				<Button onClick={() => handleAuthModalOpen("signup")}>Sign Up</Button>
+				<Box className="flex min-h-screen items-center justify-center flex-col px-8">
+					<Box className="bg-white shadow-lg rounded-xl border border-transparent w-full max-w-sm">
+						<Box className="p-4 bg-blue-100 flex flex-row items-center justify-center rounded-t-xl">
+							<Box className="flex flex-row gap-x-8 items-center group">
+								<Box
+									className="
+										border-blue-500 p-4 aspect-square w-32 h-32 border-4 rounded-xl text-blue-500
+									"
+								>
+									<IoLibrary className="w-full h-full" />
+								</Box>
+								<Box className="flex flex-col gap-y-0">
+									<Text
+										className="
+											font-bold text-6xl leading-none text-blue-500
+										"
+									>
+										LIB
+									</Text>
+									<Box
+										className="
+											h-4 w-full bg-blue-400 rounded-full
+										"
+									></Box>
+									<Box
+										className="
+											h-4 w-full bg-blue-300 rounded-full
+										"
+									></Box>
+									<Box
+										className="
+											h-4 w-full bg-blue-200 rounded-full
+										"
+									></Box>
+								</Box>
+							</Box>
+						</Box>
+						<Box className="p-4 flex flex-col gap-y-4">
+							<Text className="text-gray-700 font-semibold text-center px-4">
+								<Highlight
+									query={["libms"]}
+									styles={{
+										color: "blue.500",
+										fontWeight: "bold",
+										borderRadius: "full",
+									}}
+								>
+									Welcome to LibMS! The Library Management System
+								</Highlight>
+							</Text>
+							<Divider />
+							<Button
+								colorScheme="messenger"
+								borderRadius={"full"}
+								onClick={() => handleAuthModalOpen("signin")}
+							>
+								Sign In
+							</Button>
+							<Button
+								colorScheme="whatsapp"
+								borderRadius={"full"}
+								onClick={() => handleAuthModalOpen("signup")}
+							>
+								Sign Up
+							</Button>
+						</Box>
+					</Box>
+				</Box>
 
 				<Modal
 					isOpen={authModalOpen == "signin"}
@@ -134,7 +205,7 @@ const AuthPageComponent: React.FC<AuthPageComponentProps> = () => {
 										: "false"
 								}
 							>
-								<div className="flex flex-col gap-y-0">
+								<Box className="flex flex-col gap-y-0">
 									<label
 										htmlFor="email"
 										className="font-semibold"
@@ -156,8 +227,8 @@ const AuthPageComponent: React.FC<AuthPageComponentProps> = () => {
 										onChange={handleSignInFormChange}
 										required
 									/>
-								</div>
-								<div className="flex flex-col gap-y-0">
+								</Box>
+								<Box className="flex flex-col gap-y-0">
 									<label
 										htmlFor="password"
 										className="font-semibold"
@@ -179,7 +250,7 @@ const AuthPageComponent: React.FC<AuthPageComponentProps> = () => {
 										onChange={handleSignInFormChange}
 										required
 									/>
-								</div>
+								</Box>
 
 								<Button
 									type="submit"
@@ -228,7 +299,7 @@ const AuthPageComponent: React.FC<AuthPageComponentProps> = () => {
 										: "false"
 								}
 							>
-								<div className="flex flex-col gap-y-0">
+								<Box className="flex flex-col gap-y-0">
 									<label
 										htmlFor="email"
 										className="font-semibold"
@@ -250,9 +321,9 @@ const AuthPageComponent: React.FC<AuthPageComponentProps> = () => {
 										onChange={handleSignUpFormChange}
 										required
 									/>
-								</div>
+								</Box>
 
-								<div className="flex flex-col gap-y-0">
+								<Box className="flex flex-col gap-y-0">
 									<label
 										htmlFor="password"
 										className="font-semibold"
@@ -274,14 +345,14 @@ const AuthPageComponent: React.FC<AuthPageComponentProps> = () => {
 										onChange={handleSignUpFormChange}
 										required
 									/>
-								</div>
+								</Box>
 
-								<div className="flex flex-col gap-y-0">
+								<Box className="flex flex-col gap-y-0">
 									<label
 										htmlFor="repeatPassword"
 										className="font-semibold"
 									>
-										RepeatPassword
+										Repeat Password
 									</label>
 									<input
 										type="password"
@@ -298,7 +369,7 @@ const AuthPageComponent: React.FC<AuthPageComponentProps> = () => {
 										onChange={handleSignUpFormChange}
 										required
 									/>
-								</div>
+								</Box>
 
 								<Button
 									type="submit"

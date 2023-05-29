@@ -562,6 +562,25 @@ const IndexPage = () => {
 												)}
 											</>
 										</Box>
+										<>
+											{viewBook?.borrow &&
+												viewBook.borrow.borrowStatus !== "returned" && (
+													<>
+														<Box className="pt-4 pl-2 relative">
+															<Box className="p-4 pt-6 border border-pink-500 bg-pink-100 rounded-lg">
+																<Text className="absolute text-white top-0 left-0 text-sm px-4 py-1 font-bold bg-pink-700 rounded-full">
+																	Note
+																</Text>
+																<Text className="text-xs whitespace-pre-wrap break-words text-pink-700">
+																	{viewBook.borrow.note
+																		? viewBook.borrow.note
+																		: "No note available"}
+																</Text>
+															</Box>
+														</Box>
+													</>
+												)}
+										</>
 										<Grid className="grid-cols-2 xs:grid-cols-4 items-center justify-center gap-1 flex-wrap">
 											<Tooltip
 												placement="top"
@@ -638,7 +657,7 @@ const IndexPage = () => {
 										</Grid>
 										<Divider />
 										<Box className="py-2 px-4 bg-gray-50 rounded-lg">
-											<Text className="text-lg font-bold text-gray-700">
+											<Text className="text-lg font-bold text-gray-700 whitespace-pre-wrap break-words">
 												Description
 											</Text>
 											<Text className="text-sm text-gray-500">

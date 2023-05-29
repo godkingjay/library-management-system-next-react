@@ -26,6 +26,7 @@ import {
 	AlertDialogFooter,
 	AlertDialogHeader,
 	AlertDialogOverlay,
+	Highlight,
 } from "@chakra-ui/react";
 import Head from "next/head";
 import ManageBreadcrumb from "@/components/Breadcrumb/ManageBreadcrumb";
@@ -42,6 +43,7 @@ import { AiOutlinePlus } from "react-icons/ai";
 import { HiOutlineRefresh } from "react-icons/hi";
 import { APIEndpointBooksCategoryParameters } from "../api/books/categories/category";
 import moment from "moment";
+import SearchBar from "@/components/Input/SearchBar";
 
 type ManageCategoriesPageProps = {};
 
@@ -63,7 +65,12 @@ const ManageCategoriesPage: React.FC<ManageCategoriesPageProps> = () => {
 	const [updating, setUpdating] = useState(false);
 	const [deleting, setDeleting] = useState(false);
 
-	// const [searchText, setSearchText] = useState("");
+	const [searchText, setSearchText] = useState("");
+	const [searchResultDetails, setSearchResultDetails] = useState({
+		text: "",
+		total: 0,
+	});
+
 	const [categoryAlphabet, setCategoryAlphabet] = useState("All");
 
 	const categoriesMounted = useRef(false);
@@ -242,6 +249,7 @@ const ManageCategoriesPage: React.FC<ManageCategoriesPageProps> = () => {
 					.get(apiConfig.apiEndpoint + "/books/categories/", {
 						params: {
 							apiKey: usersStateValue.currentUser?.auth?.keys[0].key,
+							search: searchText,
 							alphabet: alphabet === "All" ? "" : alphabet,
 							page: page || cPage,
 							limit: itemsPerPage,
@@ -256,6 +264,11 @@ const ManageCategoriesPage: React.FC<ManageCategoriesPageProps> = () => {
 
 				setCategoriesData(categories);
 				setTPages(totalPages > 0 ? totalPages : 1);
+
+				setSearchResultDetails({
+					text: searchText,
+					total: totalCount,
+				});
 
 				setFetchingData(false);
 			}
@@ -398,6 +411,27 @@ const ManageCategoriesPage: React.FC<ManageCategoriesPageProps> = () => {
 		}
 	};
 
+	const handleSearch = async (event: React.FormEvent<HTMLFormElement>) => {
+		event.preventDefault();
+
+		try {
+			if (!fetchingData) {
+				setCPage(1);
+				await fetchCategories(categoryAlphabet, 1);
+			}
+		} catch (error: any) {
+			console.error(
+				`=>API: Search Categories fetchCategories Failed:\n${error}`
+			);
+		}
+	};
+
+	const handleSearchChange = (text: string) => {
+		if (!fetchingData) {
+			setSearchText(text);
+		}
+	};
+
 	useEffect(() => {
 		if (
 			!categoriesMounted.current &&
@@ -448,27 +482,6 @@ const ManageCategoriesPage: React.FC<ManageCategoriesPageProps> = () => {
 						<Flex className="flex-col gap-y-4"></Flex>
 					</Flex>
 					<Flex className="flex flex-col gap-y-4 shadow-page-box-1 bg-white rounded-lg p-4">
-						{/* <form
-							onSubmit={(event) => !fetchingData && handleSearch(event)}
-							className="flex flex-row gap-x-2 items-center"
-						>
-							<Flex
-								direction={"column"}
-								flex={1}
-							>
-								<SearchBar
-									placeholder={"Search Book..."}
-									onSearch={handleSearchChange}
-								/>
-							</Flex>
-							<Button
-								type="submit"
-								colorScheme="linkedin"
-							>
-								Search
-							</Button>
-						</form> */}
-
 						<Select
 							onChange={(event) => handleSelectChange(event)}
 							value={categoryAlphabet}
@@ -485,13 +498,32 @@ const ManageCategoriesPage: React.FC<ManageCategoriesPageProps> = () => {
 								</option>
 							))}
 						</Select>
+						<form
+							onSubmit={(event) => !fetchingData && handleSearch(event)}
+							className="flex flex-row gap-x-2 items-center"
+						>
+							<Flex
+								direction={"column"}
+								flex={1}
+							>
+								<SearchBar
+									placeholder={"Search Categories..."}
+									onSearch={handleSearchChange}
+								/>
+							</Flex>
+							<Button
+								type="submit"
+								colorScheme="linkedin"
+							>
+								Search
+							</Button>
+						</form>
 						<Flex
-							direction="row"
 							justifyContent={"end"}
 							gap={2}
-							className="items-center"
+							className="items-center flex-col-reverse md:flex-row"
 						>
-							{/* <div
+							<div
 								className="
 								flex-1 flex-col
 								hidden
@@ -500,30 +532,32 @@ const ManageCategoriesPage: React.FC<ManageCategoriesPageProps> = () => {
 								data-search={searchResultDetails.text.trim().length > 0}
 							>
 								<p className="w-full text-sm max-w-full inline text-gray-500 truncate break-words whitespace-pre-wrap">
-									<span>Showing {booksData.length.toString()} out of </span>
+									<span>Showing {categoriesData.length.toString()} out of </span>
 									<span>
 										{searchResultDetails.total.toString()} results for{" "}
 									</span>
 									<span>"{searchResultDetails.text}"</span>
 								</p>
-							</div> */}
-							<Button
-								leftIcon={<HiOutlineRefresh />}
-								colorScheme="messenger"
-								variant="outline"
-								onClick={() => !fetchingData && handleCategoriesRefresh()}
-								isLoading={fetchingData}
-							>
-								Refresh
-							</Button>
-							<Button
-								leftIcon={<AiOutlinePlus />}
-								colorScheme="whatsapp"
-								variant="solid"
-								onClick={() => handleCategoriesModalOpen("add")}
-							>
-								Add Book
-							</Button>
+							</div>
+							<Box className="w-full md:w-auto flex flex-row justify-end items-center gap-2">
+								<Button
+									leftIcon={<HiOutlineRefresh />}
+									colorScheme="messenger"
+									variant="outline"
+									onClick={() => !fetchingData && handleCategoriesRefresh()}
+									isLoading={fetchingData}
+								>
+									Refresh
+								</Button>
+								<Button
+									leftIcon={<AiOutlinePlus />}
+									colorScheme="whatsapp"
+									variant="solid"
+									onClick={() => handleCategoriesModalOpen("add")}
+								>
+									Add Book
+								</Button>
+							</Box>
 						</Flex>
 					</Flex>
 
@@ -546,14 +580,25 @@ const ManageCategoriesPage: React.FC<ManageCategoriesPageProps> = () => {
 															{index + 1 + itemsPerPage * (cPage - 1)}
 														</Text>
 														<Text className="first-letter:font-serif first-letter:underline text-gray-700 font-semibold group-hover:text-blue-500 group-hover:underline flex-1 text-xl truncate">
-															{category.name
-																.split("-")
-																.map((word) => {
-																	return (
-																		word.charAt(0).toUpperCase() + word.slice(1)
-																	);
-																})
-																.join(" ")}
+															<Highlight
+																query={[searchResultDetails.text]}
+																styles={{
+																	bg: "teal.100",
+																}}
+															>
+																{
+																	category.name
+																		.split("-")
+																		.map((word) => {
+																			return (
+																				word.charAt(0).toUpperCase() +
+																				word.slice(1)
+																			);
+																		})
+																		.join(" ")
+																		.toString() as string
+																}
+															</Highlight>
 														</Text>
 														<Text className="text-xs text-gray-500">
 															{category.name}

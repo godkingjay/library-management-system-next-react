@@ -20,6 +20,7 @@ import { useRouter } from "next/router";
 import React, { useRef, useState } from "react";
 import { AiOutlineUser } from "react-icons/ai";
 import { BiChevronDown } from "react-icons/bi";
+import { FaHandHolding } from "react-icons/fa";
 import { IoExitOutline } from "react-icons/io5";
 import { MdSpaceDashboard } from "react-icons/md";
 
@@ -95,6 +96,29 @@ const UserMenu: React.FC<UserMenuProps> = () => {
 							</MenuItem>
 						</>
 					)}
+
+					{/* <MenuItem
+						className="
+									group
+									data-[active-directory=true]:bg-blue-100
+								"
+						data-active-directory={
+							directories[1] === "borrows" && !directories[2]
+						}
+					>
+						<Link
+							href="/borrows"
+							className="
+										flex-1 gap-x-4 font-semibold !text-gray-500 flex flex-row items-center !no-underline
+										group-data-[active-directory=true]:!text-blue-500
+									"
+						>
+							<Box className="h-6 w-6">
+								<FaHandHolding className="h-full w-full" />
+							</Box>
+							<Text>Borrows</Text>
+						</Link>
+					</MenuItem> */}
 
 					<MenuItem
 						className="

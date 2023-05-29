@@ -329,7 +329,8 @@ const ManageBooksPage: React.FC<ManageBooksPageProps> = () => {
 					available: bookForm.available || 0,
 					borrows: bookForm.borrows || 0,
 					borrowedTimes: bookForm.borrowedTimes || 0,
-					publicationDate: bookForm.publicationDate,
+					publicationDate:
+						bookForm.publicationDate && new Date(bookForm.publicationDate),
 					categories: JSON.stringify(bookForm.categories) as any,
 				};
 
@@ -425,7 +426,9 @@ const ManageBooksPage: React.FC<ManageBooksPageProps> = () => {
 					available: editUpdateBookForm.available || 0,
 					borrows: editUpdateBookForm.borrows || 0,
 					borrowedTimes: editUpdateBookForm.borrowedTimes || 0,
-					publicationDate: editUpdateBookForm.publicationDate,
+					publicationDate:
+						editUpdateBookForm.publicationDate &&
+						new Date(editUpdateBookForm.publicationDate),
 					categories: JSON.stringify(editUpdateBookForm.categories) as any,
 				};
 
@@ -696,31 +699,17 @@ const ManageBooksPage: React.FC<ManageBooksPageProps> = () => {
 
 		switch (booksModalOpen) {
 			case "add": {
-				if (name === "publicationDate") {
-					setBookForm((prev) => ({
-						...prev,
-						[name]: new Date(value).toISOString(),
-					}));
-				} else {
-					setBookForm((prev) => ({
-						...prev,
-						[name]: value,
-					}));
-				}
+				setBookForm((prev) => ({
+					...prev,
+					[name]: value,
+				}));
 			}
 
 			case "edit": {
-				if (name === "publicationDate") {
-					setEditUpdateBookForm((prev) => ({
-						...prev,
-						[name]: new Date(value).toISOString(),
-					}));
-				} else {
-					setEditUpdateBookForm((prev) => ({
-						...prev,
-						[name]: value,
-					}));
-				}
+				setEditUpdateBookForm((prev) => ({
+					...prev,
+					[name]: value,
+				}));
 
 				break;
 			}
@@ -962,10 +951,9 @@ const ManageBooksPage: React.FC<ManageBooksPageProps> = () => {
 							</Button>
 						</form>
 						<Flex
-							direction="row"
 							justifyContent={"end"}
 							gap={2}
-							className="items-center"
+							className="items-center flex-col-reverse md:flex-row"
 						>
 							<div
 								className="
@@ -983,23 +971,25 @@ const ManageBooksPage: React.FC<ManageBooksPageProps> = () => {
 									<span>"{searchResultDetails.text}"</span>
 								</p>
 							</div>
-							<Button
-								leftIcon={<HiOutlineRefresh />}
-								colorScheme="messenger"
-								variant="outline"
-								onClick={() => !fetchingData && handleBooksRefresh()}
-								isLoading={fetchingData}
-							>
-								Refresh
-							</Button>
-							<Button
-								leftIcon={<AiOutlinePlus />}
-								colorScheme="whatsapp"
-								variant="solid"
-								onClick={() => handleBooksModalOpen("add")}
-							>
-								Add Book
-							</Button>
+							<Box className="w-full md:w-auto flex flex-row justify-end items-center gap-2">
+								<Button
+									leftIcon={<HiOutlineRefresh />}
+									colorScheme="messenger"
+									variant="outline"
+									onClick={() => !fetchingData && handleBooksRefresh()}
+									isLoading={fetchingData}
+								>
+									Refresh
+								</Button>
+								<Button
+									leftIcon={<AiOutlinePlus />}
+									colorScheme="whatsapp"
+									variant="solid"
+									onClick={() => handleBooksModalOpen("add")}
+								>
+									Add Book
+								</Button>
+							</Box>
 						</Flex>
 
 						{/**
