@@ -148,7 +148,7 @@ export default async function handler(
 							},
 							{
 								categories: {
-									$in: [title],
+									$in: [title.toLowerCase()],
 								},
 							},
 						],
@@ -172,7 +172,7 @@ export default async function handler(
 							},
 							{
 								categories: {
-									$in: [title],
+									$in: [title.toLowerCase()],
 								},
 							},
 						],
