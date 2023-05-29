@@ -42,6 +42,7 @@ import { AiOutlinePlus } from "react-icons/ai";
 import { HiOutlineRefresh } from "react-icons/hi";
 import { APIEndpointBooksCategoryParameters } from "../api/books/categories/category";
 import moment from "moment";
+import SearchBar from "@/components/Input/SearchBar";
 
 type ManageCategoriesPageProps = {};
 
@@ -63,7 +64,12 @@ const ManageCategoriesPage: React.FC<ManageCategoriesPageProps> = () => {
 	const [updating, setUpdating] = useState(false);
 	const [deleting, setDeleting] = useState(false);
 
-	// const [searchText, setSearchText] = useState("");
+	const [searchText, setSearchText] = useState("");
+	const [searchResultDetails, setSearchResultDetails] = useState({
+		text: "",
+		total: 0,
+	});
+
 	const [categoryAlphabet, setCategoryAlphabet] = useState("All");
 
 	const categoriesMounted = useRef(false);
@@ -242,6 +248,7 @@ const ManageCategoriesPage: React.FC<ManageCategoriesPageProps> = () => {
 					.get(apiConfig.apiEndpoint + "/books/categories/", {
 						params: {
 							apiKey: usersStateValue.currentUser?.auth?.keys[0].key,
+							search: searchText,
 							alphabet: alphabet === "All" ? "" : alphabet,
 							page: page || cPage,
 							limit: itemsPerPage,
@@ -256,6 +263,11 @@ const ManageCategoriesPage: React.FC<ManageCategoriesPageProps> = () => {
 
 				setCategoriesData(categories);
 				setTPages(totalPages > 0 ? totalPages : 1);
+
+				setSearchResultDetails({
+					text: searchText,
+					total: totalCount,
+				});
 
 				setFetchingData(false);
 			}
@@ -398,6 +410,27 @@ const ManageCategoriesPage: React.FC<ManageCategoriesPageProps> = () => {
 		}
 	};
 
+	const handleSearch = async (event: React.FormEvent<HTMLFormElement>) => {
+		event.preventDefault();
+
+		try {
+			if (!fetchingData) {
+				setCPage(1);
+				await fetchCategories(categoryAlphabet, 1);
+			}
+		} catch (error: any) {
+			console.error(
+				`=>API: Search Categories fetchCategories Failed:\n${error}`
+			);
+		}
+	};
+
+	const handleSearchChange = (text: string) => {
+		if (!fetchingData) {
+			setSearchText(text);
+		}
+	};
+
 	useEffect(() => {
 		if (
 			!categoriesMounted.current &&
@@ -485,6 +518,26 @@ const ManageCategoriesPage: React.FC<ManageCategoriesPageProps> = () => {
 								</option>
 							))}
 						</Select>
+						<form
+							onSubmit={(event) => !fetchingData && handleSearch(event)}
+							className="flex flex-row gap-x-2 items-center"
+						>
+							<Flex
+								direction={"column"}
+								flex={1}
+							>
+								<SearchBar
+									placeholder={"Search Book..."}
+									onSearch={handleSearchChange}
+								/>
+							</Flex>
+							<Button
+								type="submit"
+								colorScheme="linkedin"
+							>
+								Search
+							</Button>
+						</form>
 						<Flex
 							direction="row"
 							justifyContent={"end"}
