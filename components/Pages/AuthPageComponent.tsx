@@ -281,7 +281,7 @@ const AuthPageComponent: React.FC<AuthPageComponentProps> = () => {
 										htmlFor="repeatPassword"
 										className="font-semibold"
 									>
-										RepeatPassword
+										Repeat Password
 									</label>
 									<input
 										type="password"
