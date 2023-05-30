@@ -555,7 +555,7 @@ const ManageCategoriesPage: React.FC<ManageCategoriesPageProps> = () => {
 									variant="solid"
 									onClick={() => handleCategoriesModalOpen("add")}
 								>
-									Add Book
+									Add Category
 								</Button>
 							</Box>
 						</Flex>

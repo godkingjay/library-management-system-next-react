@@ -291,15 +291,15 @@ export default async function handler(
 					.limit(1)
 					.toArray()) as BookBorrow[];
 
-				// if (!existingBorrow) {
-				// 	return res.status(400).json({
-				// 		statusCode: 400,
-				// 		error: {
-				// 			type: "No Borrow",
-				// 			message: "No Borrow",
-				// 		},
-				// 	});
-				// }
+				if (!existingBorrow) {
+					return res.status(400).json({
+						statusCode: 400,
+						error: {
+							type: "No Borrow",
+							message: "No Borrow",
+						},
+					});
+				}
 
 				if (!existingBorrow || existingBorrow.length === 0) {
 					return res.status(400).json({
@@ -308,6 +308,7 @@ export default async function handler(
 							type: "No Borrow",
 							message: "No Borrow",
 						},
+						borrowType,
 					});
 				}
 
@@ -487,7 +488,6 @@ export default async function handler(
 						type: "Book Borrow",
 						message: "Book Borrow fetched successfully",
 					},
-					borrow: existingBookBorrow[0],
 				});
 
 				break;
@@ -506,7 +506,6 @@ export default async function handler(
 
 				const existingBorrow = (await bookBorrowsCollection.findOne({
 					id: borrowId,
-					userId: userData.id,
 				})) as unknown as BookBorrow;
 
 				if (!existingBorrow) {
@@ -531,7 +530,6 @@ export default async function handler(
 
 				const deletedBorrow = await bookBorrowsCollection.findOneAndDelete({
 					id: borrowId,
-					userId: userData.id,
 				});
 
 				return res.status(200).json({

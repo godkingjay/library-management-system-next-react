@@ -7,6 +7,7 @@ import { Author } from "@/utils/models/author";
 import { SiteUser } from "@/utils/models/user";
 import { NextApiRequest, NextApiResponse } from "next";
 import bookDb from "@/server/mongo/bookDb";
+import { Book } from "@/utils/models/book";
 
 export interface APIEndpointAuthorParameters {
 	apiKey: string;
@@ -27,7 +28,7 @@ export default async function handler(
 
 		const { authorsCollection } = await authorDb();
 
-		const { booksCollection } = await bookDb();
+		const { booksCollection, bookBorrowsCollection } = await bookDb();
 
 		const {
 			apiKey,
@@ -306,6 +307,24 @@ export default async function handler(
 				const deletedAuthorData = await authorsCollection.findOneAndDelete({
 					id: authorId,
 				});
+
+				const authorBooks = (await booksCollection
+					.find({
+						author: existingAuthor.name,
+					})
+					.toArray()) as Book[];
+
+				await Promise.all(
+					authorBooks.map(async (book) => {
+						await bookBorrowsCollection.deleteMany({
+							bookId: book.id,
+						});
+
+						await booksCollection.deleteOne({
+							id: book.id,
+						});
+					})
+				);
 
 				return res.status(200).json({
 					statusCode: 200,
