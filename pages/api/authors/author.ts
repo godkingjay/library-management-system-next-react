@@ -307,6 +307,10 @@ export default async function handler(
 					id: authorId,
 				});
 
+				await booksCollection.deleteMany({
+					author: existingAuthor.name,
+				});
+
 				return res.status(200).json({
 					statusCode: 200,
 					success: {
