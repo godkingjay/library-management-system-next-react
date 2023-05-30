@@ -30,9 +30,9 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
 				!usersStateValue.currentUser.user?.roles.includes("admin") &&
 				directories[1] === "manage"
 			) {
-				router.push("/");
+				userMounted.current = true;
 
-				userMounted.current;
+				router.push("/");
 			}
 		}
 	}, [loadingUser, usersStateValue, userMounted.current]);
@@ -41,7 +41,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
 		<>
 			<div className="relative min-h-screen bg-gray-100 w-full max-w-full m-0 p-0 flex flex-col">
 				<>
-					{userMounted && (
+					{!loadingUser && usersStateValue.currentUser?.auth && (
 						<>
 							{usersStateValue.currentUser && (
 								<>
