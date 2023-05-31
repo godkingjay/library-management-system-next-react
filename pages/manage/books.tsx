@@ -65,6 +65,7 @@ import { APIEndpointAuthorsParameters } from "../api/authors";
 import { BiSearch } from "react-icons/bi";
 import BookCategoryTags from "@/components/Book/BookCategoryTags";
 import { HiOutlineRefresh } from "react-icons/hi";
+import useBook from "@/hooks/useBook";
 
 type ManageBooksPageProps = {};
 
@@ -73,7 +74,8 @@ export type BooksModalTypes = "" | "add" | "edit" | "delete";
 const ManageBooksPage: React.FC<ManageBooksPageProps> = () => {
 	const { loadingUser } = useAuth();
 	const { usersStateValue } = useUser();
-	const { uploadImageOrVideo } = useInput();
+	const { uploadImageOrVideo, getImageFile } = useInput();
+	const { getBooks } = useBook();
 
 	const toast = useToast();
 
@@ -270,46 +272,6 @@ const ManageBooksPage: React.FC<ManageBooksPageProps> = () => {
 	// 	return formData;
 	// };
 
-	const getImageFile = async () => {
-		switch (booksModalOpen) {
-			case "add": {
-				if (bookForm.image) {
-					const response = await fetch(bookForm.image.url);
-					const blob = await response.blob();
-
-					return new File([blob], bookForm.image.name, {
-						type: bookForm.image.type,
-					});
-				} else {
-					return null;
-				}
-
-				break;
-			}
-
-			case "edit": {
-				if (editUpdateBookForm.image) {
-					const response = await fetch(editUpdateBookForm.image.url);
-					const blob = await response.blob();
-
-					return new File([blob], editUpdateBookForm.image.name, {
-						type: editUpdateBookForm.image.type,
-					});
-				} else {
-					return null;
-				}
-
-				break;
-			}
-
-			default: {
-				return null;
-
-				break;
-			}
-		}
-	};
-
 	const handleCreateBook = async (event: React.FormEvent<HTMLFormElement>) => {
 		event.preventDefault();
 
@@ -317,7 +279,11 @@ const ManageBooksPage: React.FC<ManageBooksPageProps> = () => {
 			if (!submitting) {
 				setSubmitting(true);
 
-				const imageFile: File | null = await getImageFile();
+				const imageFile: File | null = bookForm.image
+					? await getImageFile({
+							image: bookForm.image,
+					  })
+					: null;
 
 				const formData: APIEndpointBookParameters = {
 					apiKey: usersStateValue.currentUser?.auth?.keys[0].key || "",
@@ -413,8 +379,11 @@ const ManageBooksPage: React.FC<ManageBooksPageProps> = () => {
 			if (!updating) {
 				setUpdating(true);
 
-				const imageFile: File | null = await getImageFile();
-
+				const imageFile: File | null = editUpdateBookForm.image
+					? await getImageFile({
+							image: editUpdateBookForm.image,
+					  })
+					: null;
 				const formData: APIEndpointBookParameters = {
 					bookId: editUpdateBookForm.id,
 					apiKey: usersStateValue.currentUser?.auth?.keys[0].key || "",
@@ -491,55 +460,43 @@ const ManageBooksPage: React.FC<ManageBooksPageProps> = () => {
 			if (!fetchingData) {
 				setFetchingData(true);
 
-				const {
-					books,
-					totalPages,
-					totalCount,
-				}: {
-					books: BookInfo[];
-					totalPages: number;
-					totalCount: number;
-				} = await axios
-					.get(apiConfig.apiEndpoint + "/books/", {
-						params: {
-							apiKey: usersStateValue.currentUser?.auth?.keys[0].key,
-							title: searchText,
-							page: page,
-							limit: itemsPerPage,
-						} as APIEndpointBooksParameters,
-					})
-					.then((response) => response.data)
-					.catch((error) => {
-						const errorData = error.response.data;
+				const booksDetails = await getBooks({
+					search: searchText,
+					page: page,
+					limit: itemsPerPage,
+				}).catch((error: any) => {
+					const errorData = error.response.data;
 
-						if (errorData.error.message) {
-							toast({
-								title: "Fetch Books Failed",
-								description: errorData.error.message,
-								status: "error",
-								duration: 5000,
-								isClosable: true,
-								position: "top",
-							});
-						}
+					if (errorData.error.message) {
+						toast({
+							title: "Fetch Books Failed",
+							description: errorData.error.message,
+							status: "error",
+							duration: 5000,
+							isClosable: true,
+							position: "top",
+						});
+					}
 
-						throw new Error(
-							`=>API: Fetch Books Failed:\n${error.response.data.error.message}`
-						);
-					});
-
-				setBooksData(books);
-				setTPages(totalPages > 0 ? totalPages : 1);
-
-				setSearchResultDetails({
-					text: searchText,
-					total: totalCount,
+					throw new Error(
+						`=>Hook: Fetch Books Failed(2/2):\n${error.response.data.error.message}`
+					);
 				});
+
+				if (booksDetails) {
+					setBooksData(booksDetails.books);
+					setTPages(booksDetails.totalPages > 0 ? booksDetails.totalPages : 1);
+
+					setSearchResultDetails({
+						text: searchText,
+						total: booksDetails.totalCount,
+					});
+				}
 
 				setFetchingData(false);
 			}
 		} catch (error: any) {
-			console.error(`=>API: Fetch Books Failed:\n${error}`);
+			console.error(`=>Hook: Fetch Books Failed(1/2):\n${error}`);
 			setFetchingData(false);
 		}
 	};
@@ -968,7 +925,7 @@ const ManageBooksPage: React.FC<ManageBooksPageProps> = () => {
 									<span>
 										{searchResultDetails.total.toString()} results for{" "}
 									</span>
-									<span>"{searchResultDetails.text}"</span>
+									<span>{`"${searchResultDetails.text}"`}</span>
 								</p>
 							</div>
 							<Box className="w-full md:w-auto flex flex-row justify-end items-center gap-2">

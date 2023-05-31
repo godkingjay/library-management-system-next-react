@@ -10,11 +10,11 @@ type LayoutProps = {
 };
 
 const Layout: React.FC<LayoutProps> = ({ children }) => {
-	const { loadingUser } = useAuth();
+	const { loadingUser, userMounted } = useAuth();
 
 	const { usersStateValue } = useUser();
 
-	const userMounted = useRef(false);
+	const pageMounted = useRef(false);
 
 	const router = useRouter();
 	const { pathname } = router;
@@ -22,38 +22,42 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
 
 	useEffect(() => {
 		if (
-			!loadingUser &&
-			usersStateValue.currentUser?.auth &&
-			!userMounted.current
+			(!userMounted && !loadingUser) ||
+			(userMounted &&
+				!usersStateValue.currentUser?.user?.roles.includes("admin"))
 		) {
-			if (
-				!usersStateValue.currentUser.user?.roles.includes("admin") &&
-				directories[1] === "manage"
-			) {
-				userMounted.current = true;
-
-				router.push("/");
-			}
+			router.push("/");
 		}
-	}, [loadingUser, usersStateValue, userMounted.current]);
+	}, [
+		router.pathname,
+		userMounted,
+		loadingUser,
+		usersStateValue.currentUser?.user?.roles.includes("admin"),
+	]);
 
 	return (
 		<>
 			<div className="relative min-h-screen bg-gray-100 w-full max-w-full m-0 p-0 flex flex-col">
 				<>
-					{!loadingUser && usersStateValue.currentUser?.auth && (
+					{userMounted && (
 						<>
 							{usersStateValue.currentUser && (
 								<>
-									<NavigationBar />
-									<>{children}</>
+									{((router.pathname.split("/")[1] === "manage" &&
+										usersStateValue.currentUser.user?.roles.includes("admin")) ||
+										router.pathname.split("/")[1] !== "manage") && (
+										<>
+											<NavigationBar />
+											<>{children}</>
+										</>
+									)}
 								</>
 							)}
 						</>
 					)}
 				</>
 				<>
-					{!usersStateValue.currentUser && !loadingUser && (
+					{!loadingUser && !userMounted && (
 						<>
 							<AuthPageComponent />
 						</>

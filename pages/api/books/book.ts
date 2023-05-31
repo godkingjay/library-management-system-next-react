@@ -620,6 +620,12 @@ export default async function handler(
 					}
 				}
 
+				if (deletedBookState.acknowledged) {
+					await bookBorrowsCollection.deleteMany({
+						bookId: existingBook.id,
+					});
+				}
+
 				return res.status(200).json({
 					statusCode: 200,
 					success: {

@@ -11,7 +11,7 @@ import { NextApiRequest, NextApiResponse } from "next";
 
 export interface APIEndpointBooksParameters {
 	apiKey: string;
-	title?: string;
+	search?: string;
 	fromTitle?: string;
 	page?: number;
 	limit?: number;
@@ -32,7 +32,7 @@ export default async function handler(
 
 		const {
 			apiKey,
-			title = undefined,
+			search = undefined,
 			fromTitle = undefined,
 			page: rawPage = 1,
 			limit: rawLimit = 10,
@@ -128,27 +128,27 @@ export default async function handler(
 				let query: any = {};
 				let countQuery: any = {};
 
-				if (title) {
+				if (search) {
 					countQuery = {
 						$or: [
 							{
 								title: {
-									$regex: new RegExp(title, "i"),
+									$regex: new RegExp(search, "i"),
 								},
 							},
 							{
 								author: {
-									$regex: new RegExp(title, "i"),
+									$regex: new RegExp(search, "i"),
 								},
 							},
 							{
 								ISBN: {
-									$regex: new RegExp(title, "i"),
+									$regex: new RegExp(search, "i"),
 								},
 							},
 							{
 								categories: {
-									$in: [title.toLowerCase()],
+									$in: [search.toLowerCase()],
 								},
 							},
 						],
@@ -157,22 +157,22 @@ export default async function handler(
 						$or: [
 							{
 								title: {
-									$regex: new RegExp(title, "i"),
+									$regex: new RegExp(search, "i"),
 								},
 							},
 							{
 								author: {
-									$regex: new RegExp(title, "i"),
+									$regex: new RegExp(search, "i"),
 								},
 							},
 							{
 								ISBN: {
-									$regex: new RegExp(title, "i"),
+									$regex: new RegExp(search, "i"),
 								},
 							},
 							{
 								categories: {
-									$in: [title.toLowerCase()],
+									$in: [search.toLowerCase()],
 								},
 							},
 						],
@@ -184,7 +184,7 @@ export default async function handler(
 						...query,
 						$or: [
 							{
-								title: {
+								search: {
 									...query.$or[0].title,
 									$lt: fromTitle,
 								},
