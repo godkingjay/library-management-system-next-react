@@ -48,7 +48,7 @@ export type BookCardModalType = "" | "view";
 const IndexPage = () => {
 	const { loadingUser } = useAuth();
 	const { usersStateValue } = useUser();
-	const { getBooks } = useBook();
+	const { getBooks, sendCancelBorrow } = useBook();
 
 	const toast = useToast();
 
@@ -122,87 +122,12 @@ const IndexPage = () => {
 				setBorrowing(true);
 
 				if (viewBook) {
-					if (
-						(borrowType === "request" &&
-							viewBook?.borrow?.borrowStatus === "pending") ||
-						(borrowType === "return" &&
-							viewBook?.borrow?.borrowStatus === "returned")
-					) {
-						await axios
-							.delete(apiConfig.apiEndpoint + "/books/borrows/borrow", {
-								params: {
-									apiKey: usersStateValue.currentUser?.auth?.keys[0].key,
-									borrowId: viewBook?.borrow.id,
-								} as APIEndpointBorrowParameters,
-							})
-							.catch((error) => {
-								const errorData = error.response.data;
-
-								if (errorData.error.message) {
-									toast({
-										title: "Borrow Book Failed",
-										description: errorData.error.message,
-										status: "error",
-										duration: 5000,
-										isClosable: true,
-										position: "top",
-									});
-								}
-
-								throw new Error(
-									`=>API: Borrow API Call Book Failed:\n${error.response.data.error.message}`
-								);
-							});
-
-						toast({
-							title: "Borrow Book Removed",
-							description: "You removed your borrow request.",
-							status: "success",
-							colorScheme: "red",
-							duration: 5000,
-							isClosable: true,
-							position: "top",
-						});
-					} else if (
-						(borrowType === "request" && !viewBook?.borrow) ||
-						(borrowType === "request" &&
-							viewBook?.borrow?.borrowStatus === "returned")
-					) {
-						await axios
-							.post(apiConfig.apiEndpoint + "/books/borrows/borrow", {
-								apiKey: usersStateValue.currentUser?.auth?.keys[0].key,
-								bookId: viewBook?.book.id,
-								borrowType: borrowType,
-							})
-							.catch((error) => {
-								const errorData = error.response.data;
-
-								if (errorData.error.message) {
-									toast({
-										title: "Borrow Book Failed",
-										description: errorData.error.message,
-										status: "error",
-										duration: 5000,
-										isClosable: true,
-										position: "top",
-									});
-								}
-
-								throw new Error(
-									`=>API: Borrow API Call Book Failed:\n${error.response.data.error.message}`
-								);
-							});
-
-						toast({
-							title: "Borrow Book Success",
-							description: "You requested to borrow this book.",
-							status: "success",
-							colorScheme: "messenger",
-							duration: 5000,
-							isClosable: true,
-							position: "top",
-						});
-					}
+					await sendCancelBorrow({
+						bookId: viewBook.book.id,
+						borrowStatus: viewBook.borrow?.borrowStatus,
+						borrowId: viewBook.borrow?.id,
+						borrowType: borrowType,
+					});
 
 					await fetchBooks(cPage);
 					handleBookCardModalOpen("");
