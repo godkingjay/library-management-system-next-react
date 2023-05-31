@@ -41,12 +41,14 @@ import moment from "moment";
 import { IoBookSharp } from "react-icons/io5";
 import { ImBooks } from "react-icons/im";
 import { SiBookstack } from "react-icons/si";
+import useBook from "@/hooks/useBook";
 
 export type BookCardModalType = "" | "view";
 
 const IndexPage = () => {
 	const { loadingUser } = useAuth();
 	const { usersStateValue } = useUser();
+	const { getBooks } = useBook();
 
 	const toast = useToast();
 
@@ -84,42 +86,30 @@ const IndexPage = () => {
 			if (!fetchingData) {
 				setFetchingData(true);
 
-				const {
-					books,
-					totalPages,
-					totalCount,
-				}: {
-					books: BookInfo[];
-					totalPages: number;
-					totalCount: number;
-				} = await axios
-					.get(apiConfig.apiEndpoint + "/books/", {
-						params: {
-							apiKey: usersStateValue.currentUser?.auth?.keys[0].key,
-							title: searchText,
-							page: page,
-							limit: itemsPerPage,
-						} as APIEndpointBooksParameters,
-					})
-					.then((response) => response.data)
-					.catch((error) => {
-						throw new Error(
-							`=>API: Fetch Books API Call Failed:\n${error.response.data.error.message}`
-						);
-					});
-
-				setBooksData(books);
-				setTPages(totalPages > 0 ? totalPages : 1);
-
-				setSearchResultDetails({
-					text: searchText,
-					total: totalCount,
+				const booksDetails = await getBooks({
+					search: searchText,
+					page: page,
+					limit: itemsPerPage,
+				}).catch((error) => {
+					throw new Error(
+						`=>Hook: Fetch Books Failed(2/2):\n${error.response.data.error.message}`
+					);
 				});
+
+				if (booksDetails) {
+					setBooksData(booksDetails.books);
+					setTPages(booksDetails.totalPages > 0 ? booksDetails.totalPages : 1);
+
+					setSearchResultDetails({
+						text: searchText,
+						total: booksDetails.totalCount,
+					});
+				}
 
 				setFetchingData(false);
 			}
 		} catch (error: any) {
-			console.error(`=>API: Fetch Books Failed:\n${error}`);
+			console.error(`=>Hook: Fetch Books Failed(1/2):\n${error}`);
 			setFetchingData(false);
 		}
 	};
