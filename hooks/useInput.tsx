@@ -11,6 +11,22 @@ export type ImageOrVideoType = {
 };
 
 const useInput = () => {
+	const getImageFile = useCallback(
+		async ({ image }: { image: ImageOrVideoType | null }) => {
+			if (image) {
+				const response = await fetch(image.url);
+				const blob = await response.blob();
+
+				return new File([blob], image.name, {
+					type: image.type,
+				});
+			} else {
+				return null;
+			}
+		},
+		[]
+	);
+
 	const validateImageOrVideo = useCallback((imageOrVideo: File) => {
 		if (validImageTypes.ext.includes(imageOrVideo.type)) {
 			if (imageOrVideo.size > 1024 * 1024 * 2) {
@@ -164,6 +180,7 @@ const useInput = () => {
 	}, []);
 
 	return {
+		getImageFile,
 		uploadImageOrVideo,
 		calculateDaysAway,
 		formatNumberWithSuffix,

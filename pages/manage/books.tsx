@@ -74,7 +74,7 @@ export type BooksModalTypes = "" | "add" | "edit" | "delete";
 const ManageBooksPage: React.FC<ManageBooksPageProps> = () => {
 	const { loadingUser } = useAuth();
 	const { usersStateValue } = useUser();
-	const { uploadImageOrVideo } = useInput();
+	const { uploadImageOrVideo, getImageFile } = useInput();
 	const { getBooks } = useBook();
 
 	const toast = useToast();
@@ -272,46 +272,6 @@ const ManageBooksPage: React.FC<ManageBooksPageProps> = () => {
 	// 	return formData;
 	// };
 
-	const getImageFile = async () => {
-		switch (booksModalOpen) {
-			case "add": {
-				if (bookForm.image) {
-					const response = await fetch(bookForm.image.url);
-					const blob = await response.blob();
-
-					return new File([blob], bookForm.image.name, {
-						type: bookForm.image.type,
-					});
-				} else {
-					return null;
-				}
-
-				break;
-			}
-
-			case "edit": {
-				if (editUpdateBookForm.image) {
-					const response = await fetch(editUpdateBookForm.image.url);
-					const blob = await response.blob();
-
-					return new File([blob], editUpdateBookForm.image.name, {
-						type: editUpdateBookForm.image.type,
-					});
-				} else {
-					return null;
-				}
-
-				break;
-			}
-
-			default: {
-				return null;
-
-				break;
-			}
-		}
-	};
-
 	const handleCreateBook = async (event: React.FormEvent<HTMLFormElement>) => {
 		event.preventDefault();
 
@@ -319,7 +279,11 @@ const ManageBooksPage: React.FC<ManageBooksPageProps> = () => {
 			if (!submitting) {
 				setSubmitting(true);
 
-				const imageFile: File | null = await getImageFile();
+				const imageFile: File | null = bookForm.image
+					? await getImageFile({
+							image: bookForm.image,
+					  })
+					: null;
 
 				const formData: APIEndpointBookParameters = {
 					apiKey: usersStateValue.currentUser?.auth?.keys[0].key || "",
@@ -415,8 +379,11 @@ const ManageBooksPage: React.FC<ManageBooksPageProps> = () => {
 			if (!updating) {
 				setUpdating(true);
 
-				const imageFile: File | null = await getImageFile();
-
+				const imageFile: File | null = editUpdateBookForm.image
+					? await getImageFile({
+							image: editUpdateBookForm.image,
+					  })
+					: null;
 				const formData: APIEndpointBookParameters = {
 					bookId: editUpdateBookForm.id,
 					apiKey: usersStateValue.currentUser?.auth?.keys[0].key || "",
