@@ -1,47 +1,84 @@
-# TypeScript Next.js example
+# Library Management System with Next, React, Chakra, and Redux
 
-This is a really simple project that shows the usage of Next.js with TypeScript.
+## Tech Stack
 
-## Deploy your own
+|                  |                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
+| ---------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Front-End        | ![React](https://img.shields.io/badge/react-%2320232a.svg?style=for-the-badge&logo=react&logoColor=%2361DAFB) ![Chakra](https://img.shields.io/badge/chakra-%234ED1C5.svg?style=for-the-badge&logo=chakraui&logoColor=white) ![TailwindCSS](https://img.shields.io/badge/tailwindcss-%2338B2AC.svg?style=for-the-badge&logo=tailwind-css&logoColor=white) ![SASS](https://img.shields.io/badge/SASS-hotpink.svg?style=for-the-badge&logo=SASS&logoColor=white) |
+| Back-End         | ![NodeJS](https://img.shields.io/badge/node.js-6DA55F?style=for-the-badge&logo=node.js&logoColor=white) ![TypeScript](https://img.shields.io/badge/typescript-%23007ACC.svg?style=for-the-badge&logo=typescript&logoColor=white) ![Next JS](https://img.shields.io/badge/Next-black?style=for-the-badge&logo=next.js&logoColor=white)                                                                                                                          |
+| Database         | ![MongoDB](https://img.shields.io/badge/MongoDB-%234ea94b.svg?style=for-the-badge&logo=mongodb&logoColor=white)                                                                                                                                                                                                                                                                                                                                                |
+| State-Management | ![Redux](https://img.shields.io/badge/redux-%23593d88.svg?style=for-the-badge&logo=redux&logoColor=white)                                                                                                                                                                                                                                                                                                                                                      |
+| Tools            | ![Postman](https://img.shields.io/badge/Postman-FF6C37?style=for-the-badge&logo=postman&logoColor=white)                                                                                                                                                                                                                                                                                                                                                       |
+| Others           | ![JWT](https://img.shields.io/badge/JWT-black?style=for-the-badge&logo=JSON%20web%20tokens)                                                                                                                                                                                                                                                                                                                                                                    |
 
-Deploy the example using [Vercel](https://vercel.com?utm_source=github&utm_medium=readme&utm_campaign=next-example) or preview live with [StackBlitz](https://stackblitz.com/github/vercel/next.js/tree/canary/examples/with-typescript)
+## Setup
 
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/vercel/next.js/tree/canary/examples/with-typescript&project-name=with-typescript&repository-name=with-typescript)
+### Environment Variables
 
-## How to use it?
-
-Execute [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app) with [npm](https://docs.npmjs.com/cli/init), [Yarn](https://yarnpkg.com/lang/en/docs/cli/create/), or [pnpm](https://pnpm.io) to bootstrap the example:
-
-```bash
-npx create-next-app --example with-typescript with-typescript-app
-```
-
-```bash
-yarn create next-app --example with-typescript with-typescript-app
-```
+1. Open `.env.example`
+2. Fill-up the variables
 
 ```bash
-pnpm create next-app --example with-typescript with-typescript-app
+#NEXT_PUBLIC_BASE_URL is the base url of the website, e.g. http://localhost:3000
+NEXT_PUBLIC_BASE_URL=#Website Base URL e.g. http://localhost:3000
+
+#NEXT_PUBLIC_API_ENDPOINT is the base url of the api, e.g. http://localhost:3000/api
+NEXT_PUBLIC_API_ENDPOINT=#API Endpoint Base URL e.g. http://localhost:3000/api
+
+#NEXT_PUBLIC_JWT_SECRET_KEY is the secret key used to generate JWT tokens, e.g. Hello
+NEXT_PUBLIC_JWT_SECRET_KEY=#JWT Generator Secret Key e.g. Hello
+
+#MONGODB_URI is the endpoint of the MongoDB database, e.g. mongodb://0.0.0.0:27017/library-db
+MONGODB_URI=#MongoDB Database Endpoint e.g. mongodb://0.0.0.0:27017/library-db
+NEXT_PUBLIC_MONGODB_NAME=#MongoDB Database Name e.g. library-db
 ```
 
-Deploy it to the cloud with [Vercel](https://vercel.com/new?utm_source=github&utm_medium=readme&utm_campaign=next-example) ([Documentation](https://nextjs.org/docs/deployment)).
+3. Rename `.env.example` to `.env.local`
 
-## Notes
+### Running the Software
 
-This example shows how to integrate the TypeScript type system into Next.js. Since TypeScript is supported out of the box with Next.js, all we have to do is to install TypeScript.
+1. Install the dependencies
 
-```
-npm install --save-dev typescript
-```
+```bash
+# Using npm
+npm install
 
-To enable TypeScript's features, we install the type declarations for React and Node.
-
-```
-npm install --save-dev @types/react @types/react-dom @types/node
+# Using yarn
+yarn install
 ```
 
-When we run `next dev` the next time, Next.js will start looking for any `.ts` or `.tsx` files in our project and builds it. It even automatically creates a `tsconfig.json` file for our project with the recommended settings.
+2. Run Development Build
 
-Next.js has built-in TypeScript declarations, so we'll get autocompletion for Next.js' modules straight away.
+```bash
+# Using npm
+npm run dev
 
-A `type-check` script is also added to `package.json`, which runs TypeScript's `tsc` CLI in `noEmit` mode to run type-checking separately. You can then include this, for example, in your `test` scripts.
+# Using yarn
+yarn dev
+```
+
+3. Go to development build (e.g. [http://localhost:3000/](http://localhost:3000))
+
+### Running Production
+
+1. Create Production Build
+
+```bash
+# Using npm
+npm run build
+
+# Using yarn
+yarn build
+```
+
+2. Run Production
+
+```bash
+# Using npm
+npm run start
+
+# Using yarn
+yarn build
+```
+
+3. Go to production build (e.g. [http://localhost:3000/](http://localhost:3000))
