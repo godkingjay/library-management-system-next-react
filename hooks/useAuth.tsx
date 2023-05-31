@@ -33,6 +33,7 @@ const useAuth = () => {
 		[error, setError]
 	);
 
+	const authCheck = useRef(false);
 	const userMounted = useRef(false);
 
 	const getSession = useCallback(
@@ -289,23 +290,31 @@ const useAuth = () => {
 			console.log(`=>Mongo: Sign Out Failed:\n${error.message}`);
 			setErrorMemo(error);
 		}
-	}, [dispatch, setErrorMemo]);
+	}, [dispatch, setErrorMemo, userMounted]);
 
 	useEffect(() => {
 		const sessionToken = localStorage.getItem("sessionToken");
 
-		if (!userMounted.current && loadingUserMemo) {
-			userMounted.current = true;
+		if (!authCheck.current && !userMounted.current && loadingUserMemo) {
+			authCheck.current = true;
 
 			if (sessionToken && !usersStateValue.currentUser?.auth) {
 				getSession({
 					sessionToken,
 				});
+			} else {
+				setLoadingUserMemo(false);
 			}
-		} else {
-			setLoadingUserMemo(false);
 		}
-	}, [userMounted.current, loadingUserMemo]);
+	}, [authCheck.current, loadingUserMemo]);
+
+	useEffect(() => {
+		if (usersStateValue.currentUser?.auth && !userMounted.current) {
+			userMounted.current = true;
+		} else {
+			userMounted.current = false;
+		}
+	}, [userMounted, usersStateValue.currentUser]);
 
 	return {
 		loadingUser: loadingUserMemo,
@@ -313,6 +322,7 @@ const useAuth = () => {
 		signInWithPassword,
 		signUp,
 		signOut,
+		userMounted: userMounted.current,
 	};
 };
 
