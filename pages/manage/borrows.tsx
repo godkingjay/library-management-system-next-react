@@ -426,7 +426,7 @@ const ManageBorrowsPage: React.FC<ManageBorrowsPageProps> = () => {
 									<span>
 										{searchResultDetails.total.toString()} results for{" "}
 									</span>
-									<span>"{searchResultDetails.text}"</span>
+									<span>{`"${searchResultDetails.text}"`}</span>
 								</p>
 							</div>
 							<Box className="w-full md:w-auto flex flex-row justify-end items-center gap-2">

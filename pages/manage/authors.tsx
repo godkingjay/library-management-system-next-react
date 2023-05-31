@@ -503,7 +503,7 @@ const ManageAuthorsPage: React.FC<ManageAuthorsPageProps> = () => {
 							<p className="w-full text-sm max-w-full inline text-gray-500 truncate break-words whitespace-pre-wrap">
 								<span>Showing {tableData.length.toString()} out of </span>
 								<span>{searchResultDetails.total.toString()} results for </span>
-								<span>"{searchResultDetails.text}"</span>
+								<span>{`"${searchResultDetails.text}"`}</span>
 							</p>
 						</div>
 						<Box className="w-full md:w-auto flex flex-row justify-end items-center gap-2">
