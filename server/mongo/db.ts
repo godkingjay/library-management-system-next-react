@@ -2,7 +2,9 @@ import clientPromise from "../mongodb";
 
 export default async function mongoDb() {
 	const client = await clientPromise;
-	const libraryDb = await client.db("library-db");
+	const libraryDb = await client.db(
+		process.env.NEXT_PUBLIC_MONGODB_NAME as string
+	);
 	const session = client.startSession();
 
 	const clientCloseConnection = async () => {
