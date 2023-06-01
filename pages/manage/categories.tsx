@@ -576,7 +576,7 @@ const ManageCategoriesPage: React.FC<ManageCategoriesPageProps> = () => {
 													className="flex flex-col gap-y-4  p-4 shadow-page-box-1 rounded-lg bg-white border border-transparent group hover:border-blue-500 relative"
 												>
 													<Box className="flex flex-col">
-														<Text className="duration-200 group-hover:scale-125 group-hover:bg-blue-500 font-bold bg-slate-700 text-white px-2 py-1 absolute top-0 left-0 text-2xs -translate-x-1 -translate-y-2 rounded-full">
+														<Text className="duration-200 group-hover:scale-125 group-hover:bg-blue-500 font-bold bg-slate-400 text-white px-2 py-1 absolute top-0 left-0 text-2xs -translate-x-1 -translate-y-2 rounded-full">
 															{index + 1 + itemsPerPage * (cPage - 1)}
 														</Text>
 														<Text className="first-letter:font-serif first-letter:underline text-gray-700 font-semibold group-hover:text-blue-500 group-hover:underline flex-1 text-xl truncate">
