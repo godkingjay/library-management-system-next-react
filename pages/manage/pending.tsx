@@ -16,6 +16,7 @@ import {
 	FormControl,
 	FormLabel,
 	Grid,
+	Highlight,
 	Icon,
 	Input,
 	Modal,
@@ -707,7 +708,18 @@ const ManagePendingPage: React.FC<ManagePendingPageProps> = () => {
 						</AlertDialogHeader>
 
 						<AlertDialogBody>
-							<Text>Are you sure you want to accept this request?</Text>
+							<Text>
+								<Highlight
+									query={`"${updateBorrow?.book.title}"`}
+									styles={{
+										color: "green",
+										fontWeight: "semibold",
+										fontStyle: "italic",
+									}}
+								>
+									{`Are you sure you want to accept the borrow request for the book "${updateBorrow?.book.title}"?`}
+								</Highlight>
+							</Text>
 						</AlertDialogBody>
 
 						<AlertDialogFooter className="flex flex-row gap-x-2">
@@ -761,7 +773,18 @@ const ManagePendingPage: React.FC<ManagePendingPageProps> = () => {
 						</AlertDialogHeader>
 
 						<AlertDialogBody>
-							<Text>Are you sure you want to reject this request?</Text>
+							<Text>
+								<Highlight
+									query={`"${updateBorrow?.book.title}"`}
+									styles={{
+										color: "red",
+										fontWeight: "semibold",
+										fontStyle: "italic",
+									}}
+								>
+									{`Are you sure you want to reject the borrow request for the book "${updateBorrow?.book.title}"?`}
+								</Highlight>
+							</Text>
 						</AlertDialogBody>
 
 						<AlertDialogFooter className="flex flex-row gap-x-2">
