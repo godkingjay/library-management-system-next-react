@@ -18,6 +18,7 @@ import {
 	FormControl,
 	FormLabel,
 	Grid,
+	Highlight,
 	Icon,
 	Input,
 	Modal,
@@ -618,7 +619,18 @@ const ManageReturnedPage: React.FC<ManageReturnedPageProps> = () => {
 						</AlertDialogHeader>
 
 						<AlertDialogBody>
-							<Text>Are you sure you want to remove this borrow request?</Text>
+							<Text>
+								<Highlight
+									query={`"${updateBorrow?.book.title}"`}
+									styles={{
+										color: "red",
+										fontWeight: "semibold",
+										fontStyle: "italic",
+									}}
+								>
+									{`Are you sure you want to remove this borrow request for the book "${updateBorrow?.book.title}"?`}
+								</Highlight>
+							</Text>
 						</AlertDialogBody>
 
 						<AlertDialogFooter className="flex flex-row gap-x-2">
