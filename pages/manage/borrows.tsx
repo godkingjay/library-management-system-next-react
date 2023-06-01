@@ -18,6 +18,7 @@ import {
 	FormControl,
 	FormLabel,
 	Grid,
+	Highlight,
 	Icon,
 	Input,
 	Modal,
@@ -616,7 +617,18 @@ const ManageBorrowsPage: React.FC<ManageBorrowsPageProps> = () => {
 						</AlertDialogHeader>
 
 						<AlertDialogBody>
-							<Text>Is the book borrow returned?</Text>
+							<Text>
+								<Highlight
+									query={`"${updateBorrow?.book.title}"`}
+									styles={{
+										color: "green",
+										fontWeight: "semibold",
+										fontStyle: "italic",
+									}}
+								>
+									{`Is the book "${updateBorrow?.book.title}" already returned to the library?`}
+								</Highlight>
+							</Text>
 						</AlertDialogBody>
 
 						<AlertDialogFooter className="flex flex-row gap-x-2">
