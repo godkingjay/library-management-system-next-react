@@ -19,6 +19,7 @@ import {
 	FormLabel,
 	Grid,
 	GridItem,
+	Highlight,
 	Icon,
 	Input,
 	List,
@@ -1443,7 +1444,18 @@ const ManageBooksPage: React.FC<ManageBooksPageProps> = () => {
 						</AlertDialogHeader>
 
 						<AlertDialogBody>
-							<Text>Are you sure you want to delete this book?</Text>
+							<Text className="break-words whitespace-pre-wrap">
+								<Highlight
+									query={[`"${deleteBookForm?.title}"`]}
+									styles={{
+										color: "red",
+										fontWeight: "semibold",
+										fontStyle: "italic",
+									}}
+								>
+									{`Are you sure you want to delete the book "${deleteBookForm?.title}"?`}
+								</Highlight>
+							</Text>
 						</AlertDialogBody>
 
 						<AlertDialogFooter className="flex flex-row gap-x-2">
