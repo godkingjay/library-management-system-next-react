@@ -381,207 +381,232 @@ const IndexPage = () => {
 						<ModalHeader isTruncated>{viewBook?.book.title}</ModalHeader>
 						<ModalCloseButton />
 						<ModalBody>
-							<Flex className="flex flex-col sm:flex-row gap-8">
-								<Box className="sm:flex-1">
-									<Box
-										className="flex flex-col aspect-[2/3] w-full bg-gray-200 items justify-center relative rounded-lg overflow-hidden shadow-lg group/image"
-										_focusWithin={{
-											ring: 4,
-											ringColor: "cyan.200",
-										}}
-									>
-										{viewBook?.book.cover ? (
+							<Flex className="flex flex-col gap-y-4">
+								<Flex className="flex flex-col sm:flex-row gap-8">
+									<Box className="sm:flex-1">
+										<Box
+											className="flex flex-col aspect-[2/3] w-full bg-gray-200 items justify-center relative rounded-lg overflow-hidden shadow-lg group/image"
+											_focusWithin={{
+												ring: 4,
+												ringColor: "cyan.200",
+											}}
+										>
+											{viewBook?.book.cover ? (
+												<>
+													<a
+														href={viewBook.book.cover.fileUrl}
+														target="_blank"
+														title="View Full Image"
+													>
+														<Image
+															src={viewBook?.book.cover.fileUrl}
+															alt={viewBook?.book.title}
+															sizes="full"
+															fill
+															loading="lazy"
+															className="w-full bg-center object-cover duration-200 group-hover/image:scale-110 group-focus-within/image:scale-110"
+														/>
+													</a>
+												</>
+											) : (
+												<>
+													<Box className="flex flex-col h-full w-full p-4 bg-gradient-to-t from-slate-700 to-slate-600 items-center justify-center text-white">
+														<Box className="h-12 w-12">
+															<Icon
+																as={MdBrokenImage}
+																height={"full"}
+																width={"full"}
+															/>
+														</Box>
+														<Text className="text-center text-xs font-mono">
+															No cover image available
+														</Text>
+													</Box>
+												</>
+											)}
+										</Box>
+									</Box>
+									<Box className="sm:flex-1 flex flex-col">
+										<Box className="flex flex-col gap-y-1">
+											<Text className="font-bold text-gray-700 text-2xl">
+												{viewBook?.book.title}
+											</Text>
+											<Text className="text-gray-500">
+												by {viewBook?.author.name}
+											</Text>
+											<Text className="text-gray-500 font-bold text-sm">
+												ISBN: {viewBook?.book.ISBN}
+											</Text>
 											<>
-												<a
-													href={viewBook.book.cover.fileUrl}
-													target="_blank"
-													title="View Full Image"
-												>
-													<Image
-														src={viewBook?.book.cover.fileUrl}
-														alt={viewBook?.book.title}
-														sizes="full"
-														fill
-														loading="lazy"
-														className="w-full bg-center object-cover duration-200 group-hover/image:scale-110 group-focus-within/image:scale-110"
-													/>
-												</a>
+												{viewBook?.book.publicationDate && (
+													<>
+														<Text className="text-xs text-gray-500">
+															Published on{" "}
+															{moment(viewBook?.book.publicationDate).format(
+																"MMMM DD, YYYY"
+															)}
+														</Text>
+													</>
+												)}
 											</>
-										) : (
-											<>
-												<Box className="flex flex-col h-full w-full p-4 bg-gradient-to-t from-slate-700 to-slate-600 items-center justify-center text-white">
-													<Box className="h-12 w-12">
-														<Icon
-															as={MdBrokenImage}
-															height={"full"}
-															width={"full"}
+											<Divider />
+										</Box>
+										<>
+											{viewBook?.book.categories && (
+												<>
+													<Box className="flex flex-col mt-2 relative">
+														{/* <Box className="absolute top-0 left-0 h-full w-1 bg-blue-500" /> */}
+														<Text className="font-semibold text-gray-700">
+															Categories
+														</Text>
+														<CategoryTagsList
+															itemName="Categories"
+															items={viewBook?.book.categories}
+															maxItems={5}
 														/>
 													</Box>
-													<Text className="text-center text-xs font-mono">
-														No cover image available
-													</Text>
-												</Box>
-											</>
-										)}
-									</Box>
-								</Box>
-								<Box className="sm:flex-1 flex flex-col">
-									<Box className="flex flex-col gap-y-1">
-										<Text className="font-bold text-gray-700 text-2xl">
-											{viewBook?.book.title}
-										</Text>
-										<Text className="text-gray-500">
-											by {viewBook?.author.name}
-										</Text>
-										<Text className="text-gray-500 font-bold text-sm">
-											ISBN: {viewBook?.book.ISBN}
-										</Text>
-										<>
-											{viewBook?.book.publicationDate && (
-												<>
-													<Text className="text-xs text-gray-500">
-														Published on{" "}
-														{moment(viewBook?.book.publicationDate).format(
-															"MMMM DD, YYYY"
-														)}
-													</Text>
 												</>
 											)}
 										</>
-										<Divider />
-									</Box>
-									<>
-										{viewBook?.book.categories && (
+										<Box className="flex flex-col gap-y-4">
+											<Box className="flex flex-col mt-4">
+												<>
+													{viewBook && (
+														<>
+															{renderBorrowButton(
+																viewBook?.borrow?.borrowStatus
+															)}
+														</>
+													)}
+												</>
+											</Box>
 											<>
-												<Box className="flex flex-col mt-2 relative">
-													{/* <Box className="absolute top-0 left-0 h-full w-1 bg-blue-500" /> */}
-													<Text className="font-semibold text-gray-700">
-														Categories
-													</Text>
-													<CategoryTagsList
-														itemName="Categories"
-														items={viewBook?.book.categories}
-														maxItems={5}
-													/>
-												</Box>
-											</>
-										)}
-									</>
-									<Box className="flex flex-col gap-y-4">
-										<Box className="flex flex-col mt-4">
-											<>
-												{viewBook && (
-													<>
-														{renderBorrowButton(viewBook?.borrow?.borrowStatus)}
-													</>
-												)}
-											</>
-										</Box>
-										<>
-											{viewBook?.borrow &&
-												viewBook.borrow.borrowStatus !== "returned" && (
-													<>
-														<Box className="pt-4 pl-2 relative">
-															<Box className="p-4 pt-6 border border-pink-500 bg-pink-100 rounded-lg">
-																<Text className="absolute text-white top-0 left-0 text-sm px-4 py-1 font-bold bg-pink-700 rounded-full">
-																	Note
-																</Text>
-																<Text className="text-xs whitespace-pre-wrap break-words text-pink-700">
-																	{viewBook.borrow.note
-																		? viewBook.borrow.note
-																		: "No note available"}
-																</Text>
+												{viewBook?.borrow &&
+													viewBook.borrow.borrowStatus !== "returned" && (
+														<>
+															<Box className="pt-4 pl-2 relative">
+																<Box className="p-4 pt-6 border border-blue-500 bg-blue-100 rounded-lg">
+																	<Text className="absolute text-white top-0 left-0 text-sm px-4 py-1 font-bold bg-blue-700 rounded-full">
+																		Due Date
+																	</Text>
+																	<Text className="text-xs whitespace-pre-wrap break-words text-blue-700">
+																		{viewBook.borrow.dueAt
+																			? moment(viewBook.borrow.dueAt).format(
+																					"MMMM DD, YYYY"
+																			  )
+																			: "No due date available"}
+																	</Text>
+																</Box>
 															</Box>
-														</Box>
-													</>
-												)}
-										</>
-										<Grid className="grid-cols-2 xs:grid-cols-4 items-center justify-center gap-1 flex-wrap">
-											<Tooltip
-												placement="top"
-												label={`Total Amount: ${viewBook?.book.amount}`}
-												fontSize={"md"}
-												hasArrow
-											>
-												<Box className="flex-1 border border-gray-300 bg-gray-100 rounded-full px-3 py-1 flex flex-row items-center gap-x-2 font-semibold sm:opacity-50 duration-200 group hover:opacity-100">
-													<Icon
-														as={IoBookSharp}
-														height={4}
-														width={4}
-														className="!text-gray-500"
-													/>
-													<Text className="flex-1 text-gray-700">
-														{viewBook?.book.amount}
-													</Text>
-												</Box>
-											</Tooltip>
-											<Tooltip
-												placement="top"
-												label={`Available: ${viewBook?.book.available}`}
-												fontSize={"md"}
-												hasArrow
-											>
-												<Box className="flex-1 border border-purple-300 bg-purple-100 rounded-full px-3 py-1 flex flex-row items-center gap-x-2 font-semibold sm:opacity-50 duration-200 group hover:opacity-100">
-													<Icon
-														as={ImBooks}
-														height={4}
-														width={4}
-														className="!text-purple-500"
-													/>
-													<Text className="text-purple-700">
-														{viewBook?.book.available}
-													</Text>
-												</Box>
-											</Tooltip>
-											<Tooltip
-												placement="top"
-												label={`Borrowed: ${viewBook?.book.borrows}`}
-												fontSize={"md"}
-												hasArrow
-											>
-												<Box className="flex-1 border border-cyan-300 bg-cyan-100 rounded-full px-3 py-1 flex flex-row items-center gap-x-2 font-semibold sm:opacity-50 duration-200 group hover:opacity-100">
-													<Icon
-														as={FaHandHolding}
-														height={4}
-														width={4}
-														className="!text-cyan-500"
-													/>
-													<Text className="text-cyan-700">
-														{viewBook?.book.borrows}
-													</Text>
-												</Box>
-											</Tooltip>
-											<Tooltip
-												placement="top"
-												label={`Borrowed Times: ${viewBook?.book.borrowedTimes}`}
-												fontSize={"md"}
-												hasArrow
-											>
-												<Box className="flex-1 border border-green-300 bg-green-100 rounded-full px-3 py-1 flex flex-row items-center gap-x-2 font-semibold sm:opacity-50 duration-200 group hover:opacity-100">
-													<Icon
-														as={SiBookstack}
-														height={4}
-														width={4}
-														className="!text-green-500"
-													/>
-													<Text className="text-green-700">
-														{viewBook?.book.borrowedTimes}
-													</Text>
-												</Box>
-											</Tooltip>
-										</Grid>
-										<Divider />
-										<Box className="py-2 px-4 bg-gray-50 rounded-lg">
-											<Text className="text-lg font-bold text-gray-700 whitespace-pre-wrap break-words">
-												Description
-											</Text>
-											<Text className="text-sm text-gray-500">
-												{viewBook?.book.description
-													? viewBook?.book.description
-													: "No description available"}
-											</Text>
+														</>
+													)}
+											</>
+											<>
+												{viewBook?.borrow &&
+													viewBook.borrow.borrowStatus !== "returned" && (
+														<>
+															<Box className="pt-4 pl-2 relative">
+																<Box className="p-4 pt-6 border border-pink-500 bg-pink-100 rounded-lg">
+																	<Text className="absolute text-white top-0 left-0 text-sm px-4 py-1 font-bold bg-pink-700 rounded-full">
+																		Note
+																	</Text>
+																	<Text className="text-xs whitespace-pre-wrap break-words text-pink-700">
+																		{viewBook.borrow.note
+																			? viewBook.borrow.note
+																			: "No note available"}
+																	</Text>
+																</Box>
+															</Box>
+														</>
+													)}
+											</>
+											<Grid className="grid-cols-2 xs:grid-cols-4 items-center justify-center gap-1 flex-wrap">
+												<Tooltip
+													placement="top"
+													label={`Total Amount: ${viewBook?.book.amount}`}
+													fontSize={"md"}
+													hasArrow
+												>
+													<Box className="flex-1 border border-gray-300 bg-gray-100 rounded-full px-3 py-1 flex flex-row items-center gap-x-2 font-semibold sm:opacity-50 duration-200 group hover:opacity-100">
+														<Icon
+															as={IoBookSharp}
+															height={4}
+															width={4}
+															className="!text-gray-500"
+														/>
+														<Text className="flex-1 text-gray-700">
+															{viewBook?.book.amount}
+														</Text>
+													</Box>
+												</Tooltip>
+												<Tooltip
+													placement="top"
+													label={`Available: ${viewBook?.book.available}`}
+													fontSize={"md"}
+													hasArrow
+												>
+													<Box className="flex-1 border border-purple-300 bg-purple-100 rounded-full px-3 py-1 flex flex-row items-center gap-x-2 font-semibold sm:opacity-50 duration-200 group hover:opacity-100">
+														<Icon
+															as={ImBooks}
+															height={4}
+															width={4}
+															className="!text-purple-500"
+														/>
+														<Text className="text-purple-700">
+															{viewBook?.book.available}
+														</Text>
+													</Box>
+												</Tooltip>
+												<Tooltip
+													placement="top"
+													label={`Borrowed: ${viewBook?.book.borrows}`}
+													fontSize={"md"}
+													hasArrow
+												>
+													<Box className="flex-1 border border-cyan-300 bg-cyan-100 rounded-full px-3 py-1 flex flex-row items-center gap-x-2 font-semibold sm:opacity-50 duration-200 group hover:opacity-100">
+														<Icon
+															as={FaHandHolding}
+															height={4}
+															width={4}
+															className="!text-cyan-500"
+														/>
+														<Text className="text-cyan-700">
+															{viewBook?.book.borrows}
+														</Text>
+													</Box>
+												</Tooltip>
+												<Tooltip
+													placement="top"
+													label={`Borrowed Times: ${viewBook?.book.borrowedTimes}`}
+													fontSize={"md"}
+													hasArrow
+												>
+													<Box className="flex-1 border border-green-300 bg-green-100 rounded-full px-3 py-1 flex flex-row items-center gap-x-2 font-semibold sm:opacity-50 duration-200 group hover:opacity-100">
+														<Icon
+															as={SiBookstack}
+															height={4}
+															width={4}
+															className="!text-green-500"
+														/>
+														<Text className="text-green-700">
+															{viewBook?.book.borrowedTimes}
+														</Text>
+													</Box>
+												</Tooltip>
+											</Grid>
+											<Divider />
 										</Box>
 									</Box>
+								</Flex>
+								<Box className="py-2 px-4 bg-gray-50 rounded-lg">
+									<Text className="text-lg font-bold text-gray-700 whitespace-pre-wrap break-words">
+										Description
+									</Text>
+									<Text className="text-sm text-gray-500">
+										{viewBook?.book.description
+											? viewBook?.book.description
+											: "No description available"}
+									</Text>
 								</Box>
 							</Flex>
 						</ModalBody>
